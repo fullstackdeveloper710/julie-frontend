@@ -5,7 +5,7 @@ import MESSAGES from '../../constant/message.js';
 import RESPONSE_CODES from '../../constant/responseCode.js';
 import { CustomError } from '../../errors/custom.error.js';
 import { generateToken } from '../../utils/random.util.js';
-import { sendVerificationEmail, sendManagerInviteEmail } from '../../email/auth.email.js';
+import { sendVerificationEmail, sendPasswordResetEmail, sendManagerInviteEmail } from '../../email/auth.email.js';
 import crypto from 'crypto';
 import Agency from '../models/agency.model.js';
 import { EUserRole, EUserPlan } from '../enums/agency.enum.js';
@@ -61,10 +61,12 @@ export const signUp = async (userData: TSignUpInput) => {
 };
 
 /**
- * Verify user email via Link and log them in
+ * Verify the user's email via the link token. Idempotent: clicking a still-
+ * valid link multiple times returns success instead of "invalid token", so
+ * dev-mode double effects, browser back-button, or network retries don't
+ * surface a fake error to the user.
  */
-export const verifyEmail = async (token: string, redirectTo: string) => {
-    // Find user by token and ensure token hasn't expired
+export const verifyEmail = async (token: string) => {
     const user = await User.findOne({
         verificationToken: token,
         verificationExpires: { $gt: new Date() },
@@ -72,27 +74,40 @@ export const verifyEmail = async (token: string, redirectTo: string) => {
     });
 
     if (!user) {
-        throw new CustomError(RESPONSE_CODES.BAD_REQUEST, 'Invalid or expired verification token');
+        throw new CustomError(
+            RESPONSE_CODES.BAD_REQUEST,
+            'Invalid or expired verification token'
+        );
     }
 
-    // Update user status
-    user.isConfirmed = true;
-    user.verificationToken = undefined;
-    user.verificationExpires = undefined;
-    await user.save();
+    const alreadyVerified = user.isConfirmed === true;
 
-    // Generate tokens for direct login
+    if (!alreadyVerified) {
+        user.isConfirmed = true;
+        await user.save();
+    }
+    // Token is intentionally retained until natural expiration so repeat
+    // clicks on the same link stay idempotent.
+
     const tokens = generateAuthTokens({
         user_id: user._id.toString(),
     });
 
-    // Construct redirect URL with tokens
-    const redirectUrl = new URL(redirectTo);
-    redirectUrl.searchParams.append('access_token', tokens.access_token.token);
-    redirectUrl.searchParams.append('refresh_token', tokens.refresh_token.token);
-    redirectUrl.searchParams.append('type', 'signup');
+    const showAgencyModal = (user?.agencies?.length || 0) === 0;
 
-    return redirectUrl.toString();
+    return {
+        alreadyVerified,
+        user: {
+            id: user._id,
+            email: user.email,
+            fullName: user.fullName,
+            plan: user.plan,
+            agencies: user?.agencies,
+            createdAt: user.createdAt,
+            showAgencyModal,
+        },
+        tokens,
+    };
 };
 
 /**
@@ -135,6 +150,66 @@ export const signIn = async (credentials: TAuthBase) => {
             showAgencyModal,
         },
         tokens,
+    };
+};
+
+/**
+ * Send a password-reset link to the user's email if the account exists.
+ * Always resolves successfully so the endpoint cannot be used to enumerate users.
+ */
+export const forgotPassword = async (email: string) => {
+    const user = await User.findOne({ email, isDeleted: false });
+
+    if (user) {
+        const resetToken = generateToken();
+        const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = resetExpires;
+        await user.save();
+
+        try {
+            await sendPasswordResetEmail(user.email, resetToken);
+        } catch (error) {
+            console.error('[auth] failed to send password reset email', error);
+        }
+    }
+
+    return {
+        message: 'If an account exists for that email, a reset link has been sent.',
+    };
+};
+
+/**
+ * Reset a user's password using a valid reset token.
+ */
+export const resetPassword = async (token: string, newPassword: string) => {
+    const user = await User.findOne({
+        resetPasswordToken: token,
+        resetPasswordExpires: { $gt: new Date() },
+        isDeleted: false,
+    });
+
+    if (!user) {
+        throw new CustomError(
+            RESPONSE_CODES.BAD_REQUEST,
+            'Invalid or expired password reset token'
+        );
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    if (!user.isConfirmed) {
+        user.isConfirmed = true;
+        user.verificationToken = undefined;
+        user.verificationExpires = undefined;
+    }
+    await user.save();
+
+    return {
+        message: MESSAGES.AUTH.PASSWORD_RESET_SUCCESSFULLY,
     };
 };
 

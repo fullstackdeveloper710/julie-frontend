@@ -17,6 +17,8 @@ export type TUserAccount = TSignUpInput & {
     isConfirmed: boolean;
     verificationToken: string | undefined;
     verificationExpires: Date | undefined;
+    resetPasswordToken?: string | undefined;
+    resetPasswordExpires?: Date | undefined;
 };
 
 export type TUser = TUserAccount & {

@@ -13,3 +13,12 @@ export const signUpValidation = joi.object({
 export const getMeValidation = joi.object({
     user_id: joi.string().required()
 })
+
+export const forgotPasswordValidation = joi.object({
+    email: joi.string().email().required(),
+});
+
+export const resetPasswordValidation = joi.object({
+    token: joi.string().min(10).required(),
+    password: joi.string().min(6).required(),
+});

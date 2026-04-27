@@ -27,30 +27,82 @@ export const signUp = async (req: Request, res: Response, next: NextFunction) =>
 };
 
 /**
- * @route GET /api/v1/auth/verify
- * @desc Verify via link click
+ * @route GET /api/v1/auth/verify?token=...
+ * @desc Verify the email token and return the user + JWT tokens as JSON so
+ *       the frontend can auto-log the user in.
  */
 export const verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { token, redirect_to } = req.query;
-        if (!token) {
+        const { token } = req.query;
+        if (!token || typeof token !== 'string') {
             return res.status(RESPONSE_CODES.BAD_REQUEST).json({
                 success: false,
                 message: 'Token is required',
+                data: null,
             });
         }
 
-        const redirectUrl = await Services.auth.verifyEmail(
-            token as string,
-            (redirect_to as string) || process.env.FRONTEND_URL || 'http://localhost:3000/auth/callback'
-        );
+        const result = await Services.auth.verifyEmail(token);
 
-        // Redirect to frontend with tokens
-        return res.redirect(redirectUrl);
-    } catch (error: any) {
-        // If it's a verification error, we might want to redirect to an error page on frontend
-        const errorRedirect = `${process.env.FRONTEND_URL}/auth/error?message=${encodeURIComponent(error.message || 'Verification failed')}`;
-        return res.redirect(errorRedirect);
+        return res.status(RESPONSE_CODES.OK).json({
+            success: true,
+            message: MESSAGES.AUTH.EMAIL_VERIFIED,
+            data: result,
+        });
+    } catch (error) {
+        handleErrorResponse(error, res, next);
+    }
+};
+
+/**
+ * @route POST /api/v1/auth/forgot-password
+ * @desc Send a password reset link via email
+ */
+export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        Validate(req.body, Validation.user.forgotPasswordValidation);
+        const result = await Services.auth.forgotPassword(req.body.email);
+        return res.status(RESPONSE_CODES.OK).json({
+            success: true,
+            message: result.message,
+            data: null,
+        });
+    } catch (error) {
+        handleErrorResponse(error, res, next);
+    }
+};
+
+/**
+ * @route POST /api/v1/auth/reset-password
+ * @desc Set a new password using a reset token
+ */
+export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        Validate(req.body, Validation.user.resetPasswordValidation);
+        const result = await Services.auth.resetPassword(req.body.token, req.body.password);
+        return res.status(RESPONSE_CODES.OK).json({
+            success: true,
+            message: result.message,
+            data: null,
+        });
+    } catch (error) {
+        handleErrorResponse(error, res, next);
+    }
+};
+
+/**
+ * @route POST /api/v1/auth/signout
+ * @desc Stateless JWT signout (client discards tokens; endpoint exists for parity).
+ */
+export const signOut = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+        return res.status(RESPONSE_CODES.OK).json({
+            success: true,
+            message: MESSAGES.AUTH.LOGGED_OUT,
+            data: null,
+        });
+    } catch (error) {
+        handleErrorResponse(error, res, next);
     }
 };
 

@@ -50,6 +50,12 @@ const UserSchema = new Schema<TUser>(
         verificationExpires: {
             type: Date,
         },
+        resetPasswordToken: {
+            type: String,
+        },
+        resetPasswordExpires: {
+            type: Date,
+        },
     },
     {
         timestamps: true,
