@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 
 type TabType =
   | 'dashboard'
+  | 'annual-checkin'
   | 'monthly-checkin'
   | 'intelligence-graphs'
   | 'fmla-ot-patterns'
@@ -15,6 +16,7 @@ type TabType =
 
 const TABS: { id: TabType; label: string }[] = [
   { id: 'dashboard', label: 'Dashboard' },
+  { id: 'annual-checkin', label: 'Annual Check-In' },
   { id: 'monthly-checkin', label: 'Monthly Check-In' },
   { id: 'intelligence-graphs', label: 'Intelligence Graphs' },
   { id: 'fmla-ot-patterns', label: 'FMLA & OT Patterns' },

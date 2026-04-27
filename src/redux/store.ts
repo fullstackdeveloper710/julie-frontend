@@ -16,6 +16,7 @@ import { authApi } from './api/authApi';
 import { subscriptionApi } from './api/subscriptionApi';
 import { userApi } from './api/userApi';
 import { analyticsApi } from './api/analyticsApi';
+import { checkinApi } from './api/checkinApi';
 import { reportsApi } from './api/reportsApi';
 import { uiReducer, userReducer } from './slices';
 import { agencyApi } from './api/agencyApi';
@@ -28,6 +29,7 @@ const rootReducer = combineReducers({
     [subscriptionApi.reducerPath]: subscriptionApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
     [analyticsApi.reducerPath]: analyticsApi.reducer,
+    [checkinApi.reducerPath]: checkinApi.reducer,
     [reportsApi.reducerPath]: reportsApi.reducer,
     [agencyApi.reducerPath]: agencyApi.reducer,
     [managerApi.reducerPath]: managerApi.reducer,
@@ -56,6 +58,7 @@ export const store = configureStore({
                 subscriptionApi.middleware,
                 userApi.middleware,
                 analyticsApi.middleware,
+                checkinApi.middleware,
                 reportsApi.middleware,
                 agencyApi.middleware,
                 managerApi.middleware,
