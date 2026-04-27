@@ -1,14 +1,16 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Tabs } from '@/components/common/Tabs';
 import { Loading } from '@/components/ui';
-import { useGetCurrentUserAuthQuery } from '@/hooks';
+import { useAppDispatch, useGetCurrentUserAuthQuery, logout } from '@/hooks';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { isLoading } = useGetCurrentUserAuthQuery();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { data, isLoading } = useGetCurrentUserAuthQuery();
 
-  // Temporary auth bypass: allow dashboard access without redirecting to sign-in.
-  // Restore the redirect logic below after testing is complete.
   useEffect(() => {
     if (!isLoading && !data?.data.email) {
       dispatch(logout());

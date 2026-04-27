@@ -13,6 +13,15 @@ import { setCredentials } from '@/redux/slices/userSlice';
 import { useState } from 'react';
 import { PRICING_CONFIG } from '@/types';
 import type { PlanType } from '@/types/subscription';
+
+type BackendPlan = 'Early Adopter' | 'Standard' | 'Enterprise';
+
+const PLAN_TYPE_TO_BACKEND: Record<PlanType, BackendPlan> = {
+  founding: 'Early Adopter',
+  early_adopter: 'Early Adopter',
+  standard: 'Standard',
+  enterprise: 'Enterprise',
+};
 const validationSchema = Yup.object({
   // agencyName: Yup.string().required('Agency name is required'),
   // agencyType: Yup.string().required('Agency type is required'),
@@ -58,7 +67,7 @@ export default function SignUpPage() {
           email: values.email,
           password: values.password,
           fullName: values.fullName,
-          plan: plan,
+          plan: PLAN_TYPE_TO_BACKEND[plan],
         }).unwrap();
 
         setUserEmail(result.data.email);

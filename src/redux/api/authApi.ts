@@ -1,19 +1,11 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { axiosBaseQuery } from './axiosBaseQuery';
 import { User } from '@/types';
-import { supabase } from '@/lib/supabase';
-
-const AUTH_REDIRECTS = {
-    emailConfirmation: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
-    passwordReset: `${process.env.NEXT_PUBLIC_APP_URL}/auth/update-password`,
-    dashboard: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
-} as const;
 
 export const authApi = createApi({
     reducerPath: 'authApi',
     baseQuery: axiosBaseQuery({
         baseUrl: process.env.NEXT_PUBLIC_API_URL || '',
-
     }),
     tagTypes: ['User', 'Auth'],
     endpoints: (builder) => ({
@@ -41,12 +33,8 @@ export const authApi = createApi({
                 data: {
                     user: User;
                     tokens: {
-                        access_token: {
-                            token: string;
-                        };
-                        refresh_token: {
-                            token: string;
-                        };
+                        access_token: { token: string };
+                        refresh_token: { token: string };
                     };
                 };
             },
@@ -83,116 +71,39 @@ export const authApi = createApi({
             }),
         }),
 
-        // Sign out
-        signOut: builder.mutation<{ success: boolean }, void>({
-            queryFn: async () => {
-                try {
-                    const { error } = await supabase.auth.signOut();
-
-                    if (error) {
-                        return {
-                            error: {
-                                status: 500,
-                                data: error.message,
-                            },
-                        };
-                    }
-
-                    return { data: { success: true } };
-                } catch (error) {
-                    return {
-                        error: {
-                            status: 500,
-                            data: error instanceof Error ? error.message : 'Sign out failed',
-                        },
-                    };
-                }
-            },
+        // Sign out (stateless JWT — client also clears local credentials)
+        signOut: builder.mutation<{ success: boolean; message: string }, void>({
+            query: () => ({
+                url: '/auth/signout',
+                method: 'POST',
+            }),
             invalidatesTags: ['User', 'Auth'],
         }),
 
         // Reset password (send reset link)
-        resetPassword: builder.mutation<{ success: boolean; message: string }, { email: string }>({
-            queryFn: async ({ email }) => {
-                try {
-                    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                        redirectTo: AUTH_REDIRECTS.passwordReset,
-                    });
-
-                    if (error) {
-                        return {
-                            error: {
-                                status: 400,
-                                data: error.message,
-                            },
-                        };
-                    }
-
-                    return {
-                        data: {
-                            success: true,
-                            message: 'Password reset link sent to your email',
-                        },
-                    };
-                } catch (error) {
-                    return {
-                        error: {
-                            status: 500,
-                            data: error instanceof Error ? error.message : 'Failed to send reset link',
-                        },
-                    };
-                }
-            },
+        resetPassword: builder.mutation<
+            { success: boolean; message: string },
+            { email: string }
+        >({
+            query: (body) => ({
+                url: '/auth/forgot-password',
+                method: 'POST',
+                body,
+            }),
             invalidatesTags: ['Auth'],
         }),
 
-        // Update password (after user clicks reset link)
-        updatePassword: builder.mutation<{ success: boolean }, { password: string }>({
-            queryFn: async ({ password }) => {
-                try {
-                    const { error } = await supabase.auth.updateUser({ password });
-
-                    if (error) {
-                        return {
-                            error: {
-                                status: 400,
-                                data: error.message,
-                            },
-                        };
-                    }
-
-                    return { data: { success: true } };
-                } catch (error) {
-                    return {
-                        error: {
-                            status: 500,
-                            data: error instanceof Error ? error.message : 'Failed to update password',
-                        },
-                    };
-                }
-            },
+        // Update password using a reset token
+        updatePassword: builder.mutation<
+            { success: boolean; message: string },
+            { token: string; password: string }
+        >({
+            query: (body) => ({
+                url: '/auth/reset-password',
+                method: 'POST',
+                body,
+            }),
             invalidatesTags: ['Auth'],
-        }),
-
-        // Get current session
-        getCurrentSession: builder.query<{ session: any | null }, void>({
-            queryFn: async () => {
-                try {
-                    const {
-                        data: { session },
-                    } = await supabase.auth.getSession();
-
-                    return { data: { session } };
-                } catch (error) {
-                    return {
-                        error: {
-                            status: 500,
-                            data: error instanceof Error ? error.message : 'Failed to fetch session',
-                        },
-                    };
-                }
-            },
-            providesTags: ['Auth'],
         }),
     }),
 });
@@ -204,5 +115,4 @@ export const {
     useSignOutMutation,
     useResetPasswordMutation,
     useUpdatePasswordMutation,
-    useGetCurrentSessionQuery,
 } = authApi;

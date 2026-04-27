@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { extractRtkErrorMessage, logRtkError } from '@/utils/rtkErrorHandler';
 import { Input, Button } from '@/components/ui';
@@ -13,8 +13,12 @@ import { setCredentials } from '@/redux/slices/userSlice';
 
 export default function SignInPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const [signIn, { isLoading, error: rtcError }] = useSignInMutation();
+
+  const flashMessage = searchParams.get('message');
+  const flashError = searchParams.get('error');
 
   const formik = useFormik({
     initialValues: {
@@ -79,6 +83,18 @@ export default function SignInPage() {
 
           <h2 className="font-bold text-3xl text-white mb-2">Welcome Back</h2>
           <p className=" text-sm mb-6">Sign in to your agency dashboard</p>
+
+          {flashMessage && (
+            <div className="bg-green-500/10 border border-green-500/30 text-green-400 text-xs px-3 py-2 rounded mb-4">
+              {flashMessage}
+            </div>
+          )}
+
+          {flashError && !errorMessage && (
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-3 py-2 rounded mb-4">
+              {flashError}
+            </div>
+          )}
 
           {errorMessage && (
             <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-3 py-2 rounded mb-4">
