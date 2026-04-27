@@ -78,7 +78,15 @@ const MESSAGES = {
         CREATED: "Monthly check-in submitted successfully",
         UPDATED: "Monthly check-in updated successfully",
         FETCHED: "Monthly check-ins fetched successfully",
+        NOT_FOUND: "Monthly check-in not found",
         ALREADY_EXISTS: "A check-in for this month already exists",
+    },
+    ANNUAL_CHECKIN: {
+        CREATED: "Annual check-in submitted successfully",
+        UPDATED: "Annual check-in updated successfully",
+        FETCHED: "Annual check-ins fetched successfully",
+        NOT_FOUND: "Annual check-in not found",
+        ALREADY_EXISTS: "An annual check-in for this baseline year already exists",
     },
     TEXT: {
         VERFICATION_SEND: "A verification link has been sent to your email. Please check your inbox."

@@ -9,28 +9,28 @@ import { AuthenticatedRequest } from '@/middlewares/authenticate';
 import MESSAGES from '@/constant/message';
 
 /**
- * @route POST /api/v1/checkins
- * @desc Submit a new monthly check-in
+ * @route POST /api/v1/annual-checkins
+ * @desc Submit a new annual check-in baseline
  */
-export const createCheckin = async (
+export const createAnnualCheckin = async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
 ) => {
     try {
-        Validate(req.body, Validation.checkin.createCheckinValidation);
+        Validate(req.body, Validation.annualCheckin.createAnnualCheckinValidation);
         const userId = req.user?.user_id;
         if (!userId) {
             return response.failed(req, res, RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.UNAUTHORIZED);
         }
 
-        const checkin = await Services.checkin.createCheckin(userId, req.body);
+        const checkin = await Services.annualCheckin.createAnnualCheckin(userId, req.body);
         return response.success(
             req,
             res,
             checkin,
             RESPONSE_CODES.CREATED,
-            MESSAGES.CHECKIN.CREATED
+            MESSAGES.ANNUAL_CHECKIN.CREATED
         );
     } catch (error) {
         handleErrorResponse(error, res, next);
@@ -38,10 +38,10 @@ export const createCheckin = async (
 };
 
 /**
- * @route GET /api/v1/checkins/me
- * @desc Fetch all monthly check-ins for the current user
+ * @route GET /api/v1/annual-checkins/me
+ * @desc Fetch all annual check-ins for the current user
  */
-export const getMyCheckins = async (
+export const getMyAnnualCheckins = async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
@@ -52,13 +52,13 @@ export const getMyCheckins = async (
             return response.failed(req, res, RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.UNAUTHORIZED);
         }
 
-        const checkins = await Services.checkin.getCheckinsByUserId(userId);
+        const checkins = await Services.annualCheckin.getAnnualCheckinsByUserId(userId);
         return response.success(
             req,
             res,
             checkins,
             RESPONSE_CODES.OK,
-            MESSAGES.CHECKIN.FETCHED
+            MESSAGES.ANNUAL_CHECKIN.FETCHED
         );
     } catch (error) {
         handleErrorResponse(error, res, next);
@@ -66,16 +66,44 @@ export const getMyCheckins = async (
 };
 
 /**
- * @route PATCH /api/v1/checkins/:id
- * @desc Update a specific monthly check-in
+ * @route GET /api/v1/annual-checkins/current
+ * @desc Fetch the most recent annual check-in for the current user
  */
-export const updateCheckin = async (
+export const getCurrentAnnualCheckin = async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
 ) => {
     try {
-        Validate(req.body, Validation.checkin.updateCheckinValidation);
+        const userId = req.user?.user_id;
+        if (!userId) {
+            return response.failed(req, res, RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.UNAUTHORIZED);
+        }
+
+        const checkin = await Services.annualCheckin.getCurrentAnnualCheckin(userId);
+        return response.success(
+            req,
+            res,
+            checkin,
+            RESPONSE_CODES.OK,
+            MESSAGES.ANNUAL_CHECKIN.FETCHED
+        );
+    } catch (error) {
+        handleErrorResponse(error, res, next);
+    }
+};
+
+/**
+ * @route PATCH /api/v1/annual-checkins/:id
+ * @desc Update a specific annual check-in
+ */
+export const updateAnnualCheckin = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        Validate(req.body, Validation.annualCheckin.updateAnnualCheckinValidation);
         const userId = req.user?.user_id;
         const id = req.params.id as string;
         if (!userId) {
@@ -85,13 +113,13 @@ export const updateCheckin = async (
             return response.failed(req, res, RESPONSE_CODES.BAD_REQUEST, MESSAGES.COMMON.ID_REQUIRED);
         }
 
-        const checkin = await Services.checkin.updateCheckin(id, userId, req.body);
+        const checkin = await Services.annualCheckin.updateAnnualCheckin(id, userId, req.body);
         return response.success(
             req,
             res,
             checkin,
             RESPONSE_CODES.OK,
-            MESSAGES.CHECKIN.UPDATED
+            MESSAGES.ANNUAL_CHECKIN.UPDATED
         );
     } catch (error) {
         handleErrorResponse(error, res, next);
