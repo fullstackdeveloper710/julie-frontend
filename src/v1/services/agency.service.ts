@@ -3,7 +3,7 @@ import User from '../models/user.model';
 import { CustomError } from '@/errors/custom.error';
 import RESPONSE_CODES from '@/constant/responseCode';
 import MESSAGES from '@/constant/message';
-import { EUserPlan } from '../enums/agency.enum';
+import { EUserPlan, EUserRole } from '../enums/agency.enum';
 
 const maxAgenciesForPlan = (plan?: string): number => {
     return plan === EUserPlan.ENTERPRISE ? 2 : 1;
@@ -13,12 +13,54 @@ const isOwnedBy = (agencyUserId: unknown, userId: string): boolean =>
     String(agencyUserId) === String(userId);
 
 /**
- * Create a new agency for a user, respecting per-plan limits.
+ * Resolve the user id whose agencies the caller actually sees. For
+ * Account Holders that's themselves; for Admins (role=manager) it's the
+ * Account Holder who invited them. Throws if the caller is an admin with no
+ * Account Holder linked (legacy data) — which shouldn't happen for new admins
+ * since `createdBy` is now persisted at invite time.
  */
-export const createAgency = async (userId: string, data: any) => {
-    const user = await User.findById(userId).select('plan isDeleted');
+const resolveOwner = async (
+    userId: string
+): Promise<{ ownerId: string; isAdmin: boolean; selfPlan?: string }> => {
+    const user = await User.findById(userId).select('plan role createdBy isDeleted');
     if (!user || user.isDeleted) {
         throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.USER.NOT_FOUND);
+    }
+
+    const isAdmin = user.role === EUserRole.MANAGER;
+    if (!isAdmin) {
+        return { ownerId: String(user._id), isAdmin: false, selfPlan: user.plan };
+    }
+
+    if (!user.createdBy) {
+        throw new CustomError(
+            RESPONSE_CODES.NOT_FOUND,
+            'No Account Holder is linked to this admin'
+        );
+    }
+
+    const accountHolder = await User.findById(user.createdBy).select('plan isDeleted');
+    if (!accountHolder || accountHolder.isDeleted) {
+        throw new CustomError(RESPONSE_CODES.NOT_FOUND, 'Account Holder not found');
+    }
+
+    return { ownerId: String(accountHolder._id), isAdmin: true, selfPlan: accountHolder.plan };
+};
+
+/**
+ * Create a new agency for the caller. Admins inherit their Account Holder's
+ * agencies and cannot create their own.
+ */
+export const createAgency = async (userId: string, data: any) => {
+    const user = await User.findById(userId).select('plan role isDeleted');
+    if (!user || user.isDeleted) {
+        throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.USER.NOT_FOUND);
+    }
+    if (user.role === EUserRole.MANAGER) {
+        throw new CustomError(
+            RESPONSE_CODES.FORBIDDEN,
+            'Admins use the Account Holder\'s agency and cannot create new ones'
+        );
     }
 
     const agencyCount = await Agency.countDocuments({ userId: userId as any });
@@ -49,10 +91,12 @@ export const createAgency = async (userId: string, data: any) => {
 };
 
 /**
- * Get the first/only agency for a user (legacy single-agency endpoint).
+ * Get the first/only agency in the caller's effective scope (their own as
+ * Account Holder, or the inviter's as Admin). Legacy single-agency endpoint.
  */
 export const getAgencyByUserId = async (userId: string) => {
-    const agency = await Agency.findOne({ userId: userId as any }).sort({ createdAt: 1 });
+    const { ownerId } = await resolveOwner(userId);
+    const agency = await Agency.findOne({ userId: ownerId as any }).sort({ createdAt: 1 });
     if (!agency) {
         throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.AGENCY.NOT_FOUND);
     }
@@ -60,27 +104,40 @@ export const getAgencyByUserId = async (userId: string) => {
 };
 
 /**
- * Return all agencies belonging to the user, ordered by creation time.
+ * All agencies in the caller's effective scope (own or Account Holder's).
  */
 export const getAgenciesByUserId = async (userId: string) => {
-    return Agency.find({ userId: userId as any }).sort({ createdAt: 1 });
+    const { ownerId } = await resolveOwner(userId);
+    return Agency.find({ userId: ownerId as any }).sort({ createdAt: 1 });
 };
 
 /**
- * Return one agency by id, but only if it belongs to the user.
+ * One agency by id, restricted to the caller's effective scope.
  */
 export const getAgencyByIdForUser = async (userId: string, agencyId: string) => {
+    const { ownerId } = await resolveOwner(userId);
     const agency = await Agency.findById(agencyId);
-    if (!agency || !isOwnedBy(agency.userId, userId)) {
+    if (!agency || !isOwnedBy(agency.userId, ownerId)) {
         throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.AGENCY.NOT_FOUND);
     }
     return agency;
 };
 
 /**
- * Legacy single-agency update — keeps PATCH /agencies/me working.
+ * Legacy single-agency update — Account Holders only.
  */
 export const updateAgency = async (userId: string, data: any) => {
+    const user = await User.findById(userId).select('role isDeleted');
+    if (!user || user.isDeleted) {
+        throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.USER.NOT_FOUND);
+    }
+    if (user.role === EUserRole.MANAGER) {
+        throw new CustomError(
+            RESPONSE_CODES.FORBIDDEN,
+            'Admins cannot modify agency details'
+        );
+    }
+
     const agency = await Agency.findOneAndUpdate(
         { userId: userId as any },
         data,
@@ -93,9 +150,20 @@ export const updateAgency = async (userId: string, data: any) => {
 };
 
 /**
- * Update a specific agency by id, restricted to the owning user.
+ * Update a specific agency by id — Account Holders only, scoped to ownership.
  */
 export const updateAgencyById = async (userId: string, agencyId: string, data: any) => {
+    const user = await User.findById(userId).select('role isDeleted');
+    if (!user || user.isDeleted) {
+        throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.USER.NOT_FOUND);
+    }
+    if (user.role === EUserRole.MANAGER) {
+        throw new CustomError(
+            RESPONSE_CODES.FORBIDDEN,
+            'Admins cannot modify agency details'
+        );
+    }
+
     try {
         const agency = await Agency.findOneAndUpdate(
             { _id: agencyId as any, userId: userId as any },
@@ -118,18 +186,19 @@ export const updateAgencyById = async (userId: string, agencyId: string, data: a
 };
 
 /**
- * Plan-aware metadata used by the frontend to drive Add Agency UI.
+ * Plan-aware metadata used by the frontend to drive Add Agency UI. Admins
+ * always get `canCreateMore: false` (they don't own seats).
  */
 export const getAgencyCapacity = async (userId: string) => {
-    const user = await User.findById(userId).select('plan');
-    const plan = user?.plan as string | undefined;
-    const maxAllowed = maxAgenciesForPlan(plan);
-    const used = await Agency.countDocuments({ userId: userId as any });
+    const { ownerId, isAdmin, selfPlan } = await resolveOwner(userId);
+    const plan = selfPlan;
+    const maxAllowed = isAdmin ? 0 : maxAgenciesForPlan(plan);
+    const used = await Agency.countDocuments({ userId: ownerId as any });
 
     return {
         plan,
         maxAllowed,
         used,
-        canCreateMore: used < maxAllowed,
+        canCreateMore: !isAdmin && used < maxAllowed,
     };
 };

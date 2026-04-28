@@ -31,6 +31,15 @@ const UserSchema = new Schema<TUser>(
             enum: Object.values(EUserRole),
             default: EUserRole.USER,
         },
+        title: {
+            type: String,
+            trim: true,
+            maxlength: 200,
+        },
+        createdBy: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+        },
         plan: {
             type: String,
             enum: Object.values(EUserPlan),

@@ -24,6 +24,8 @@ export type TUserAccount = TSignUpInput & {
 export type TUser = TUserAccount & {
     agencies: string[]; // Array of agency IDs
     isDeleted: boolean;
+    title?: string;
+    createdBy?: string;
     createdAt: string;
     updatedAt: string;
 }

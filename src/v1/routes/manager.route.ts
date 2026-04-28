@@ -4,7 +4,7 @@ import authenticate from '@/middlewares/authenticate';
 
 const router = Router();
 
-// Create manager (invite)
 router.post('/', authenticate, managerController.createManager);
+router.get('/', authenticate, managerController.listManagers);
 
 export default router;

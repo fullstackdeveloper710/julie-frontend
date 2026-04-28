@@ -214,21 +214,32 @@ export const resetPassword = async (token: string, newPassword: string) => {
 };
 
 /**
- * Get user profile by ID
+ * Get user profile by ID. For Admins (role=manager) the agency context is
+ * inherited from their Account Holder, so we surface `role`, `createdBy`, and
+ * `title` so the frontend can gate UI accordingly.
  */
 export const getProfile = async (userId: string) => {
-    const user = await User.findById(userId).select('email fullName plan agencies createdAt isDeleted');
+    const user = await User.findById(userId).select(
+        'email fullName plan role title agencies createdBy createdAt isDeleted'
+    );
     if (!user || user.isDeleted) {
         throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.USER.NOT_FOUND);
     }
 
-    const showAgencyModal = (user?.agencies?.length || 0) === 0;
+    const isAdmin = user.role === EUserRole.MANAGER;
+
+    // Admins don't own agencies; the modal that nudges users to create one
+    // should never show for them.
+    const showAgencyModal = !isAdmin && (user?.agencies?.length || 0) === 0;
 
     return {
         id: user._id,
         email: user.email,
         fullName: user.fullName,
         plan: user.plan,
+        role: user.role,
+        title: user.title,
+        createdBy: user.createdBy,
         agencies: user.agencies,
         createdAt: user.createdAt,
         showAgencyModal,
@@ -236,27 +247,48 @@ export const getProfile = async (userId: string) => {
 };
 
 /**
- * Create manager user (invite) and send verification + temp password
+ * Per-account admin (manager) seat cap. Mirrors the seat-definitions UI:
+ * one Account Holder + up to two Admins per organization.
  */
-export const createManager = async (createdByUserId: string | undefined, data: { email: string; fullName?: string }) => {
-    const { email, fullName } = data;
+export const MAX_ADMIN_SEATS_PER_ACCOUNT = 2;
 
-    // Validate creator
-    let creatorPlan: EUserPlan = EUserPlan.STANDARD;
-    if (createdByUserId) {
-        try {
-            const creator = await User.findById(createdByUserId).select('plan');
-            if (creator && creator.plan) creatorPlan = creator.plan as EUserPlan;
-        } catch (e) { }
+/**
+ * Create an Admin (manager) seat under the current Account Holder.
+ * Enforces the 2-seat cap and sends an invite + temp password.
+ */
+export const createManager = async (
+    createdByUserId: string | undefined,
+    data: { email: string; fullName?: string; title?: string }
+) => {
+    const { email, fullName, title } = data;
+
+    if (!createdByUserId) {
+        throw new CustomError(RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.UNAUTHORIZED);
     }
 
-    // check existing user
+    const creator = await User.findById(createdByUserId).select('plan isDeleted');
+    if (!creator || creator.isDeleted) {
+        throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.USER.NOT_FOUND);
+    }
+    const creatorPlan = (creator.plan as EUserPlan) ?? EUserPlan.STANDARD;
+
+    const adminCount = await User.countDocuments({
+        createdBy: createdByUserId as any,
+        role: EUserRole.MANAGER,
+        isDeleted: false,
+    });
+    if (adminCount >= MAX_ADMIN_SEATS_PER_ACCOUNT) {
+        throw new CustomError(
+            RESPONSE_CODES.BAD_REQUEST,
+            MESSAGES.MANAGER.LIMIT_REACHED(MAX_ADMIN_SEATS_PER_ACCOUNT)
+        );
+    }
+
     const existing = await User.findOne({ email, isDeleted: false });
     if (existing) {
         throw new CustomError(RESPONSE_CODES.BAD_REQUEST, MESSAGES.AUTH.EMAIL_ALREADY_EXISTS);
     }
 
-    // generate temp password and verification token
     const tempPassword = crypto.randomBytes(6).toString('hex');
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(tempPassword, salt);
@@ -267,19 +299,47 @@ export const createManager = async (createdByUserId: string | undefined, data: {
         email,
         password: passwordHash,
         fullName: fullName || '',
+        title: title?.trim() || undefined,
         isConfirmed: false,
         verificationToken,
         verificationExpires,
         plan: creatorPlan,
         role: EUserRole.MANAGER,
+        createdBy: createdByUserId,
     });
 
-    // send invite email with verification link + temp password
     await sendManagerInviteEmail(email, verificationToken, tempPassword);
 
     return {
         id: newUser._id,
         email: newUser.email,
         fullName: newUser.fullName,
+        title: newUser.title,
+    };
+};
+
+/**
+ * List Admin seats owned by the current Account Holder, plus capacity.
+ */
+export const listManagers = async (createdByUserId: string | undefined) => {
+    if (!createdByUserId) {
+        throw new CustomError(RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.UNAUTHORIZED);
+    }
+
+    const admins = await User.find({
+        createdBy: createdByUserId as any,
+        role: EUserRole.MANAGER,
+        isDeleted: false,
+    })
+        .select('email fullName title isConfirmed createdAt')
+        .sort({ createdAt: 1 });
+
+    return {
+        admins,
+        capacity: {
+            maxAllowed: MAX_ADMIN_SEATS_PER_ACCOUNT,
+            used: admins.length,
+            canCreateMore: admins.length < MAX_ADMIN_SEATS_PER_ACCOUNT,
+        },
     };
 };

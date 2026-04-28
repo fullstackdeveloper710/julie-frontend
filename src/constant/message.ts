@@ -63,6 +63,12 @@ const MESSAGES = {
         NOT_FOUND: "Agency not found",
         LIMIT_REACHED: (maxAllowed: number) => `You can create up to ${maxAllowed} ${maxAllowed === 1 ? 'agency' : 'agencies'} on your current plan`,
     },
+    MANAGER: {
+        CREATED: "Admin created and invite sent",
+        FETCHED: "Admins fetched successfully",
+        LIMIT_REACHED: (maxAllowed: number) =>
+            `You can create up to ${maxAllowed} admin ${maxAllowed === 1 ? 'seat' : 'seats'} per account`,
+    },
     PRICING: {
         FETCHED: "Pricing fetched successfully",
     },
