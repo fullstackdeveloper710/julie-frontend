@@ -5,6 +5,7 @@ import * as analytics from './analytics.service';
 import * as checkin from './checkin.service';
 import * as annualCheckin from './annualCheckin.service';
 import * as subscription from './subscription.service';
+import * as pricing from './pricing.service';
 
 const index = {
     auth,
@@ -14,6 +15,7 @@ const index = {
     checkin,
     annualCheckin,
     subscription,
+    pricing,
 }
 
 export default index;

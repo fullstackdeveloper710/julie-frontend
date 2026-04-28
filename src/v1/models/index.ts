@@ -12,6 +12,7 @@ import AnnualCheckin from './annualCheckin.model';
 import Subscription from './subscription.model';
 import Report from './report.model';
 import MonthlyData from './monthlyData.model';
+import PricingPlan from './pricingPlan.model';
 
 export const Models = {
     User,
@@ -22,6 +23,7 @@ export const Models = {
     Subscription,
     Report,
     MonthlyData,
+    PricingPlan,
 };
 
 export default Models;

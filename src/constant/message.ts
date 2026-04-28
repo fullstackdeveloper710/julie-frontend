@@ -63,6 +63,9 @@ const MESSAGES = {
         NOT_FOUND: "Agency not found",
         LIMIT_REACHED: (maxAllowed: number) => `You can create up to ${maxAllowed} ${maxAllowed === 1 ? 'agency' : 'agencies'} on your current plan`,
     },
+    PRICING: {
+        FETCHED: "Pricing fetched successfully",
+    },
     REPORT: {
         CREATED: "Report created successfully",
         UPDATED: "Report updated successfully",
