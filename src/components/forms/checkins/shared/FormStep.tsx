@@ -18,7 +18,7 @@ export function FormStep({ title, description, stepLabel, children }: FormStepPr
         >
           {title}
         </h2>
-        <p className="text-sm">{description}</p>
+        {/* <p className="text-sm">{description}</p> */}
         <p className="text-xs text-slate-400 mt-2">{stepLabel}</p>
       </div>
 

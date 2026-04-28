@@ -32,7 +32,7 @@ function AgencyBadge({
       >
         <Building2 className="w-4 h-4 text-(--accent)" />
         <span
-          className="text-xs text-slate-200 font-semibold truncate"
+          className="text-xs text-slate-200 font-semibold truncate uppercase"
           style={{ fontFamily: HEADING_FONT }}
         >
           {selected.name}
@@ -51,7 +51,7 @@ function AgencyBadge({
       >
         <Building2 className="w-4 h-4 text-(--accent)" />
         <span
-          className="text-xs text-slate-200 font-semibold truncate"
+          className="text-xs text-slate-200 font-semibold truncate uppercase"
           style={{ fontFamily: HEADING_FONT }}
         >
           {selected.name}
@@ -74,13 +74,13 @@ function AgencyBadge({
                 type="button"
                 onClick={() => onSwitch(agency._id)}
                 disabled={isCurrent}
-                className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                className={`w-full text-left px-4 py-2 text-sm transition-colors uppercase ${
                   isCurrent
                     ? 'text-(--accent) font-semibold bg-slate-700/40 cursor-default'
                     : 'text-slate-300 hover:bg-slate-700 hover:text-(--accent)'
                 }`}
               >
-                <span className="truncate block">{agency.name}</span>
+                <span className="truncate block ">{agency.name}</span>
               </button>
             );
           })}
@@ -88,7 +88,7 @@ function AgencyBadge({
             {canCreateMore && (
               <Link
                 href="/dashboard/agency-setup?mode=add"
-                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-(--accent) transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-(--accent) transition-colors uppercase"
               >
                 <Plus className="w-4 h-4" />
                 Add Agency
@@ -96,10 +96,10 @@ function AgencyBadge({
             )}
             <Link
               href="/dashboard/agencies"
-              className="flex items-center gap-2 px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-(--accent) transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-(--accent) transition-colors uppercase"
             >
               <Pencil className="w-4 h-4" />
-              Manage Agencies
+              Manage {isEnterprise ? 'Agencies': 'Agency'}
             </Link>
           </div>
         </div>

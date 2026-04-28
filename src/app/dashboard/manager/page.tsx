@@ -91,7 +91,7 @@ export default function CreateManagerPage() {
           style={{ fontFamily: HEADING_FONT_FAMILY }}
         >
           <UserCog className="w-7 h-7" />
-          Create Admin
+          Manage Admin
         </h1>
         <p className="text-sm text-slate-400">
           Invite a Deputy Chief, Lieutenant, or equivalent decision-maker. They&apos;ll receive an

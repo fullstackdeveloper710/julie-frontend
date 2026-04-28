@@ -117,7 +117,9 @@ export function Navbar() {
                   onClick={() => setShowUserMenu(false)}
                   className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-(--accent) transition-colors uppercase"
                 >
-                  {isAdmin ? 'View Agencies' : 'Manage Agencies'}
+                  {isAdmin
+                    ? `View ${isEnterprise ? 'Agencies' : 'Agency'}`
+                    : `Manage ${isEnterprise ? 'Agencies' : 'Agency'}`}
                 </Link>
                 {!isAdmin && (
                   <button
@@ -127,7 +129,7 @@ export function Navbar() {
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-(--accent) transition-colors uppercase"
                   >
-                    Create Admin
+                    Manage Admin
                   </button>
                 )}
                 <button

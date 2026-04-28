@@ -235,44 +235,41 @@ export function AnnualStepContent({ step, formik }: { step: number; formik: Annu
           {renderTextareaField({
             formik,
             name: 'goal1PrimaryAnnualGoal',
-            label: 'Goal 1 - Primary Annual Goal',
+            label: 'Primary Annual Goal',
             placeholder: 'Describe the primary annual goal and include category context.',
             helpText: 'Required strategic goal input.',
           })}
           {renderTextField({
             formik,
             name: 'goal1TargetMetric',
-            label: 'Goal 1 - Target Metric',
+            label: 'Target Metric',
             placeholder: 'e.g. Reach 90% fill rate',
             helpText: 'At least one of G-2 or G-5 must be provided.',
           })}
           {renderSelectField({
             formik,
             name: 'goal1Timeframe',
-            label: 'Goal 1 - Timeframe',
+            label: 'Timeframe',
             options: GOAL_1_TIMEFRAME_OPTIONS,
-            helpText: 'Required for Goal 1 milestone generation.',
+            helpText: 'Required for milestone generation.',
           })}
           {renderTextareaField({
             formik,
             name: 'goal2SecondaryAnnualGoal',
-            label: 'Goal 2 - Secondary Annual Goal (Optional)',
+            label: 'Secondary Annual Goal (Optional)',
             placeholder: 'Optional secondary goal.',
-            helpText: 'Optional strategic secondary goal.',
           })}
           {renderTextField({
             formik,
             name: 'goal2TargetMetric',
-            label: 'Goal 2 - Target Metric (Optional)',
+            label: 'Target Metric (Optional)',
             placeholder: 'e.g. Maintain OT below 15%',
-            helpText: 'At least one of G-2 or G-5 must be provided.',
           })}
           {renderSelectField({
             formik,
             name: 'goal2Timeframe',
-            label: 'Goal 2 - Timeframe (Optional)',
+            label: 'Timeframe (Optional)',
             options: GOAL_2_TIMEFRAME_OPTIONS,
-            helpText: 'Optional timeframe for Goal 2.',
           })}
           <div className="rounded-md border border-slate-700 bg-slate-900/60 px-4 py-3 text-xs text-slate-300">
             Validation rule: If both G-2 and G-5 are blank, submission is blocked.

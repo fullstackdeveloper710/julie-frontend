@@ -44,7 +44,7 @@ export default function AgenciesPage() {
             style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
           >
             <Building2 className="w-7 h-7" />
-            Your Agencies
+            Your {isEnterprise ? 'Agencies': 'Agency'}
           </h1>
           <p className="text-sm text-slate-400">
             {isAdmin

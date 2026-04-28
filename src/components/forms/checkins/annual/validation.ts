@@ -61,18 +61,18 @@ export const annualValidationSchema = Yup.object()
       .required('Employee Assistance Program value is required'),
     goal1PrimaryAnnualGoal: Yup.string()
       .trim()
-      .required('Goal 1 primary annual goal is required')
-      .max(4000, 'Goal 1 description is too long'),
+      .required('Primary annual goal is required')
+      .max(4000, 'Description is too long'),
     goal1TargetMetric: Yup.string()
       .trim()
-      .max(1000, 'Goal 1 target metric is too long')
+      .max(1000, 'Target metric is too long')
       .notRequired(),
     goal1Timeframe: Yup.string()
       .oneOf(
         ['Annual (Q1-Q4)', 'First half (Q1-Q2)', 'Second half (Q3-Q4)'],
-        'Goal 1 timeframe is invalid',
+        'Timeframe is invalid',
       )
-      .required('Goal 1 timeframe is required'),
+      .required('Timeframe is required'),
     goal2SecondaryAnnualGoal: Yup.string()
       .trim()
       .max(4000, 'Goal 2 description is too long')
