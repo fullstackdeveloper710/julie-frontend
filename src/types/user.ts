@@ -1,10 +1,14 @@
 export type UserPlan = 'Early Adopter' | 'Standard' | 'Enterprise';
 
+export type UserRole = 'user' | 'manager' | 'viewer';
+
 export interface User {
   id: string;
   email: string;
   fullName?: string;
-  role: 'admin' | 'user';
+  role: UserRole;
+  title?: string;
+  createdBy?: string | null;
   plan?: UserPlan | string;
   agencies?: string[];
   createdAt: string;

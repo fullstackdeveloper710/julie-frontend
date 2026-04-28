@@ -24,7 +24,9 @@ export default function AgenciesPage() {
     const capacity = data?.data?.capacity;
     const errorMessage = extractRtkErrorMessage(error);
     const isEnterprise = userResp?.data?.plan === 'Enterprise';
-    const canAddAgency = isEnterprise && !!capacity?.canCreateMore;
+    const isAdmin = userResp?.data?.role === 'manager';
+    const canAddAgency = !isAdmin && isEnterprise && !!capacity?.canCreateMore;
+    const canEditAgency = !isAdmin;
 
     if (isLoading) {
         return (
@@ -46,9 +48,11 @@ export default function AgenciesPage() {
                         Your Agencies
                     </h1>
                     <p className="text-sm text-slate-400">
-                        {capacity
-                            ? `Plan: ${capacity.plan ?? 'Standard'} • ${capacity.used} of ${capacity.maxAllowed} agencies used`
-                            : 'Manage agencies you administer.'}
+                        {isAdmin
+                            ? "Read-only view of your Account Holder's agencies."
+                            : capacity
+                              ? `Plan: ${capacity.plan ?? 'Standard'} • ${capacity.used} of ${capacity.maxAllowed} agencies used`
+                              : 'Manage agencies you administer.'}
                     </p>
                 </div>
 
@@ -128,14 +132,16 @@ export default function AgenciesPage() {
                                             Switch To
                                         </button>
                                     )}
-                                    <Link
-                                        href={`/dashboard/agencies/${agency._id}`}
-                                        className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-widest text-slate-950 bg-(--accent) hover:bg-orange-600 rounded-lg transition-colors"
-                                        style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
-                                    >
-                                        <Pencil className="w-3.5 h-3.5" />
-                                        Edit
-                                    </Link>
+                                    {canEditAgency && (
+                                        <Link
+                                            href={`/dashboard/agencies/${agency._id}`}
+                                            className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold uppercase tracking-widest text-slate-950 bg-(--accent) hover:bg-orange-600 rounded-lg transition-colors"
+                                            style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+                                        >
+                                            <Pencil className="w-3.5 h-3.5" />
+                                            Edit
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
                         );

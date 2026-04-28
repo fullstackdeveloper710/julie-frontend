@@ -1,6 +1,28 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { axiosBaseQuery } from './axiosBaseQuery';
 
+export interface AdminSeat {
+    _id: string;
+    email: string;
+    fullName?: string;
+    title?: string;
+    isConfirmed: boolean;
+    createdAt: string;
+}
+
+export interface AdminCapacity {
+    maxAllowed: number;
+    used: number;
+    canCreateMore: boolean;
+}
+
+export interface ApiSuccess<T> {
+    success: boolean;
+    statusCode?: number;
+    message?: string;
+    data: T;
+}
+
 export const managerApi = createApi({
     reducerPath: 'managerApi',
     baseQuery: axiosBaseQuery({
@@ -9,18 +31,20 @@ export const managerApi = createApi({
     tagTypes: ['Manager'],
 
     endpoints: (builder) => ({
-
+        listManagers: builder.query<
+            ApiSuccess<{ admins: AdminSeat[]; capacity: AdminCapacity }>,
+            void
+        >({
+            query: () => ({
+                url: '/managers',
+                method: 'GET',
+            }),
+            providesTags: ['Manager'],
+        }),
 
         createManager: builder.mutation<
-            {
-                success: boolean;
-                message: string;
-                data: any;
-            },
-            {
-                email: string;
-                fullName: string;
-            }
+            ApiSuccess<{ id: string; email: string; fullName?: string; title?: string }>,
+            { email: string; fullName: string; title?: string }
         >({
             query: (body) => ({
                 url: '/managers',
@@ -29,14 +53,10 @@ export const managerApi = createApi({
             }),
             invalidatesTags: ['Manager'],
         }),
-
-
-
-
     }),
 });
 
 export const {
+    useListManagersQuery,
     useCreateManagerMutation,
-
 } = managerApi;

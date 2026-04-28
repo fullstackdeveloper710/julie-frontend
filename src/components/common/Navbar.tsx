@@ -11,7 +11,7 @@ import {
     useAppSelector,
     useListMyAgenciesQuery,
     setSelectedAgencyId,
-    logout,
+    signOutLocally,
 } from '@/hooks';
 import { useGetCurrentUserQuery } from '@/redux/api/authApi';
 
@@ -36,6 +36,7 @@ export function Navbar() {
     const userInitial = userEmail ? userEmail.charAt(0).toUpperCase() : 'U';
     const plan = user?.plan;
     const isEnterprise = plan === 'Enterprise';
+    const isAdmin = user?.role === 'manager';
 
     const agencies = agencyResp?.data?.agencies ?? [];
     const capacity = agencyResp?.data?.capacity;
@@ -48,8 +49,8 @@ export function Navbar() {
     const isActive = (path: string) => pathname === path;
 
     const handleLogout = () => {
-        dispatch(logout());
-        router.push('/auth/signin');
+        dispatch(signOutLocally());
+        router.replace('/auth/signin');
     };
 
     const switchAgency = (agencyId: string) => {
@@ -83,10 +84,10 @@ export function Navbar() {
                     {/* Agency selector (only when at least one agency exists and we're not on the setup screen). */}
                     {!isOnAgencySetup && selectedAgency && (
                         <AgencyBadge
-                            isEnterprise={isEnterprise}
+                            isEnterprise={isEnterprise && !isAdmin}
                             selected={selectedAgency}
                             agencies={agencies}
-                            canCreateMore={!!capacity?.canCreateMore}
+                            canCreateMore={!isAdmin && !!capacity?.canCreateMore}
                             isOpen={showAgencyMenu}
                             onToggle={() => setShowAgencyMenu((v) => !v)}
                             onSwitch={switchAgency}
@@ -125,17 +126,19 @@ export function Navbar() {
                                     onClick={() => setShowUserMenu(false)}
                                     className="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-(--accent) transition-colors uppercase"
                                 >
-                                    Manage Agencies
+                                    {isAdmin ? 'View Agencies' : 'Manage Agencies'}
                                 </Link>
-                                <button
-                                    onClick={() => {
-                                        setShowUserMenu(false);
-                                        router.push('/dashboard/manager');
-                                    }}
-                                    className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-(--accent) transition-colors uppercase"
-                                >
-                                    Create Admin
-                                </button>
+                                {!isAdmin && (
+                                    <button
+                                        onClick={() => {
+                                            setShowUserMenu(false);
+                                            router.push('/dashboard/manager');
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-(--accent) transition-colors uppercase"
+                                    >
+                                        Create Admin
+                                    </button>
+                                )}
                                 <button
                                     onClick={handleLogout}
                                     className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-(--accent) transition-colors border-t border-slate-700 uppercase"

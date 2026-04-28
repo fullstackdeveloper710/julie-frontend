@@ -8,8 +8,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useAppDispatch } from '@/redux';
 import { useSignInMutation } from '@/redux/api';
-import { setCredentials } from '@/redux/slices/userSlice';
-// import { setSession, setUser } from '@/redux/slices';
+import { loginSuccess } from '@/redux/actions/auth';
 
 export default function SignInPage() {
   const router = useRouter();
@@ -39,25 +38,23 @@ export default function SignInPage() {
           password: values.password,
         }).unwrap();
 
-        // ✅ extract tokens correctly
         const accessToken = result.data.tokens.access_token.token;
         const refreshToken = result.data.tokens.refresh_token.token;
-        console.log(' accessToken ', accessToken);
 
         if (!accessToken) {
           throw new Error('Access token not found');
         }
 
-        // ✅ redux
+        // Resets all per-user RTK Query caches before applying the new
+        // credentials so we never serve the previous user's cached data.
         dispatch(
-          setCredentials({
+          loginSuccess({
             user: result.data.user,
             accessToken,
             refreshToken,
           }),
         );
 
-        // ✅ redirect
         router.push('/dashboard');
       } catch (err: any) {
         console.log('LOGIN ERROR 👉', err);

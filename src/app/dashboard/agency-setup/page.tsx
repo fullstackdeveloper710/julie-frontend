@@ -31,6 +31,14 @@ export default function AgencySetupPage() {
     const agencies = list?.data?.agencies ?? [];
     const capacity = list?.data?.capacity;
     const isEnterprise = userResp?.data?.plan === 'Enterprise';
+    const isAdmin = userResp?.data?.role === 'manager';
+
+    // Admins inherit their Account Holder's agency and never land on agency
+    // setup. Bounce them to the dashboard.
+    useEffect(() => {
+        if (isUserLoading) return;
+        if (isAdmin) router.replace('/dashboard');
+    }, [isAdmin, isUserLoading, router]);
 
     // If the user already has at least one agency and they did not explicitly
     // ask to add another, route them onward to the dashboard.

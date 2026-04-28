@@ -20,6 +20,7 @@ import { reportsApi } from './api/reportsApi';
 import { uiReducer, userReducer, agencyReducer } from './slices';
 import { agencyApi } from './api/agencyApi';
 import { managerApi } from './api/managerApi';
+import { installAxiosInterceptors } from './api/axiosInstance';
 
 const rootReducer = combineReducers({
     user: userReducer,
@@ -64,6 +65,11 @@ export const store = configureStore({
 });
 
 setupListeners(store.dispatch);
+
+// Wire the store into the axios interceptors. Done here (and not at the
+// top of axiosInstance.ts) to avoid the import cycle:
+//   axiosInstance → store → *Api → axiosBaseQuery → axiosInstance
+installAxiosInterceptors(store);
 
 export const persistor = persistStore(store);
 

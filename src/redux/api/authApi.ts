@@ -45,6 +45,7 @@ export const authApi = createApi({
                 method: 'POST',
                 body,
             }),
+            invalidatesTags: ['User', 'Auth'],
         }),
 
         // Sign up with email/password and agency details

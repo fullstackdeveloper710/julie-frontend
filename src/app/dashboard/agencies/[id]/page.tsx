@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Loading } from '@/components/ui';
 import { AgencyDetailsForm } from '@/components/forms/agency';
@@ -10,6 +10,7 @@ import {
     useUpdateAgencyByIdMutation,
     setSelectedAgencyId,
 } from '@/hooks';
+import { useGetCurrentUserQuery } from '@/redux/api/authApi';
 import { extractRtkErrorMessage } from '@/utils/rtkErrorHandler';
 
 export default function AgencyEditPage() {
@@ -21,9 +22,17 @@ export default function AgencyEditPage() {
     const { data, isLoading, error: fetchError } = useGetAgencyByIdQuery(id, {
         skip: !id,
     });
+    const { data: userResp } = useGetCurrentUserQuery();
     const [updateAgency, { isLoading: isSubmitting, error: updateError }] =
         useUpdateAgencyByIdMutation();
     const [success, setSuccess] = useState('');
+
+    // Admins can't edit agency details — bounce them back to the read-only list.
+    useEffect(() => {
+        if (userResp?.data?.role === 'manager') {
+            router.replace('/dashboard/agencies');
+        }
+    }, [userResp, router]);
 
     const agency = data?.data;
     const fetchMessage = extractRtkErrorMessage(fetchError);
