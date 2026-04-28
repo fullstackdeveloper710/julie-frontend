@@ -1,4 +1,9 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
+
+// Force public DNS resolvers so SRV lookups work even when the system
+// resolver (VPN/corporate/stale Windows config) refuses or strips SRV records.
+dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
 
 const redactMongoUri = (uri: string): string => {
     try {

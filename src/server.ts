@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { connectDB, syncIndexes } from './config/db.js';
 import './v1/models/index.js';
 import v1Routes from './v1/routes/index.js';
+import * as subscriptionController from './v1/controllers/subscription.controller.js';
 
 // Load environment variables
 dotenv.config();
@@ -26,6 +27,7 @@ const corsOptions = {
 // Middlewares
 app.use(helmet());
 app.use(cors(corsOptions));
+app.post('/api/v1/stripe/webhook', express.raw({ type: 'application/json' }), subscriptionController.handleStripeWebhook);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

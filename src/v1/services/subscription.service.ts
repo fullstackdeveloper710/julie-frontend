@@ -4,6 +4,10 @@ export const getSubscriptionByUserId = async (userId: string) => {
     return await Subscription.findOne({ userId: userId as any });
 };
 
+export const getSubscriptionByStripeCustomerId = async (stripeCustomerId: string) => {
+    return await Subscription.findOne({ stripeCustomerId });
+};
+
 export const createOrUpdateSubscription = async (userId: string, data: any) => {
     return await Subscription.findOneAndUpdate({ userId: userId as any }, data, { upsert: true, new: true });
 };
