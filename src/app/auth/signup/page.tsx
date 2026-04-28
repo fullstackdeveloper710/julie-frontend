@@ -5,12 +5,10 @@ import Link from 'next/link';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useEffect, useState } from 'react';
-
-import { extractRtkErrorMessage, logRtkError } from '@/utils/rtkErrorHandler';
+import { logRtkError } from '@/utils/rtkErrorHandler';
 import { Input, Button } from '@/components/ui';
 import { useAppDispatch } from '@/redux';
 import { useSignUpMutation } from '@/redux/api';
-import { setCredentials } from '@/redux/slices/userSlice';
 import { fetchPricingPlans, type BackendPlanId, type PricingPlan } from '@/lib/pricing';
 
 type BackendPlan = 'Early Adopter' | 'Standard' | 'Enterprise';
@@ -82,14 +80,16 @@ export default function SignUpPage() {
     };
   }, []);
 
-  const currentPlan = pricingPlans.find((plan) => plan.id === selectedPlanKey) ??
+  const currentPlan =
+    pricingPlans.find((plan) => plan.id === selectedPlanKey) ??
     pricingPlans.find((plan) => plan.id === 'early_adopter') ??
     pricingPlans[0] ??
     null;
 
-  const resolvedPlanKey: BackendPlanId = currentPlan?.available && currentPlan.id
-    ? currentPlan.id
-    : pricingPlans.find((plan) => plan.available)?.id ?? 'early_adopter';
+  const resolvedPlanKey: BackendPlanId =
+    currentPlan?.available && currentPlan.id
+      ? currentPlan.id
+      : (pricingPlans.find((plan) => plan.available)?.id ?? 'early_adopter');
 
   const resolvedPlan = pricingPlans.find((plan) => plan.id === resolvedPlanKey) ?? currentPlan;
 
@@ -140,7 +140,9 @@ export default function SignUpPage() {
       <div className="min-h-screen bg-slate-950 flex items-center justify-center px-5">
         <div className="max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 text-center">
           <h2 className="text-xl font-bold text-white mb-2">Plan details unavailable</h2>
-          <p className="text-sm text-slate-300">{pricingError ?? 'Please try again in a moment.'}</p>
+          <p className="text-sm text-slate-300">
+            {pricingError ?? 'Please try again in a moment.'}
+          </p>
         </div>
       </div>
     );
@@ -166,10 +168,8 @@ export default function SignUpPage() {
             </>
           )}
           <div className="rounded-2xl border border-slate-700 bg-slate-950/60 p-5 mb-4">
-            {/* Plan Name */}
             <div className="text-sm font-extrabold text-(--accent)">{resolvedPlan.name} Plan</div>
 
-            {/* Price */}
             <div className="mt-2 text-3xl font-bold text-white">
               {resolvedPlan.display.priceLabel}
               <span className="text-sm font-medium text-slate-300">
@@ -177,17 +177,14 @@ export default function SignUpPage() {
               </span>
             </div>
 
-            {/* Trial */}
             {resolvedPlan.features.trialDays && (
               <div className="text-xs text-green-400 mt-1">
                 {resolvedPlan.features.trialDays} days free trial
               </div>
             )}
 
-            {/* Description */}
             <div className="mt-3 text-xs">{resolvedPlan.description}</div>
 
-            {/* Seats */}
             <div className="mt-2 text-xs text-slate-400">
               {resolvedPlan.features.adminSeats} Admin + {resolvedPlan.features.viewerSeats} Viewer
               seats
@@ -196,24 +193,13 @@ export default function SignUpPage() {
           {showModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm ">
               <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 text-center shadow-2xl animate-fadeIn">
-                {/* Icon */}
                 <div className="mb-4 text-4xl">📩</div>
-
-                {/* Title */}
                 <h2 className="text-xl font-bold text-white mb-2">Verification Email Sent</h2>
-
-                {/* Message */}
                 <p className="text-sm text-slate-300 mb-2">A verification link has been sent to:</p>
-
-                {/* Email Highlight */}
                 <p className="text-sm font-semibold text-(--accent) mb-4 break-all">{userEmail}</p>
-
-                {/* Instruction */}
                 <p className="text-xs text-slate-400 mb-6">
                   Please check your inbox and verify your email to continue.
                 </p>
-
-                {/* Button */}
                 <button
                   onClick={() => setShowModal(false)}
                   className="w-full rounded-xl bg-(--accent) px-4 py-2 text-sm font-semibold text-black transition hover:bg-orange-600 cursor-pointer"

@@ -16,7 +16,7 @@ export interface PlanFeatures {
 
 export interface PlanPrice {
   monthly: number | null; // null = not available
-  annual: number | null;   // null = not available
+  annual: number | null; // null = not available
   description?: string;
 }
 
@@ -132,11 +132,11 @@ export const getPrice = (plan: PlanType, interval: BillingInterval): number | nu
 export const getAnnualSavings = (plan: PlanType): string | null => {
   const monthly = PRICING_CONFIG[plan].pricing.monthly;
   const annual = PRICING_CONFIG[plan].pricing.annual;
-  
+
   if (!monthly || !annual) return null;
-  
+
   const monthlyTotal = monthly * 12;
-  const savings = ((monthlyTotal - annual) / monthlyTotal * 100).toFixed(0);
+  const savings = (((monthlyTotal - annual) / monthlyTotal) * 100).toFixed(0);
   return `${savings}%`;
 };
 
@@ -148,15 +148,16 @@ export const getEnterprisePrice = (numberOfAgencies: number): number => {
 
 export const getSeats = (plan: PlanType, numberOfAgencies: number = 1) => {
   const config = PRICING_CONFIG[plan].features;
-  
+
   if (plan === 'enterprise') {
     const additionalAgencies = numberOfAgencies - 1;
     return {
-      adminSeats: config.adminSeats + (additionalAgencies * (config.additionalAgencyAdminSeats || 0)),
-      viewerSeats: config.viewerSeats + (additionalAgencies * (config.additionalAgencyViewerSeats || 0)),
+      adminSeats: config.adminSeats + additionalAgencies * (config.additionalAgencyAdminSeats || 0),
+      viewerSeats:
+        config.viewerSeats + additionalAgencies * (config.additionalAgencyViewerSeats || 0),
     };
   }
-  
+
   return {
     adminSeats: config.adminSeats,
     viewerSeats: config.viewerSeats,

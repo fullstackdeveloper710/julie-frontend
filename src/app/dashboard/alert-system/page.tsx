@@ -12,12 +12,36 @@ interface AlertConfig {
 }
 
 const DEFAULT_ALERTS: AlertConfig[] = [
-  { id: 'health-score', label: 'Overall Health Score drops below', description: '', threshold: 50, enabled: true },
-  { id: 'fatigue', label: 'Fatigue Resistance score drops below', description: '', threshold: 45, enabled: true },
+  {
+    id: 'health-score',
+    label: 'Overall Health Score drops below',
+    description: '',
+    threshold: 50,
+    enabled: true,
+  },
+  {
+    id: 'fatigue',
+    label: 'Fatigue Resistance score drops below',
+    description: '',
+    threshold: 45,
+    enabled: true,
+  },
   { id: 'fmla', label: 'FMLA rate exceeds', description: '', threshold: 6, enabled: true },
-  { id: 'peer-support', label: 'Peer support readiness drops below', description: '', threshold: 40, enabled: false },
+  {
+    id: 'peer-support',
+    label: 'Peer support readiness drops below',
+    description: '',
+    threshold: 40,
+    enabled: false,
+  },
   { id: 'vacancy', label: 'Vacancy rate exceeds', description: '', threshold: 20, enabled: true },
-  { id: 'morale', label: 'Morale rating drops below', description: '', threshold: 4, enabled: false },
+  {
+    id: 'morale',
+    label: 'Morale rating drops below',
+    description: '',
+    threshold: 4,
+    enabled: false,
+  },
 ];
 
 export default function AlertSystemPage() {
@@ -25,11 +49,13 @@ export default function AlertSystemPage() {
   const [email, setEmail] = useState('');
 
   const handleAlertToggle = (id: string) => {
-    setAlerts(alerts.map(alert => (alert.id === id ? { ...alert, enabled: !alert.enabled } : alert)));
+    setAlerts(
+      alerts.map((alert) => (alert.id === id ? { ...alert, enabled: !alert.enabled } : alert)),
+    );
   };
 
   const handleThresholdChange = (id: string, value: number) => {
-    setAlerts(alerts.map(alert => (alert.id === id ? { ...alert, threshold: value } : alert)));
+    setAlerts(alerts.map((alert) => (alert.id === id ? { ...alert, threshold: value } : alert)));
   };
 
   const handleSaveEmail = () => {
@@ -46,7 +72,8 @@ export default function AlertSystemPage() {
           Custom Alert System
         </h1>
         <p className="text-sm">
-          Configure thresholds that trigger notifications when your agency's metrics cross critical levels.
+          Configure thresholds that trigger notifications when your agency's metrics cross critical
+          levels.
         </p>
       </div>
 
@@ -58,11 +85,12 @@ export default function AlertSystemPage() {
           Alert Configuration
         </h2>
         <p className="text-xs mb-4">
-          Toggle alerts on/off and set your threshold values. Alerts are evaluated each time a check-in is submitted.
+          Toggle alerts on/off and set your threshold values. Alerts are evaluated each time a
+          check-in is submitted.
         </p>
 
         <div className="space-y-0 divide-y divide-slate-700">
-          {alerts.map(alert => (
+          {alerts.map((alert) => (
             <div key={alert.id} className="flex items-center gap-4 py-4 flex-wrap">
               <input
                 type="checkbox"
@@ -71,7 +99,9 @@ export default function AlertSystemPage() {
                 className="w-4 h-4 accent-(--accent) cursor-pointer"
               />
 
-              <div className={`flex-1 min-w-48 text-sm ${alert.enabled ? 'text-white' : 'text-slate-500'}`}>
+              <div
+                className={`flex-1 min-w-48 text-sm ${alert.enabled ? 'text-white' : 'text-slate-500'}`}
+              >
                 {alert.label}
               </div>
 
@@ -80,7 +110,9 @@ export default function AlertSystemPage() {
                   type="number"
                   name={`threshold-${alert.id}`}
                   value={alert.threshold}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleThresholdChange(alert.id, Number(e.target.value))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleThresholdChange(alert.id, Number(e.target.value))
+                  }
                   disabled={!alert.enabled}
                   containerClassName=""
                   inputClassName={`w-16 px-3 py-2 bg-slate-900 border border-slate-700 rounded text-white text-sm text-center focus:outline-none focus:border-(--accent) transition-colors ${!alert.enabled ? 'opacity-40 cursor-not-allowed' : ''}`}
@@ -112,7 +144,8 @@ export default function AlertSystemPage() {
           Notification Email
         </h2>
         <p className="text-xs mb-4">
-          Enter the email address where alert notifications should be sent when thresholds are triggered.
+          Enter the email address where alert notifications should be sent when thresholds are
+          triggered.
         </p>
 
         <div className="flex gap-3 items-center mb-3 flex-wrap">
@@ -120,7 +153,7 @@ export default function AlertSystemPage() {
             type="email"
             placeholder="command@youragency.gov"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-80 px-3 py-2 bg-slate-900 border border-slate-700 rounded text-white text-sm placeholder-slate-600 focus:outline-none focus:border-(--accent) transition-colors"
           />
           <Button
@@ -133,7 +166,8 @@ export default function AlertSystemPage() {
         </div>
 
         <p className="text-xs text-slate-500">
-          In the production version, alerts will be delivered via automated email when a check-in submission triggers any active threshold.
+          In the production version, alerts will be delivered via automated email when a check-in
+          submission triggers any active threshold.
         </p>
       </div>
     </div>

@@ -50,7 +50,7 @@ export const fetchPricingPlans = async (): Promise<PricingResponse> => {
     cache: 'no-store',
   });
 
-  console.log(response)
+  console.log(response);
 
   if (!response.ok) {
     throw new Error(`Failed to load pricing plans (${response.status})`);

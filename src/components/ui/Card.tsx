@@ -11,7 +11,9 @@ export function Card({ children, className = '' }: PropsWithChildren<{ className
 }
 
 export function CardTitle({ children, className = '' }: PropsWithChildren<{ className?: string }>) {
-  return <h3 className={`text-lg font-semibold text-(--foreground) mb-2 ${className}`}>{children}</h3>;
+  return (
+    <h3 className={`text-lg font-semibold text-(--foreground) mb-2 ${className}`}>{children}</h3>
+  );
 }
 
 export function CardDescription({ children }: PropsWithChildren) {

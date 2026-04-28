@@ -36,9 +36,10 @@ export function Input({
   const finalInputClassName = inputClassName || className;
 
   // Apply error styling if error exists and no custom inputClassName includes error styling
-  const computedInputClassName = error && !inputClassName?.includes('border-red')
-    ? `${finalInputClassName} border-red-500 focus:border-red-500`
-    : finalInputClassName;
+  const computedInputClassName =
+    error && !inputClassName?.includes('border-red')
+      ? `${finalInputClassName} border-red-500 focus:border-red-500`
+      : finalInputClassName;
 
   const isPassword = type === 'password';
   const inputType = isPassword && showPassword ? 'text' : type;
@@ -53,8 +54,9 @@ export function Input({
       <div style={{ position: 'relative' }}>
         <input
           type={inputType}
-          className={`w-full px-4 py-2 border border-(--input-border) bg-transparent text-(--foreground) rounded-md! focus:ring-2 focus:ring-(--input-focus) focus:border-transparent transition-colors ${error && !inputClassName ? 'border-(--input-error)' : ''
-            } ${computedInputClassName}`}
+          className={`w-full px-4 py-2 border border-(--input-border) bg-transparent text-(--foreground) rounded-md! focus:ring-2 focus:ring-(--input-focus) focus:border-transparent transition-colors ${
+            error && !inputClassName ? 'border-(--input-error)' : ''
+          } ${computedInputClassName}`}
           {...(min !== undefined && { min })}
           {...(max !== undefined && { max })}
           {...props}

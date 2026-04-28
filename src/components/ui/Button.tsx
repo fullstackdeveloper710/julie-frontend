@@ -20,9 +20,12 @@ export function Button({
     'inline-flex items-center justify-center font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
 
   const variants = {
-    primary: 'bg-(--button-primary-bg) text-(--button-primary-text) hover:bg-(--button-primary-hover) focus:ring-(--accent)',
-    secondary: 'bg-(--button-secondary-bg) text-(--button-secondary-text) hover:bg-(--button-secondary-hover) focus:ring-(--color-cool-gray)',
-    outline: 'border-2 border-(--button-outline-border) text-(--button-outline-text) hover:bg-(--button-outline-hover-bg) focus:ring-(--button-outline-border)',
+    primary:
+      'bg-(--button-primary-bg) text-(--button-primary-text) hover:bg-(--button-primary-hover) focus:ring-(--accent)',
+    secondary:
+      'bg-(--button-secondary-bg) text-(--button-secondary-text) hover:bg-(--button-secondary-hover) focus:ring-(--color-cool-gray)',
+    outline:
+      'border-2 border-(--button-outline-border) text-(--button-outline-text) hover:bg-(--button-outline-hover-bg) focus:ring-(--button-outline-border)',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
   };
 
@@ -32,7 +35,6 @@ export function Button({
     lg: 'px-6 py-3 text-lg',
   };
 
-  // Support both className and buttonClassName for flexibility
   const finalClassName = buttonClassName || className;
 
   return (

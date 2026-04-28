@@ -23,8 +23,8 @@ export const UpgradePrompt: React.FC = () => {
     <Card className="p-4 bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200">
       <p className="font-semibold text-gray-900">Need More Capacity?</p>
       <p className="text-sm text-gray-700 mt-1">
-        You're using {Math.max(adminUsagePercent, viewerUsagePercent).toFixed(0)}% of your available seats.
-        Consider upgrading to the Standard or Enterprise plan for more team members.
+        You're using {Math.max(adminUsagePercent, viewerUsagePercent).toFixed(0)}% of your available
+        seats. Consider upgrading to the Standard or Enterprise plan for more team members.
       </p>
       <Button size="sm" className="mt-3">
         Explore Plans

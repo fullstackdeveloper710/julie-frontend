@@ -25,9 +25,7 @@ export function EmptyState({
           >
             {title}
           </div>
-          <div className="text-sm  mt-1 mb-6">
-            {description}
-          </div>
+          <div className="text-sm  mt-1 mb-6">{description}</div>
         </div>
 
         {subtitle && (
@@ -44,7 +42,6 @@ export function EmptyState({
     );
   }
 
-  // Centered layout (default)
   return (
     <div className="px-7 py-8 max-w-5xl mx-auto">
       <div className="text-center py-16 px-5">
@@ -55,14 +52,8 @@ export function EmptyState({
         >
           {title}
         </h2>
-        <p className=" max-w-xl mx-auto mb-6 leading-relaxed">
-          {description}
-        </p>
-        {subtitle && (
-          <div className="text-xs text-slate-500">
-            {subtitle}
-          </div>
-        )}
+        <p className=" max-w-xl mx-auto mb-6 leading-relaxed">{description}</p>
+        {subtitle && <div className="text-xs text-slate-500">{subtitle}</div>}
         {children}
       </div>
     </div>

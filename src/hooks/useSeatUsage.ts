@@ -30,7 +30,12 @@ export const useSeatUsage = (subscription: Subscription | null) => {
       adminPercent: (admin.used / admin.total) * 100,
       viewerPercent: (viewer.used / viewer.total) * 100,
     });
-  }, [subscription?.adminSeats, subscription?.viewerSeats, subscription?.usedAdminSeats, subscription?.usedViewerSeats]);
+  }, [
+    subscription?.adminSeats,
+    subscription?.viewerSeats,
+    subscription?.usedAdminSeats,
+    subscription?.usedViewerSeats,
+  ]);
 
   return seatUsage;
 };

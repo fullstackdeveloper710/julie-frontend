@@ -11,7 +11,10 @@ export default function IntelligenceReportPage() {
       {hasData ? (
         <>
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
+            <h1
+              className="text-3xl font-bold text-white mb-2"
+              style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+            >
               Intelligence Report
             </h1>
             <p className="text-sm ">Comprehensive workforce intelligence and insights</p>
@@ -22,8 +25,9 @@ export default function IntelligenceReportPage() {
               <CardTitle>Executive Summary</CardTitle>
               <div className="mt-4 p-4 bg-slate-700 rounded border border-slate-600">
                 <p className="text-slate-300 text-sm leading-relaxed">
-                  This report provides comprehensive workforce intelligence covering staffing patterns,
-                  overtime trends, FMLA utilization, and comparative benchmarking against peer departments.
+                  This report provides comprehensive workforce intelligence covering staffing
+                  patterns, overtime trends, FMLA utilization, and comparative benchmarking against
+                  peer departments.
                 </p>
               </div>
             </Card>

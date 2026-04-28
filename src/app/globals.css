@@ -1,9 +1,10 @@
-@import "tailwindcss";
-@import "../styles/colors.css";
+@import 'tailwindcss';
+@import '../styles/colors.css';
 
 @font-face {
   font-family: 'Barlow Condensed';
-  src: url('../assets/fonts/BarlowCondensed-ExtraBold.woff2') format('woff2'),
+  src:
+    url('../assets/fonts/BarlowCondensed-ExtraBold.woff2') format('woff2'),
     url('../assets/fonts/BarlowCondensed-ExtraBold.woff') format('woff');
   font-weight: bold;
   font-style: normal;
@@ -12,7 +13,8 @@
 
 @font-face {
   font-family: 'Barlow Condensed';
-  src: url('../assets/fonts/BarlowCondensed-Black.woff2') format('woff2'),
+  src:
+    url('../assets/fonts/BarlowCondensed-Black.woff2') format('woff2'),
     url('../assets/fonts/BarlowCondensed-Black.woff') format('woff');
   font-weight: 900;
   font-style: normal;
@@ -21,7 +23,8 @@
 
 @font-face {
   font-family: 'Barlow Condensed';
-  src: url('../assets/fonts/BarlowCondensed-Bold.woff2') format('woff2'),
+  src:
+    url('../assets/fonts/BarlowCondensed-Bold.woff2') format('woff2'),
     url('../assets/fonts/BarlowCondensed-Bold.woff') format('woff');
   font-weight: bold;
   font-style: normal;
@@ -30,7 +33,8 @@
 
 @font-face {
   font-family: 'Barlow Condensed';
-  src: url('../assets/fonts/BarlowCondensed-ExtraLight.woff2') format('woff2'),
+  src:
+    url('../assets/fonts/BarlowCondensed-ExtraLight.woff2') format('woff2'),
     url('../assets/fonts/BarlowCondensed-ExtraLight.woff') format('woff');
   font-weight: 200;
   font-style: normal;
@@ -39,7 +43,8 @@
 
 @font-face {
   font-family: 'Barlow Condensed';
-  src: url('../assets/fonts/BarlowCondensed-Light.woff2') format('woff2'),
+  src:
+    url('../assets/fonts/BarlowCondensed-Light.woff2') format('woff2'),
     url('../assets/fonts/BarlowCondensed-Light.woff') format('woff');
   font-weight: 300;
   font-style: normal;
@@ -48,7 +53,8 @@
 
 @font-face {
   font-family: 'Barlow Condensed';
-  src: url('../assets/fonts/BarlowCondensed-Italic.woff2') format('woff2'),
+  src:
+    url('../assets/fonts/BarlowCondensed-Italic.woff2') format('woff2'),
     url('../assets/fonts/BarlowCondensed-Italic.woff') format('woff');
   font-weight: normal;
   font-style: italic;
@@ -57,7 +63,8 @@
 
 @font-face {
   font-family: 'Barlow Condensed';
-  src: url('../assets/fonts/BarlowCondensed-Medium.woff2') format('woff2'),
+  src:
+    url('../assets/fonts/BarlowCondensed-Medium.woff2') format('woff2'),
     url('../assets/fonts/BarlowCondensed-Medium.woff') format('woff');
   font-weight: 500;
   font-style: normal;
@@ -66,7 +73,8 @@
 
 @font-face {
   font-family: 'Barlow Condensed';
-  src: url('../assets/fonts/BarlowCondensed-Regular.woff2') format('woff2'),
+  src:
+    url('../assets/fonts/BarlowCondensed-Regular.woff2') format('woff2'),
     url('../assets/fonts/BarlowCondensed-Regular.woff') format('woff');
   font-weight: normal;
   font-style: normal;
@@ -75,7 +83,8 @@
 
 @font-face {
   font-family: 'Barlow Condensed';
-  src: url('../assets/fonts/BarlowCondensed-SemiBold.woff2') format('woff2'),
+  src:
+    url('../assets/fonts/BarlowCondensed-SemiBold.woff2') format('woff2'),
     url('../assets/fonts/BarlowCondensed-SemiBold.woff') format('woff');
   font-weight: 600;
   font-style: normal;
@@ -84,7 +93,8 @@
 
 @font-face {
   font-family: 'Barlow Condensed';
-  src: url('../assets/fonts/BarlowCondensed-Thin.woff2') format('woff2'),
+  src:
+    url('../assets/fonts/BarlowCondensed-Thin.woff2') format('woff2'),
     url('../assets/fonts/BarlowCondensed-Thin.woff') format('woff');
   font-weight: 100;
   font-style: normal;
@@ -93,11 +103,9 @@
 
 body {
   background: var(--background);
-  font-family: "Barlow Condensed", sans-serif !important;
+  font-family: 'Barlow Condensed', sans-serif !important;
   color: var(--secondary);
 }
-
-
 
 .navBar a {
   padding: 8px 12px;

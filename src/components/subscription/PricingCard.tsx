@@ -43,7 +43,9 @@ export function PricingCard({ plan }: PricingCardProps) {
 
               <div className="flex flex-wrap items-end justify-center gap-2">
                 <span className="text-4xl font-bold text-white">{plan.display.priceLabel}</span>
-                <span className="pb-2 text-sm text-slate-300">{plan.display.priceIntervalLabel}</span>
+                <span className="pb-2 text-sm text-slate-300">
+                  {plan.display.priceIntervalLabel}
+                </span>
               </div>
 
               {isEnterprise && plan.display.priceNote && (
@@ -79,12 +81,13 @@ export function PricingCard({ plan }: PricingCardProps) {
                 <span>{feature}</span>
               </li>
             ))}
-            {plan.features.apiAccess && !plan.featureHighlights.some((feature) => feature === 'API access') && (
-              <li className="flex items-start gap-3 border-b border-slate-700">
-                <span className="mt-1 text-(--accent)!">✓</span>
-                <span>API access</span>
-              </li>
-            )}
+            {plan.features.apiAccess &&
+              !plan.featureHighlights.some((feature) => feature === 'API access') && (
+                <li className="flex items-start gap-3 border-b border-slate-700">
+                  <span className="mt-1 text-(--accent)!">✓</span>
+                  <span>API access</span>
+                </li>
+              )}
             {isEnterprise && (
               <>
                 <li className="flex items-start gap-3 border-b border-slate-700">

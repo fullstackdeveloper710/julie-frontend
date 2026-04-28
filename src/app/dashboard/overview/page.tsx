@@ -7,7 +7,6 @@ export default function DashboardOverviewPage() {
   return (
     <div className="px-7 py-8">
       <div className="max-w-7xl mx-auto">
-
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white flex items-center gap-3 mb-2">
             <BarChart3 className="w-8 h-8" />
@@ -15,8 +14,6 @@ export default function DashboardOverviewPage() {
           </h1>
           <p className="">Welcome back</p>
         </div>
-
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardTitle className="flex items-center gap-2">
@@ -25,7 +22,6 @@ export default function DashboardOverviewPage() {
             </CardTitle>
             <p className="text-3xl font-bold text-white mt-4">Operational</p>
           </Card>
-
           <Card>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-(--color-deep-orange)" />
@@ -33,7 +29,6 @@ export default function DashboardOverviewPage() {
             </CardTitle>
             <p className="text-3xl font-bold text-white mt-4">+12.5%</p>
           </Card>
-
           <Card>
             <CardTitle className="flex items-center gap-2">
               <Users className="w-5 h-5 text-(--color-deep-orange)" />
@@ -41,7 +36,6 @@ export default function DashboardOverviewPage() {
             </CardTitle>
             <p className="text-3xl font-bold text-white mt-4">1</p>
           </Card>
-
           <Card>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-(--color-deep-orange)" />
@@ -50,8 +44,6 @@ export default function DashboardOverviewPage() {
             <p className="text-3xl font-bold text-white mt-4">0</p>
           </Card>
         </div>
-
-
         <Card>
           <CardTitle>Getting Started</CardTitle>
           <div className="mt-6 space-y-4 ">

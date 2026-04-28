@@ -14,7 +14,9 @@ export interface GeneratedReportPayload {
   metadata: Record<string, unknown>;
 }
 
-export async function generateReport(request: ReportGenerationRequest): Promise<GeneratedReportPayload> {
+export async function generateReport(
+  request: ReportGenerationRequest,
+): Promise<GeneratedReportPayload> {
   const { userId, type, data } = request;
 
   // Build the prompt based on report type
@@ -40,9 +42,7 @@ export async function generateReport(request: ReportGenerationRequest): Promise<
 
   // Extract text content from response
   const content =
-    message.content[0].type === 'text'
-      ? message.content[0].text
-      : 'Unable to generate report';
+    message.content[0].type === 'text' ? message.content[0].text : 'Unable to generate report';
 
   return {
     title: `${type === 'analytics' ? 'Analytics' : 'Scenario'} Report - ${new Date().toLocaleDateString()}`,
@@ -53,13 +53,7 @@ export async function generateReport(request: ReportGenerationRequest): Promise<
 }
 
 function buildAnalyticsPrompt(data: Record<string, unknown>): string {
-  const {
-    startDate = '',
-    endDate = '',
-    region = 'All',
-    category = 'All',
-    metrics = {},
-  } = data;
+  const { startDate = '', endDate = '', region = 'All', category = 'All', metrics = {} } = data;
 
   return `Generate a professional analytics report based on the following workforce data:
 
@@ -79,11 +73,7 @@ Use professional language and format the report in markdown.`;
 }
 
 function buildScenarioPrompt(data: Record<string, unknown>): string {
-  const {
-    scenario = 'Default Scenario',
-    parameters = {},
-    baselineMetrics = {},
-  } = data;
+  const { scenario = 'Default Scenario', parameters = {}, baselineMetrics = {} } = data;
 
   return `Generate a detailed scenario modeling report for the following workforce scenario:
 
@@ -102,4 +92,3 @@ Please provide:
 
 Use professional language and format the report in markdown with clear sections and bullet points.`;
 }
-

@@ -10,153 +10,157 @@ import * as Yup from 'yup';
 import { useUpdatePasswordMutation } from '@/redux/api/authApi';
 
 export default function UpdatePasswordPage() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const [updatePassword, { isLoading, error: rtcError }] = useUpdatePasswordMutation();
-    const [token, setToken] = useState('');
-    const [authError, setAuthError] = useState('');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [updatePassword, { isLoading, error: rtcError }] = useUpdatePasswordMutation();
+  const [token, setToken] = useState('');
+  const [authError, setAuthError] = useState('');
 
-    useEffect(() => {
-        const t = searchParams.get('token');
-        if (!t) {
-            setAuthError(
-                'Invalid or expired reset link. Please request a new password reset.'
-            );
-            return;
-        }
-        setToken(t);
-    }, [searchParams]);
-
-    const formik = useFormik({
-        initialValues: {
-            password: '',
-            confirmPassword: '',
-        },
-        validationSchema: Yup.object({
-            password: Yup.string()
-                .min(6, 'Password must be at least 6 characters')
-                .required('Password is required'),
-            confirmPassword: Yup.string()
-                .oneOf([Yup.ref('password')], 'Passwords must match')
-                .required('Please confirm your password'),
-        }),
-        onSubmit: async (values) => {
-            try {
-                await updatePassword({
-                    token,
-                    password: values.password,
-                }).unwrap();
-
-                router.push(
-                    '/auth/signin?message=Password updated successfully. Please sign in.'
-                );
-            } catch (err: any) {
-                logRtkError('Password update error', err);
-            }
-        },
-    });
-
-    if (authError) {
-        return (
-            <div className="min-h-screen bg-slate-950">
-                <div
-                    className="flex items-center justify-center px-4 py-8 min-h-[calc(100vh-64px)]"
-                    style={{
-                        background: 'linear-gradient(135deg, rgb(15, 25, 34) 0%, rgb(26, 42, 58) 100%)',
-                    }}
-                >
-                    <div className="bg-slate-800 border-t-4 border-t-(--accent) border-slate-700 rounded-xl lg:p-10 p-5 w-full max-w-md">
-                        <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-3 py-2 rounded mb-4">
-                            {authError}
-                        </div>
-                        <Link
-                            href="/auth/forgot-password"
-                            className="text-(--accent) hover:text-(--accent)/80 font-semibold transition-colors"
-                        >
-                            Request a new reset link →
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        );
+  useEffect(() => {
+    const t = searchParams.get('token');
+    if (!t) {
+      setAuthError('Invalid or expired reset link. Please request a new password reset.');
+      return;
     }
+    setToken(t);
+  }, [searchParams]);
 
-    const errorMessage = extractRtkErrorMessage(rtcError);
+  const formik = useFormik({
+    initialValues: {
+      password: '',
+      confirmPassword: '',
+    },
+    validationSchema: Yup.object({
+      password: Yup.string()
+        .min(6, 'Password must be at least 6 characters')
+        .required('Password is required'),
+      confirmPassword: Yup.string()
+        .oneOf([Yup.ref('password')], 'Passwords must match')
+        .required('Please confirm your password'),
+    }),
+    onSubmit: async (values) => {
+      try {
+        await updatePassword({
+          token,
+          password: values.password,
+        }).unwrap();
 
+        router.push('/auth/signin?message=Password updated successfully. Please sign in.');
+      } catch (err: any) {
+        logRtkError('Password update error', err);
+      }
+    },
+  });
+
+  if (authError) {
     return (
-        <div className="min-h-screen bg-slate-950">
-            <div
-                className="flex items-center justify-center px-4 py-8 min-h-[calc(100vh-64px)]"
-                style={{
-                    background: 'linear-gradient(135deg, rgb(15, 25, 34) 0%, rgb(26, 42, 58) 100%)',
-                }}
-            >
-                <div className="bg-slate-800 border-t-4 border-t-(--accent) border-slate-700 rounded-xl lg:p-10 p-5 w-full max-w-md">
-                    <div className="font-bold text-sm tracking-widest text-(--accent) uppercase mb-6">
-                        Frontline Frameworks
-                    </div>
-
-                    <h2 className="font-bold text-3xl text-white mb-2">Create New Password</h2>
-                    <p className="text-sm text-slate-300 mb-6">Enter your new password below.</p>
-
-                    {errorMessage && (
-                        <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-3 py-2 rounded mb-4">
-                            {errorMessage}
-                        </div>
-                    )}
-
-                    <form onSubmit={formik.handleSubmit} className="space-y-4">
-                        <Input
-                            type="password"
-                            name="password"
-                            label="New Password"
-                            placeholder="••••••••"
-                            value={formik.values.password}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            required
-                            containerClassName="flex flex-col gap-2"
-                            labelClassName="text-xs font-semibold tracking-widest"
-                            inputClassName="bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-orange-500"
-                            error={formik.touched.password && formik.errors.password ? formik.errors.password : undefined}
-                        />
-
-                        <Input
-                            type="password"
-                            name="confirmPassword"
-                            label="Confirm Password"
-                            placeholder="••••••••"
-                            value={formik.values.confirmPassword}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            required
-                            containerClassName="flex flex-col gap-2"
-                            labelClassName="text-xs font-semibold tracking-widest"
-                            inputClassName="bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-orange-500"
-                            error={formik.touched.confirmPassword && formik.errors.confirmPassword ? formik.errors.confirmPassword : undefined}
-                        />
-
-                        <Button
-                            type="submit"
-                            disabled={isLoading || !token}
-                            buttonClassName="w-full bg-(--accent) hover:bg-(--accent)/80 disabled:bg-(--accent)/50 text-slate-950 font-bold text-sm tracking-widest uppercase py-3 rounded-lg transition-colors"
-                        >
-                            {isLoading ? 'Updating Password...' : 'Update Password →'}
-                        </Button>
-                    </form>
-
-                    <div className="my-6 border-t border-slate-700" />
-
-                    <p className="text-center text-sm">
-                        <Link
-                            href="/auth/signin"
-                            className="text-(--accent) hover:text-(--accent)/80 font-semibold transition-colors"
-                        >
-                            Back to sign in
-                        </Link>
-                    </p>
-                </div>
+      <div className="min-h-screen bg-slate-950">
+        <div
+          className="flex items-center justify-center px-4 py-8 min-h-[calc(100vh-64px)]"
+          style={{
+            background: 'linear-gradient(135deg, rgb(15, 25, 34) 0%, rgb(26, 42, 58) 100%)',
+          }}
+        >
+          <div className="bg-slate-800 border-t-4 border-t-(--accent) border-slate-700 rounded-xl lg:p-10 p-5 w-full max-w-md">
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-3 py-2 rounded mb-4">
+              {authError}
             </div>
+            <Link
+              href="/auth/forgot-password"
+              className="text-(--accent) hover:text-(--accent)/80 font-semibold transition-colors"
+            >
+              Request a new reset link →
+            </Link>
+          </div>
         </div>
+      </div>
     );
+  }
+
+  const errorMessage = extractRtkErrorMessage(rtcError);
+
+  return (
+    <div className="min-h-screen bg-slate-950">
+      <div
+        className="flex items-center justify-center px-4 py-8 min-h-[calc(100vh-64px)]"
+        style={{
+          background: 'linear-gradient(135deg, rgb(15, 25, 34) 0%, rgb(26, 42, 58) 100%)',
+        }}
+      >
+        <div className="bg-slate-800 border-t-4 border-t-(--accent) border-slate-700 rounded-xl lg:p-10 p-5 w-full max-w-md">
+          <div className="font-bold text-sm tracking-widest text-(--accent) uppercase mb-6">
+            Frontline Frameworks
+          </div>
+
+          <h2 className="font-bold text-3xl text-white mb-2">Create New Password</h2>
+          <p className="text-sm text-slate-300 mb-6">Enter your new password below.</p>
+
+          {errorMessage && (
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-3 py-2 rounded mb-4">
+              {errorMessage}
+            </div>
+          )}
+
+          <form onSubmit={formik.handleSubmit} className="space-y-4">
+            <Input
+              type="password"
+              name="password"
+              label="New Password"
+              placeholder="••••••••"
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              required
+              containerClassName="flex flex-col gap-2"
+              labelClassName="text-xs font-semibold tracking-widest"
+              inputClassName="bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-orange-500"
+              error={
+                formik.touched.password && formik.errors.password
+                  ? formik.errors.password
+                  : undefined
+              }
+            />
+
+            <Input
+              type="password"
+              name="confirmPassword"
+              label="Confirm Password"
+              placeholder="••••••••"
+              value={formik.values.confirmPassword}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              required
+              containerClassName="flex flex-col gap-2"
+              labelClassName="text-xs font-semibold tracking-widest"
+              inputClassName="bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-orange-500"
+              error={
+                formik.touched.confirmPassword && formik.errors.confirmPassword
+                  ? formik.errors.confirmPassword
+                  : undefined
+              }
+            />
+
+            <Button
+              type="submit"
+              disabled={isLoading || !token}
+              buttonClassName="w-full bg-(--accent) hover:bg-(--accent)/80 disabled:bg-(--accent)/50 text-slate-950 font-bold text-sm tracking-widest uppercase py-3 rounded-lg transition-colors"
+            >
+              {isLoading ? 'Updating Password...' : 'Update Password →'}
+            </Button>
+          </form>
+
+          <div className="my-6 border-t border-slate-700" />
+
+          <p className="text-center text-sm">
+            <Link
+              href="/auth/signin"
+              className="text-(--accent) hover:text-(--accent)/80 font-semibold transition-colors"
+            >
+              Back to sign in
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }

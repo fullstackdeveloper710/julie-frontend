@@ -27,17 +27,14 @@ export const BillingPrompt: React.FC = () => {
         <div className="flex-1">
           <p className="font-semibold text-gray-900">Add Billing Information</p>
           <p className="text-sm text-gray-700 mt-1">
-            Your trial ends in {subscription.trialDaysRemaining} days. Add your billing information now to ensure uninterrupted access.
+            Your trial ends in {subscription.trialDaysRemaining} days. Add your billing information
+            now to ensure uninterrupted access.
           </p>
           <div className="flex gap-2 mt-3">
             <Button size="sm" variant="primary">
               Add Billing Info
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setDismissed(true)}
-            >
+            <Button size="sm" variant="outline" onClick={() => setDismissed(true)}>
               Dismiss
             </Button>
           </div>

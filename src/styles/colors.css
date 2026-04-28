@@ -1,19 +1,19 @@
 :root {
   /* --- PRIMARY COLORS --- */
   /* Accent color - used for CTAs, highlights, and primary actions */
-  --color-deep-orange: #F05A28;
+  --color-deep-orange: #f05a28;
 
   /* Main text color - used for body text and primary content */
-  --color-charcoal-black: #1C1C1C;
+  --color-charcoal-black: #1c1c1c;
 
   /* Neutral background and secondary elements */
-  --color-cool-gray: #B3B3B3;
+  --color-cool-gray: #b3b3b3;
 
   /* Optional alternate accent color */
-  --color-navy-blue: #2C3E50;
+  --color-navy-blue: #2c3e50;
 
   /* White for backgrounds and light text */
-  --color-white: #FFFFFF;
+  --color-white: #ffffff;
 
   /* --- SEMANTIC COLORS --- */
   /* Base background and text */
@@ -34,37 +34,37 @@
   --input-bg: var(--color-white);
   --input-border: var(--color-cool-gray);
   --input-focus: var(--color-deep-orange);
-  --input-error: #DC2626;
+  --input-error: #dc2626;
 
   /* Buttons */
   --button-primary-bg: var(--color-deep-orange);
   --button-primary-text: var(--color-white);
-  --button-primary-hover: #E84A1A;
+  --button-primary-hover: #e84a1a;
 
   --button-secondary-bg: var(--color-cool-gray);
   --button-secondary-text: var(--color-charcoal-black);
-  --button-secondary-hover: #A0A0A0;
+  --button-secondary-hover: #a0a0a0;
 
   --button-outline-border: var(--color-cool-gray);
   --button-outline-text: var(--color-charcoal-black);
   --button-outline-hover-bg: rgba(179, 179, 179, 0.1);
 
   /* Alerts and status */
-  --alert-success-bg: #DCFCE7;
-  --alert-success-border: #86EFAC;
+  --alert-success-bg: #dcfce7;
+  --alert-success-border: #86efac;
   --alert-success-text: #166534;
 
-  --alert-error-bg: #FEE2E2;
-  --alert-error-border: #FECACA;
-  --alert-error-text: #991B1B;
+  --alert-error-bg: #fee2e2;
+  --alert-error-border: #fecaca;
+  --alert-error-text: #991b1b;
 
-  --alert-warning-bg: #FEF3C7;
-  --alert-warning-border: #FCD34D;
-  --alert-warning-text: #B45309;
+  --alert-warning-bg: #fef3c7;
+  --alert-warning-border: #fcd34d;
+  --alert-warning-text: #b45309;
 
-  --alert-info-bg: #DBEAFE;
-  --alert-info-border: #93C5FD;
-  --alert-info-text: #1E3A8A;
+  --alert-info-bg: #dbeafe;
+  --alert-info-border: #93c5fd;
+  --alert-info-text: #1e3a8a;
 
   /* Cards and surfaces */
   --card-bg: var(--color-white);
@@ -74,14 +74,14 @@
   --badge-default-bg: var(--color-cool-gray);
   --badge-default-text: var(--color-charcoal-black);
 
-  --badge-success-bg: #DCFCE7;
+  --badge-success-bg: #dcfce7;
   --badge-success-text: #166534;
 
-  --badge-warning-bg: #FEF3C7;
-  --badge-warning-text: #B45309;
+  --badge-warning-bg: #fef3c7;
+  --badge-warning-text: #b45309;
 
-  --badge-danger-bg: #FEE2E2;
-  --badge-danger-text: #991B1B;
+  --badge-danger-bg: #fee2e2;
+  --badge-danger-text: #991b1b;
 }
 
 /* Dark mode adjustments */

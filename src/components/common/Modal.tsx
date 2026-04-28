@@ -64,7 +64,6 @@ export default function DynamicModal({
           <div key={q.id} className="mb-4">
             <label className="text-white text-sm">{q.label}</label>
 
-            {/* TEXT */}
             {q.type === 'text' && (
               <>
                 <input
@@ -78,7 +77,6 @@ export default function DynamicModal({
               </>
             )}
 
-            {/* NUMBER */}
             {q.type === 'number' && (
               <>
                 <input
@@ -93,7 +91,6 @@ export default function DynamicModal({
               </>
             )}
 
-            {/* SELECT */}
             {q.type === 'select' && (
               <>
                 <select
@@ -116,7 +113,6 @@ export default function DynamicModal({
           </div>
         ))}
 
-        {/* BUTTONS */}
         <div className="grid  gap-3 mt-4">
           <button
             onClick={onClose}

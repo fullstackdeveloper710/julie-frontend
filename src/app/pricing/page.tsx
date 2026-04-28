@@ -11,7 +11,6 @@ export default function Pricing() {
 
   useEffect(() => {
     let alive = true;
-
     const loadPricing = async () => {
       try {
         const data = await fetchPricingPlans();
@@ -73,8 +72,8 @@ export default function Pricing() {
             Plans For Every Agency
           </h2>
           <p className="leading-relaxed max-w-2xl mb-12">
-            Start with the plan that fits your agency. Every plan includes full platform access
-            with AI capabilities.
+            Start with the plan that fits your agency. Every plan includes full platform access with
+            AI capabilities.
           </p>
           <p className="mb-12 text-sm text-slate-400">{foundingMessage}</p>
 
@@ -102,8 +101,8 @@ export default function Pricing() {
                   What happens after my trial or billing cycle starts?
                 </h4>
                 <p className="text-sm ">
-                  Your selected plan stays active until you change it. You can update billing details
-                  before the trial or renewal period ends.
+                  Your selected plan stays active until you change it. You can update billing
+                  details before the trial or renewal period ends.
                 </p>
               </div>
               <div>

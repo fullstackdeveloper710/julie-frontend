@@ -58,7 +58,10 @@ export default function IntelligenceGraphsPage() {
   return (
     <div className="px-7 py-8 max-w-7xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-1" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
+        <h1
+          className="text-3xl font-bold text-white mb-1"
+          style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+        >
           Intelligence Graphs
         </h1>
         <p className="text-sm ">
@@ -67,14 +70,15 @@ export default function IntelligenceGraphsPage() {
       </div>
 
       <div className="flex gap-3 mb-8 flex-wrap">
-        {tabButtons.map(tab => (
+        {tabButtons.map((tab) => (
           <Button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            buttonClassName={`px-4 py-2 text-xs font-bold uppercase tracking-widest rounded transition-colors ${activeTab === tab.id
-              ? 'bg-(--accent) text-slate-950'
-              : 'bg-transparent border border-slate-700 text-gray-300 hover:border-slate-600'
-              }`}
+            buttonClassName={`px-4 py-2 text-xs font-bold uppercase tracking-widest rounded transition-colors ${
+              activeTab === tab.id
+                ? 'bg-(--accent) text-slate-950'
+                : 'bg-transparent border border-slate-700 text-gray-300 hover:border-slate-600'
+            }`}
           >
             {tab.label}
           </Button>
@@ -113,4 +117,3 @@ export default function IntelligenceGraphsPage() {
     </div>
   );
 }
-

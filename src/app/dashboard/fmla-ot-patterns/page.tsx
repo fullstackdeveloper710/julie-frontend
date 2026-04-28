@@ -11,7 +11,10 @@ export default function FmlaOtPatternsPage() {
       {hasData ? (
         <>
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
+            <h1
+              className="text-3xl font-bold text-white mb-2"
+              style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+            >
               FMLA & OT Patterns
             </h1>
             <p className="text-sm ">Family and Medical Leave Act usage and overtime analysis</p>
@@ -20,7 +23,9 @@ export default function FmlaOtPatternsPage() {
           <Card>
             <CardTitle>Pattern Analysis</CardTitle>
             <div className="mt-6 text-center py-12">
-              <p className="">FMLA and overtime patterns will display here once sufficient data is collected</p>
+              <p className="">
+                FMLA and overtime patterns will display here once sufficient data is collected
+              </p>
             </div>
           </Card>
         </>

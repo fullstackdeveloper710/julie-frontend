@@ -55,7 +55,7 @@ export async function createCheckoutSession(
   customerId: string,
   priceId: string,
   successUrl: string,
-  cancelUrl: string
+  cancelUrl: string,
 ) {
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
@@ -87,7 +87,7 @@ export async function updateSubscription(
     currentPeriodStart: string;
     currentPeriodEnd: string;
     cancelAtPeriodEnd: boolean;
-  }>
+  }>,
 ) {
   const response = await fetch(buildBackendApiUrl('/subscriptions/sync'), {
     method: 'POST',
@@ -154,7 +154,7 @@ async function syncSubscriptionRecord(
     currentPeriodStart: string;
     currentPeriodEnd: string;
     cancelAtPeriodEnd: boolean;
-  }>
+  }>,
 ) {
   const response = await fetch(buildBackendApiUrl('/subscriptions/sync'), {
     method: 'POST',

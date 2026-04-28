@@ -44,9 +44,6 @@ export default function SignInPage() {
         if (!accessToken) {
           throw new Error('Access token not found');
         }
-
-        // Resets all per-user RTK Query caches before applying the new
-        // credentials so we never serve the previous user's cached data.
         dispatch(
           loginSuccess({
             user: result.data.user,
@@ -152,7 +149,6 @@ export default function SignInPage() {
               </Link>
             </div>
 
-            {/* Sign In Button */}
             <Button
               type="submit"
               disabled={isLoading}
@@ -162,10 +158,8 @@ export default function SignInPage() {
             </Button>
           </form>
 
-          {/* Divider */}
           <div className="my-6 border-t border-slate-700" />
 
-          {/* Sign Up Link */}
           <p className="text-center text-sm ">
             Don't have an account?{' '}
             <Link

@@ -12,16 +12,17 @@ export default function AnalyticsPage() {
       {hasData ? (
         <>
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
+            <h1
+              className="text-3xl font-bold text-white mb-2 flex items-center gap-3"
+              style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+            >
               <BarChart3 className="w-8 h-8" />
               Analytics
             </h1>
             <p className="text-sm">Comprehensive analytics and metrics</p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
-
-          </div>
+          <div className="grid grid-cols-1 gap-6"></div>
         </>
       ) : (
         <EmptyState

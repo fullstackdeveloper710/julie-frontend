@@ -1,8 +1,6 @@
 'use client';
 
-
 import { Alert, Input, Button } from '@/components/ui';
-
 import { useState } from 'react';
 
 export default function PlatformDemo() {
@@ -26,31 +24,26 @@ export default function PlatformDemo() {
 
   return (
     <div className="min-h-screen bg-slate-950">
-
-
-
       <section className="py-20 px-4">
         <div className="max-w-3xl mx-auto">
           <div className="font-bold text-xs tracking-widest text-(--accent) uppercase mb-3">
             Interactive Demo
           </div>
-          <h2 className="font-bold text-4xl text-white mb-4 leading-tight">
-            See It In Action
-          </h2>
+          <h2 className="font-bold text-4xl text-white mb-4 leading-tight">See It In Action</h2>
           <p className="leading-relaxed max-w-2xl mb-12">
-            Enter a few key metrics below and see how the platform scores your agency's operational health in real time.
+            Enter a few key metrics below and see how the platform scores your agency's operational
+            health in real time.
           </p>
-
 
           <Alert className="mb-8 bg-red-500/10 border border-red-500/30">
             <div className="text-sm text-red-400">
               <div className="font-bold mb-1">Founding Tier Alert</div>
               <div>
-                Founding spots are limited to 20 agencies; confirmation is on a first-come, first-served basis.
+                Founding spots are limited to 20 agencies; confirmation is on a first-come,
+                first-served basis.
               </div>
             </div>
           </Alert>
-
 
           <div className="bg-slate-800 agencyForm border-t-4 border-t-(--accent) border-slate-700 rounded-lg p-8 mb-6">
             <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
@@ -172,8 +165,6 @@ export default function PlatformDemo() {
           </div>
         </div>
       </section>
-
-
     </div>
   );
 }

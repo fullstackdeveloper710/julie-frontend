@@ -8,7 +8,9 @@ const normalizeBackendBaseUrl = (baseUrl: string): string => {
 
 export const getBackendApiBaseUrl = (): string => {
   if (!BACKEND_BASE_URL) {
-    throw new Error('Backend API base URL is not configured. Set NEXT_PUBLIC_API_URL or NODE_API_URL.');
+    throw new Error(
+      'Backend API base URL is not configured. Set NEXT_PUBLIC_API_URL or NODE_API_URL.',
+    );
   }
 
   return normalizeBackendBaseUrl(BACKEND_BASE_URL);
@@ -20,7 +22,8 @@ export const buildBackendApiUrl = (path: string): string => {
 };
 
 export const getForwardedAuthHeaders = (request: Request): HeadersInit => {
-  const authorization = request.headers.get('authorization') || request.headers.get('Authorization');
+  const authorization =
+    request.headers.get('authorization') || request.headers.get('Authorization');
 
   return authorization ? { Authorization: authorization } : {};
 };

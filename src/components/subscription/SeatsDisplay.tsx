@@ -20,7 +20,6 @@ export const SeatsDisplay: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-
         <div>
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-gray-600">Admin Seats</span>
@@ -34,11 +33,8 @@ export const SeatsDisplay: React.FC = () => {
               style={{ width: `${seatUsage.adminPercent}%` }}
             />
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            {seatUsage.adminSeats.available} available
-          </p>
+          <p className="text-xs text-gray-500 mt-1">{seatUsage.adminSeats.available} available</p>
         </div>
-
 
         <div>
           <div className="flex justify-between items-center mb-2">
@@ -53,19 +49,15 @@ export const SeatsDisplay: React.FC = () => {
               style={{ width: `${seatUsage.viewerPercent}%` }}
             />
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            {seatUsage.viewerSeats.available} available
-          </p>
+          <p className="text-xs text-gray-500 mt-1">{seatUsage.viewerSeats.available} available</p>
         </div>
       </div>
-
 
       {(seatUsage.adminSeats.available > 0 || seatUsage.viewerSeats.available > 0) && (
         <Button className="w-full mt-4" variant="outline">
           Invite Team Member
         </Button>
       )}
-
 
       {seatUsage.adminSeats.available === 0 && seatUsage.viewerSeats.available === 0 && (
         <p className="text-sm text-gray-500 mt-4 p-2 bg-gray-50 rounded">

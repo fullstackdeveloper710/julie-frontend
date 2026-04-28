@@ -20,20 +20,22 @@ export const TestimonialPrompt: React.FC = () => {
   const highPriority = daysUntilDue <= 14;
 
   return (
-    <Card className={`p-4 border-l-4 ${highPriority
-      ? 'border-l-red-500 bg-red-50'
-      : 'border-l-blue-500 bg-blue-50'
-      }`}>
+    <Card
+      className={`p-4 border-l-4 ${
+        highPriority ? 'border-l-red-500 bg-red-50' : 'border-l-blue-500 bg-blue-50'
+      }`}
+    >
       <div className="flex gap-3">
-        <AlertCircle className={`w-5 h-5 shrink-0 mt-0.5 ${highPriority ? 'text-red-600' : 'text-blue-600'
-          }`} />
+        <AlertCircle
+          className={`w-5 h-5 shrink-0 mt-0.5 ${highPriority ? 'text-red-600' : 'text-blue-600'}`}
+        />
         <div className="flex-1">
           <p className="font-semibold text-gray-900">
             {highPriority ? '⭐ Share Your Feedback' : 'Tell Us About Your Experience'}
           </p>
           <p className="text-sm text-gray-700 mt-1">
-            As a founding tier member, we'd love to hear about your experience with Frontline Framework.
-            Your testimonial helps us improve and validates our solution for others.
+            As a founding tier member, we'd love to hear about your experience with Frontline
+            Framework. Your testimonial helps us improve and validates our solution for others.
           </p>
           <div className="flex gap-2 mt-3">
             <Button size="sm" variant="primary">

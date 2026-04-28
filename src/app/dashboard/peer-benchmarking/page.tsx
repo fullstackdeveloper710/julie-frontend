@@ -11,7 +11,10 @@ export default function PeerBenchmarkingPage() {
       {hasData ? (
         <>
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
+            <h1
+              className="text-3xl font-bold text-white mb-2"
+              style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+            >
               Peer Benchmarking
             </h1>
             <p className="text-sm ">Compare your metrics against similar departments</p>
@@ -59,12 +62,13 @@ export default function PeerBenchmarkingPage() {
           subtitle="Benchmarks represent aggregated national averages for Law Enforcement agencies. In the production platform, benchmarks update as more agencies submit data — making comparisons increasingly precise over time."
           layout="default"
         >
-          <div className="text-white font-condensed font-bold text-lg mb-2" style={{ fontFamily: '"Barlow Condensed", sans-serif' }}>
+          <div
+            className="text-white font-condensed font-bold text-lg mb-2"
+            style={{ fontFamily: '"Barlow Condensed", sans-serif' }}
+          >
             Submit a Check-In First
           </div>
-          <div className=" text-sm">
-            Your agency data is needed to generate a peer comparison.
-          </div>
+          <div className=" text-sm">Your agency data is needed to generate a peer comparison.</div>
         </EmptyState>
       )}
     </div>

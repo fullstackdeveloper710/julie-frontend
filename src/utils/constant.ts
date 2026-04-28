@@ -1,0 +1,1 @@
+export const HEADING_FONT = '"Barlow Condensed", sans-serif';

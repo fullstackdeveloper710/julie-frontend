@@ -4,7 +4,7 @@ export type BillingInterval = 'monthly' | 'annual';
 export interface Subscription {
   id: string;
   userId: string;
-  agencyId: string | null; // For multi-agency support in enterprise
+  agencyId: string | null;
   stripeCustomerId: string;
   stripeSubscriptionId: string | null;
   plan: PlanType;

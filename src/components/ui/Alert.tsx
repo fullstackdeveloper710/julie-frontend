@@ -14,11 +14,5 @@ export function Alert({
     error: 'bg-(--alert-error-bg) border-(--alert-error-border) text-(--alert-error-text)',
   };
 
-  return (
-    <div
-      className={`border rounded-md p-4 ${types[type]} ${className}`}
-    >
-      {children}
-    </div>
-  );
+  return <div className={`border rounded-md p-4 ${types[type]} ${className}`}>{children}</div>;
 }

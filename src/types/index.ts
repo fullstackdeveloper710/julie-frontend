@@ -13,4 +13,3 @@ export {
   getEnterprisePrice,
   getSeats,
 } from './plans';
-

@@ -47,19 +47,22 @@ export default function GrantWriterPage() {
           Configure Your Grant Request
         </h2>
         <p className="text-xs  mb-5">
-          Select the grant type and the platform will generate tailored justification language using your operational metrics.
+          Select the grant type and the platform will generate tailored justification language using
+          your operational metrics.
         </p>
 
         <div className="flex flex-col gap-4 mb-4">
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-slate-300">Grant Program / Funding Source</label>
+            <label className="text-xs font-semibold text-slate-300">
+              Grant Program / Funding Source
+            </label>
             <select
               value={grantProgram}
-              onChange={e => setGrantProgram(e.target.value)}
+              onChange={(e) => setGrantProgram(e.target.value)}
               className="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
             >
               <option value="">Select grant program…</option>
-              {GRANT_PROGRAMS.map(program => (
+              {GRANT_PROGRAMS.map((program) => (
                 <option key={program} value={program}>
                   {program}
                 </option>
@@ -74,7 +77,7 @@ export default function GrantWriterPage() {
             <textarea
               rows={2}
               value={purpose}
-              onChange={e => setPurpose(e.target.value)}
+              onChange={(e) => setPurpose(e.target.value)}
               placeholder="e.g. Fund Leadership Sustainability Training and Peer Support Foundations Training for 85 sworn officers and supervisors…"
               className="bg-slate-900 border border-slate-700 rounded px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
             />
@@ -83,7 +86,9 @@ export default function GrantWriterPage() {
 
         <div className="bg-amber-500/10 border border-amber-500/30 rounded px-3 py-2 mb-5">
           <p className="text-xs text-amber-400">
-            <span className="font-semibold">Tip:</span> Submit a Monthly Check-In first so the platform can reference your actual operational data in the grant language — this significantly strengthens the application.
+            <span className="font-semibold">Tip:</span> Submit a Monthly Check-In first so the
+            platform can reference your actual operational data in the grant language — this
+            significantly strengthens the application.
           </p>
         </div>
 
@@ -107,4 +112,3 @@ export default function GrantWriterPage() {
     </div>
   );
 }
-
