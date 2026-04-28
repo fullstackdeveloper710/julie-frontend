@@ -13,4 +13,19 @@ export {
     useUpdateAnnualCheckInMutation,
 } from './checkinApi';
 export { reportsApi, useGetAllReportsQuery, useGetReportByIdQuery, useCreateReportMutation, useUpdateReportMutation, useDeleteReportMutation, useGenerateAIReportMutation } from './reportsApi';
+export {
+    agencyApi,
+    useListMyAgenciesQuery,
+    useGetAgencyByIdQuery,
+    useCreateAgencyMutation,
+    useUpdateAgencyByIdMutation,
+} from './agencyApi';
+export type {
+    Agency,
+    AgencyType,
+    AgencySize,
+    AgencyBilling,
+    AgencyCapacity,
+    AgencyInput,
+} from './agencyApi';
 export { axiosBaseQuery } from './axiosBaseQuery';

@@ -1,35 +1,83 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Tabs } from '@/components/common/Tabs';
 import { Loading } from '@/components/ui';
-import { useAppDispatch, useGetCurrentUserAuthQuery, logout } from '@/hooks';
+import {
+    useAppDispatch,
+    useAppSelector,
+    useGetCurrentUserAuthQuery,
+    useListMyAgenciesQuery,
+    setSelectedAgencyId,
+    logout,
+} from '@/hooks';
+
+const ALWAYS_ACCESSIBLE = ['/dashboard/agency-setup'];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-  const { data, isLoading } = useGetCurrentUserAuthQuery();
+    const router = useRouter();
+    const pathname = usePathname() ?? '';
+    const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    if (!isLoading && !data?.data.email) {
-      dispatch(logout());
-      router.replace('/auth/signin');
-    }
-  }, [data, dispatch, isLoading, router]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <Loading />
-      </div>
+    const { data: userRes, isLoading: isUserLoading } = useGetCurrentUserAuthQuery();
+    const { data: agencyRes, isLoading: isAgenciesLoading } = useListMyAgenciesQuery(
+        undefined,
+        { skip: !userRes?.data?.email }
     );
-  }
 
-  return (
-    <div className="min-h-screen bg-slate-950">
-      <Tabs />
-      {children}
-    </div>
-  );
+    const selectedAgencyId = useAppSelector((s) => s.agency.selectedAgencyId);
+    const agencies = agencyRes?.data?.agencies ?? [];
+
+    // Redirect unauthenticated users out of the dashboard.
+    useEffect(() => {
+        if (!isUserLoading && !userRes?.data?.email) {
+            dispatch(logout());
+            router.replace('/auth/signin');
+        }
+    }, [userRes, dispatch, isUserLoading, router]);
+
+    // Mandatory onboarding: any dashboard route except /agency-setup is blocked
+    // until the user has at least one agency.
+    useEffect(() => {
+        if (isUserLoading || isAgenciesLoading) return;
+        if (!userRes?.data?.email) return;
+
+        const onAllowedPath = ALWAYS_ACCESSIBLE.some(
+            (p) => pathname === p || pathname.startsWith(`${p}/`)
+        );
+
+        if (agencies.length === 0 && !onAllowedPath) {
+            router.replace('/dashboard/agency-setup');
+        }
+    }, [agencies, isAgenciesLoading, isUserLoading, pathname, router, userRes]);
+
+    // Keep the selected agency id valid: if the persisted id is missing or stale,
+    // fall back to the first agency we know about.
+    useEffect(() => {
+        if (agencies.length === 0) return;
+        const stillExists = agencies.some((a) => a._id === selectedAgencyId);
+        if (!stillExists) {
+            dispatch(setSelectedAgencyId(agencies[0]._id));
+        }
+    }, [agencies, selectedAgencyId, dispatch]);
+
+    if (isUserLoading || (userRes?.data?.email && isAgenciesLoading)) {
+        return (
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+                <Loading />
+            </div>
+        );
+    }
+
+    const hideTabs = ALWAYS_ACCESSIBLE.some(
+        (p) => pathname === p || pathname.startsWith(`${p}/`)
+    );
+
+    return (
+        <div className="min-h-screen bg-slate-950">
+            {!hideTabs && <Tabs />}
+            {children}
+        </div>
+    );
 }

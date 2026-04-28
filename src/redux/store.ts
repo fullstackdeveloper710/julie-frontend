@@ -18,13 +18,14 @@ import { userApi } from './api/userApi';
 import { analyticsApi } from './api/analyticsApi';
 import { checkinApi } from './api/checkinApi';
 import { reportsApi } from './api/reportsApi';
-import { uiReducer, userReducer } from './slices';
+import { uiReducer, userReducer, agencyReducer } from './slices';
 import { agencyApi } from './api/agencyApi';
 import { managerApi } from './api/managerApi';
 
 const rootReducer = combineReducers({
     user: userReducer,
     ui: uiReducer,
+    agency: agencyReducer,
     [authApi.reducerPath]: authApi.reducer,
     [subscriptionApi.reducerPath]: subscriptionApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
@@ -38,7 +39,7 @@ const rootReducer = combineReducers({
 const persistConfig = {
     key: 'root',
     storage,
-    whitelist: ['user'],
+    whitelist: ['user', 'agency'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

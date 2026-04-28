@@ -115,14 +115,14 @@ export function AnnualStepContent({
                     {renderTextField({
                         formik,
                         name: 'agencyName',
-                        label: 'A-1 Agency Name',
+                        label: 'Agency Name',
                         placeholder: 'Agency name',
                         helpText: 'Required annual baseline identity field.',
                     })}
                     {renderSelectField({
                         formik,
                         name: 'agencyType',
-                        label: 'A-2 Agency Type',
+                        label: 'Agency Type',
                         options: ANNUAL_AGENCY_TYPE_OPTIONS,
                         helpText: 'Required annual baseline identity field.',
                     })}
@@ -136,14 +136,14 @@ export function AnnualStepContent({
                     {renderTextField({
                         formik,
                         name: 'primaryServiceJurisdiction',
-                        label: 'A-4 Primary Service Jurisdiction',
+                        label: 'Primary Service Jurisdiction',
                         placeholder: 'City, county, or district',
                         helpText: 'Required annual baseline identity field.',
                     })}
                     {renderNumberField({
                         formik,
                         name: 'geographicCoverageArea',
-                        label: 'A-5 Geographic Coverage Area',
+                        label: 'Geographic Coverage Area',
                         placeholder: 'e.g. 220',
                         helpText: 'Required. Enter square miles or zone count.',
                         options: { min: 0 },
@@ -156,7 +156,7 @@ export function AnnualStepContent({
                     {renderNumberField({
                         formik,
                         name: 'totalAuthorizedPositions',
-                        label: 'A-6 Total Authorized Positions',
+                        label: 'Total Authorized Positions',
                         placeholder: 'e.g. 180',
                         helpText: 'Required denominator for fill, vacancy, and turnover rates.',
                         options: { min: 0 },
@@ -164,7 +164,7 @@ export function AnnualStepContent({
                     {renderNumberField({
                         formik,
                         name: 'totalFundedPositions',
-                        label: 'A-7 Total Funded Positions',
+                        label: 'Total Funded Positions',
                         placeholder: 'e.g. 170',
                         helpText: 'Required fiscal capacity input. Must not exceed authorized.',
                         options: { min: 0 },
@@ -172,7 +172,7 @@ export function AnnualStepContent({
                     {renderNumberField({
                         formik,
                         name: 'minimumSafeStaffingLevel',
-                        label: 'A-8 Minimum Safe Staffing Level (Agency-Defined)',
+                        label: 'Minimum Safe Staffing Level (Agency-Defined)',
                         placeholder: 'e.g. 132',
                         helpText: 'Required absolute staffing floor.',
                         options: { min: 0 },
@@ -180,7 +180,7 @@ export function AnnualStepContent({
                     {renderNumberField({
                         formik,
                         name: 'specialtyUnitPositionsCount',
-                        label: 'A-9 Specialty Unit Positions (Count)',
+                        label: 'Specialty Unit Positions (Count)',
                         placeholder: 'e.g. 24',
                         helpText: 'Required specialty staffing denominator.',
                         options: { min: 0 },
@@ -188,7 +188,7 @@ export function AnnualStepContent({
                     {renderTextField({
                         formik,
                         name: 'supervisorToStaffRatio',
-                        label: 'A-10 Supervisor-To-Staff Ratio (Current)',
+                        label: 'Supervisor-To-Staff Ratio (Current)',
                         placeholder: 'e.g. 1:8',
                         helpText: 'Required format is ratio such as 1:8.',
                     })}
@@ -200,7 +200,7 @@ export function AnnualStepContent({
                     {renderNumberField({
                         formik,
                         name: 'standardShiftLengthHours',
-                        label: 'A-11 Standard Shift Length (Hours)',
+                        label: 'Standard Shift Length (Hours)',
                         placeholder: 'e.g. 12',
                         helpText: 'Required baseline context for operational and fatigue domains.',
                         options: { min: 0, max: 24, step: 0.5 },
@@ -208,28 +208,28 @@ export function AnnualStepContent({
                     {renderSelectField({
                         formik,
                         name: 'shiftScheduleType',
-                        label: 'A-12 Shift Schedule Type',
+                        label: 'Shift Schedule Type',
                         options: ANNUAL_SHIFT_SCHEDULE_OPTIONS,
                         helpText: 'Required annual infrastructure setting.',
                     })}
                     {renderSelectField({
                         formik,
                         name: 'minimumRestPeriodPolicyExists',
-                        label: 'A-13 Minimum Rest Period Policy Between Shifts?',
+                        label: 'Minimum Rest Period Policy Between Shifts?',
                         options: YES_NO_OPTIONS,
                         helpText: 'Required baseline policy question.',
                     })}
                     {renderSelectField({
                         formik,
                         name: 'activePeerSupportTeam',
-                        label: 'A-14 Active Peer Support Team?',
+                        label: 'Active Peer Support Team?',
                         options: PEER_SUPPORT_TEAM_OPTIONS,
                         helpText: 'Required baseline support infrastructure question.',
                     })}
                     {renderSelectField({
                         formik,
                         name: 'hasEmployeeAssistanceProgram',
-                        label: 'A-15 Employee Assistance Program (EAP)?',
+                        label: 'Employee Assistance Program (EAP)?',
                         options: YES_NO_OPTIONS,
                         helpText: 'Required baseline support infrastructure question.',
                     })}
@@ -241,42 +241,42 @@ export function AnnualStepContent({
                     {renderTextareaField({
                         formik,
                         name: 'goal1PrimaryAnnualGoal',
-                        label: 'G-1 Goal 1 - Primary Annual Goal',
+                        label: 'Goal 1 - Primary Annual Goal',
                         placeholder: 'Describe the primary annual goal and include category context.',
                         helpText: 'Required strategic goal input.',
                     })}
                     {renderTextField({
                         formik,
                         name: 'goal1TargetMetric',
-                        label: 'G-2 Goal 1 - Target Metric',
+                        label: 'Goal 1 - Target Metric',
                         placeholder: 'e.g. Reach 90% fill rate',
                         helpText: 'At least one of G-2 or G-5 must be provided.',
                     })}
                     {renderSelectField({
                         formik,
                         name: 'goal1Timeframe',
-                        label: 'G-3 Goal 1 - Timeframe',
+                        label: 'Goal 1 - Timeframe',
                         options: GOAL_1_TIMEFRAME_OPTIONS,
                         helpText: 'Required for Goal 1 milestone generation.',
                     })}
                     {renderTextareaField({
                         formik,
                         name: 'goal2SecondaryAnnualGoal',
-                        label: 'G-4 Goal 2 - Secondary Annual Goal (Optional)',
+                        label: 'Goal 2 - Secondary Annual Goal (Optional)',
                         placeholder: 'Optional secondary goal.',
                         helpText: 'Optional strategic secondary goal.',
                     })}
                     {renderTextField({
                         formik,
                         name: 'goal2TargetMetric',
-                        label: 'G-5 Goal 2 - Target Metric (Optional)',
+                        label: 'Goal 2 - Target Metric (Optional)',
                         placeholder: 'e.g. Maintain OT below 15%',
                         helpText: 'At least one of G-2 or G-5 must be provided.',
                     })}
                     {renderSelectField({
                         formik,
                         name: 'goal2Timeframe',
-                        label: 'G-6 Goal 2 - Timeframe (Optional)',
+                        label: 'Goal 2 - Timeframe (Optional)',
                         options: GOAL_2_TIMEFRAME_OPTIONS,
                         helpText: 'Optional timeframe for Goal 2.',
                     })}

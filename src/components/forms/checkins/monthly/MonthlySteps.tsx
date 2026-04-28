@@ -123,7 +123,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'currentlyFilledPositions',
-                        label: '1-1 Currently Filled Positions',
+                        label: 'Currently Filled Positions',
                         placeholder: 'e.g. 145',
                         helpText: 'Required. Used for fill rate and multiple domain calculations.',
                         options: { min: 0 },
@@ -131,7 +131,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'currentVacancies',
-                        label: '1-2 Current Vacancies',
+                        label: 'Current Vacancies',
                         placeholder: 'e.g. 8',
                         helpText: 'Required. Used for monthly vacancy rate.',
                         options: { min: 0 },
@@ -139,7 +139,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'resignationsThisMonth',
-                        label: '1-3 Resignations This Month',
+                        label: 'Resignations This Month',
                         placeholder: 'e.g. 2',
                         helpText: 'Required. Used for turnover rate.',
                         options: { min: 0 },
@@ -147,7 +147,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'newHiresAndAcademyGraduates',
-                        label: '1-4 New Hires And Academy Graduates This Month',
+                        label: 'New Hires And Academy Graduates This Month',
                         placeholder: 'e.g. 3',
                         helpText: 'Required. Used for hiring effectiveness.',
                         options: { min: 0 },
@@ -163,7 +163,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'leadershipLevelVacancies',
-                        label: '1-6 Leadership-Level Vacancies This Month',
+                        label: 'Leadership-Level Vacancies This Month',
                         placeholder: 'e.g. 1',
                         helpText: 'Required. Supervisor level and above.',
                         options: { min: 0 },
@@ -176,7 +176,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'totalOvertimeHours',
-                        label: '2-1 Total Overtime Hours (Agency-Wide) This Month',
+                        label: 'Total Overtime Hours (Agency-Wide) This Month',
                         placeholder: 'e.g. 2847',
                         helpText: 'Required. Core overtime exposure input.',
                         options: { min: 0 },
@@ -184,7 +184,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'averageShiftLengthHours',
-                        label: '2-2 Average Shift Length This Month (Hours)',
+                        label: 'Average Shift Length This Month (Hours)',
                         placeholder: 'e.g. 11.5',
                         helpText: 'Required. Actual monthly average shift length.',
                         options: { min: 0, step: 0.1 },
@@ -192,7 +192,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'shiftCoverageShortages',
-                        label: '2-3 Shift Coverage Shortages This Month (Number Of Shifts)',
+                        label: 'Shift Coverage Shortages This Month (Number Of Shifts)',
                         placeholder: 'e.g. 6',
                         helpText: 'Required. Count of uncovered or below-minimum shifts.',
                         options: { min: 0 },
@@ -200,7 +200,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'mandatoryOvertimePercentage',
-                        label: '2-4 Percentage Of Overtime That Was Mandatory',
+                        label: 'Percentage Of Overtime That Was Mandatory',
                         placeholder: 'e.g. 35',
                         helpText: 'Required. Enter a percentage between 0 and 100.',
                         options: { min: 0, max: 100, step: 0.1 },
@@ -208,7 +208,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'plannedOvertimePercentage',
-                        label: '2-5 Planned Overtime Percentage',
+                        label: 'Planned Overtime Percentage',
                         placeholder: 'e.g. 40',
                         helpText: 'Required. Planned + unplanned must equal 100.',
                         options: { min: 0, max: 100, step: 0.1 },
@@ -216,7 +216,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'unplannedOvertimePercentage',
-                        label: '2-5 Unplanned Overtime Percentage',
+                        label: 'Unplanned Overtime Percentage',
                         placeholder: 'e.g. 60',
                         helpText: 'Required. Planned + unplanned must equal 100.',
                         options: { min: 0, max: 100, step: 0.1 },
@@ -224,7 +224,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'callInAndHoldoverIncidents',
-                        label: '2-6 Call-In And Holdover Incidents This Month',
+                        label: 'Call-In And Holdover Incidents This Month',
                         placeholder: 'e.g. 9',
                         helpText: 'Required. Includes call-ins and holdovers.',
                         options: { min: 0 },
@@ -237,7 +237,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'totalSickLeaveDaysUsed',
-                        label: '3-1 Total Sick Leave Days Used This Month (Agency-Wide)',
+                        label: 'Total Sick Leave Days Used This Month (Agency-Wide)',
                         placeholder: 'e.g. 54',
                         helpText: 'Required. Domain 3 dedicated monthly question.',
                         options: { min: 0 },
@@ -250,7 +250,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'employeesOnFmlaLeave',
-                        label: '4-1 Employees Currently On FMLA Leave',
+                        label: 'Employees Currently On FMLA Leave',
                         placeholder: 'e.g. 5',
                         helpText: 'Required. Used for FMLA rate.',
                         options: { min: 0 },
@@ -258,7 +258,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'newFmlaRequests',
-                        label: '4-2 New FMLA Requests This Month',
+                        label: 'New FMLA Requests This Month',
                         placeholder: 'e.g. 2',
                         helpText: 'Required. Tracks growth in leave stress.',
                         options: { min: 0 },
@@ -266,7 +266,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'workersCompClaimsFiled',
-                        label: '4-3 Workers Comp Claims Filed This Month',
+                        label: 'Workers Comp Claims Filed This Month',
                         placeholder: 'e.g. 1',
                         helpText: 'Required monthly count.',
                         options: { min: 0 },
@@ -274,7 +274,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'peerSupportActivations',
-                        label: '4-4 Peer Support Activations This Month',
+                        label: 'Peer Support Activations This Month',
                         placeholder: 'e.g. 4',
                         helpText: 'Required. Evaluated relative to critical incidents.',
                         options: { min: 0 },
@@ -282,7 +282,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'criticalIncidentExposures',
-                        label: '4-5 Critical Incident Exposures This Month',
+                        label: 'Critical Incident Exposures This Month',
                         placeholder: 'e.g. 6',
                         helpText: 'Required context for peer support activation ratio.',
                         options: { min: 0 },
@@ -290,7 +290,7 @@ export function MonthlyCoreStepContent({
                     {renderSelectField({
                         formik,
                         name: 'lineOfDutyDeathsOrSeriousInjuries',
-                        label: '4-6 Line-Of-Duty Deaths Or Serious Injuries This Period',
+                        label: 'Line-Of-Duty Deaths Or Serious Injuries This Period',
                         options: YES_NO_OPTIONS,
                         helpText: 'Required. If Yes, enter count.',
                     })}
@@ -298,7 +298,7 @@ export function MonthlyCoreStepContent({
                         renderNumberField({
                             formik,
                             name: 'lineOfDutyDeathsOrSeriousInjuriesCount',
-                            label: '4-6 Count For Line-Of-Duty Deaths Or Serious Injuries',
+                            label: 'Count For Line-Of-Duty Deaths Or Serious Injuries',
                             placeholder: 'e.g. 1',
                             helpText: 'Required when 4-6 is Yes.',
                             options: { min: 1 },
@@ -311,7 +311,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'leadershipMoraleRating',
-                        label: '5-1 Leadership Morale Rating This Month (1-10)',
+                        label: 'Leadership Morale Rating This Month (1-10)',
                         placeholder: '1 = Very Low, 10 = Excellent',
                         helpText: 'Required command-level morale indicator.',
                         options: { min: 1, max: 10 },
@@ -319,7 +319,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'frontlineMoraleRating',
-                        label: '5-2 Frontline / Line-Level Morale Rating This Month (1-10)',
+                        label: 'Frontline / Line-Level Morale Rating This Month (1-10)',
                         placeholder: '1 = Very Low, 10 = Excellent',
                         helpText: 'Required frontline morale indicator.',
                         options: { min: 1, max: 10 },
@@ -327,7 +327,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'disciplinaryActions',
-                        label: '5-3 Disciplinary Actions This Month (Count)',
+                        label: 'Disciplinary Actions This Month (Count)',
                         placeholder: 'e.g. 1',
                         helpText: 'Required monthly count.',
                         options: { min: 0 },
@@ -335,7 +335,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'formalGrievancesFiled',
-                        label: '5-4 Formal Grievances Or Complaints Filed By Personnel This Month',
+                        label: 'Formal Grievances Or Complaints Filed By Personnel This Month',
                         placeholder: 'e.g. 2',
                         helpText: 'Required monthly count.',
                         options: { min: 0 },
@@ -343,7 +343,7 @@ export function MonthlyCoreStepContent({
                     {renderNumberField({
                         formik,
                         name: 'promotionsOrLeadershipDevelopmentCount',
-                        label: '5-5 Promotions Or Leadership Development Activity This Period',
+                        label: 'Promotions Or Leadership Development Activity This Period',
                         placeholder: 'e.g. 1',
                         helpText: 'Required. Enter 0 if none.',
                         options: { min: 0 },
@@ -356,7 +356,7 @@ export function MonthlyCoreStepContent({
                     {renderSelectField({
                         formik,
                         name: 'dataConfidence',
-                        label: 'DC-1 What Is The Confidence Level Of The Data Submitted This Month?',
+                        label: 'What Is The Confidence Level Of The Data Submitted This Month?',
                         options: DATA_CONFIDENCE_OPTIONS,
                         helpText:
                             'Required. This does not change scores but it adjusts report language and AI tone.',
@@ -398,7 +398,7 @@ export function MonthlyOptionalStepContent({
                         formik,
                         name: 'staffingBudgetConstraint',
                         label:
-                            'B-3 Is The Agency Operating Under A Budget Constraint Affecting Staffing Decisions?',
+                            'Is The Agency Operating Under A Budget Constraint Affecting Staffing Decisions?',
                         options: STAFFING_BUDGET_CONSTRAINT_OPTIONS,
                         helpText: 'Optional strategic context for all domain recommendations.',
                     })}
@@ -410,7 +410,7 @@ export function MonthlyOptionalStepContent({
                     {renderNumberField({
                         formik,
                         name: 'totalCallsOrIncidents',
-                        label: 'OD-1 Total Calls Or Incidents This Month',
+                        label: 'Total Calls Or Incidents This Month',
                         placeholder: 'e.g. 1850',
                         helpText:
                             'Optional demand-side context used for staffing-to-demand interpretation.',
@@ -419,14 +419,14 @@ export function MonthlyOptionalStepContent({
                     {renderSelectField({
                         formik,
                         name: 'responseTimeStandardsMet',
-                        label: 'OD-2 Were Response Time Standards Met This Month?',
+                        label: 'Were Response Time Standards Met This Month?',
                         options: RESPONSE_STANDARD_OPTIONS,
                         helpText: 'Optional operational outcome signal.',
                     })}
                     {renderNumberField({
                         formik,
                         name: 'specialtyUnitVacancies',
-                        label: 'OD-3 Specialty Unit Vacancies This Month',
+                        label: 'Specialty Unit Vacancies This Month',
                         placeholder: 'e.g. 2',
                         helpText: 'Optional capability gap indicator separate from general vacancies.',
                         options: { min: 0 },
@@ -440,21 +440,21 @@ export function MonthlyOptionalStepContent({
                         formik,
                         name: 'minimumRestPeriodRequirementMet',
                         label:
-                            'F-1 Is The Agency Meeting Its Minimum Rest Period Requirement Between Shifts?',
+                            'Is The Agency Meeting Its Minimum Rest Period Requirement Between Shifts?',
                         options: REST_REQUIREMENT_OPTIONS,
                         helpText: 'Optional compliance check against baseline policy.',
                     })}
                     {renderSelectField({
                         formik,
                         name: 'ptoVacationAccrualBacklog',
-                        label: 'F-2 PTO And Vacation Accrual Backlog Present?',
+                        label: 'PTO And Vacation Accrual Backlog Present?',
                         options: PTO_BACKLOG_OPTIONS,
                         helpText: 'Optional fatigue and morale precision signal.',
                     })}
                     {renderNumberField({
                         formik,
                         name: 'returnToDutyIncidentsBeforeFullRecovery',
-                        label: 'F-3 Return-To-Duty Incidents Before Full Recovery (Count)',
+                        label: 'Return-To-Duty Incidents Before Full Recovery (Count)',
                         placeholder: 'e.g. 1',
                         helpText: 'Optional liability and wellness context.',
                         options: { min: 0 },
@@ -467,7 +467,7 @@ export function MonthlyOptionalStepContent({
                     {renderNumberField({
                         formik,
                         name: 'eapReferralsOrUtilizations',
-                        label: 'PS-1 EAP Referrals Or Utilizations This Month',
+                        label: 'EAP Referrals Or Utilizations This Month',
                         placeholder: 'e.g. 4',
                         helpText: 'Optional context for peer support utilization depth.',
                         options: { min: 0 },
@@ -475,7 +475,7 @@ export function MonthlyOptionalStepContent({
                     {renderSelectField({
                         formik,
                         name: 'topLeadershipConcern',
-                        label: 'PS-2 Top Leadership Concern This Month',
+                        label: 'Top Leadership Concern This Month',
                         options: TOP_CONCERN_OPTIONS,
                         helpText: 'Optional strategic input that enriches the AI plan engine.',
                     })}
@@ -483,14 +483,14 @@ export function MonthlyOptionalStepContent({
                         renderTextareaField({
                             formik,
                             name: 'topLeadershipConcernOther',
-                            label: 'PS-2 Other Leadership Concern',
+                            label: 'Other Leadership Concern',
                             placeholder: 'Describe the other top leadership concern...',
                             helpText: 'Required only when "Other" is selected.',
                         })}
                     {renderTextareaField({
                         formik,
                         name: 'additionalContextOrNotes',
-                        label: 'PS-3 Additional Context Or Notes',
+                        label: 'Additional Context Or Notes',
                         placeholder: 'Add any context not captured by structured fields...',
                         helpText:
                             'Optional unstructured context for report interpretation and planning.',
