@@ -4,19 +4,18 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { useEffect, useState } from 'react';
 
 import { extractRtkErrorMessage, logRtkError } from '@/utils/rtkErrorHandler';
 import { Input, Button } from '@/components/ui';
 import { useAppDispatch } from '@/redux';
 import { useSignUpMutation } from '@/redux/api';
 import { setCredentials } from '@/redux/slices/userSlice';
-import { useState } from 'react';
-import { PRICING_CONFIG } from '@/types';
-import type { PlanType } from '@/types/subscription';
+import { fetchPricingPlans, type BackendPlanId, type PricingPlan } from '@/lib/pricing';
 
 type BackendPlan = 'Early Adopter' | 'Standard' | 'Enterprise';
 
-const PLAN_TYPE_TO_BACKEND: Record<PlanType, BackendPlan> = {
+const PLAN_KEY_TO_BACKEND_PLAN: Record<BackendPlanId, BackendPlan> = {
   founding: 'Early Adopter',
   early_adopter: 'Early Adopter',
   standard: 'Standard',
@@ -42,11 +41,57 @@ export default function SignUpPage() {
   const [showModal, setShowModal] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  // get fromm param
+  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
+  const [pricingLoading, setPricingLoading] = useState(true);
+  const [pricingError, setPricingError] = useState<string | null>(null);
+
   const searchParams = useSearchParams();
-  const selectedPlan = searchParams.get('plan') as PlanType | null;
-  const plan: PlanType =
-    selectedPlan && PRICING_CONFIG[selectedPlan] ? selectedPlan : 'early_adopter';
+  const selectedPlanKey = searchParams.get('plan') as BackendPlanId | null;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadPricing = async () => {
+      try {
+        setPricingLoading(true);
+        const response = await fetchPricingPlans();
+
+        if (!isMounted) {
+          return;
+        }
+
+        setPricingPlans(response.plans);
+        setPricingError(null);
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        setPricingError('Unable to load plan details right now.');
+      } finally {
+        if (isMounted) {
+          setPricingLoading(false);
+        }
+      }
+    };
+
+    void loadPricing();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const currentPlan = pricingPlans.find((plan) => plan.id === selectedPlanKey) ??
+    pricingPlans.find((plan) => plan.id === 'early_adopter') ??
+    pricingPlans[0] ??
+    null;
+
+  const resolvedPlanKey: BackendPlanId = currentPlan?.available && currentPlan.id
+    ? currentPlan.id
+    : pricingPlans.find((plan) => plan.available)?.id ?? 'early_adopter';
+
+  const resolvedPlan = pricingPlans.find((plan) => plan.id === resolvedPlanKey) ?? currentPlan;
 
   const formik = useFormik({
     initialValues: {
@@ -67,7 +112,7 @@ export default function SignUpPage() {
           email: values.email,
           password: values.password,
           fullName: values.fullName,
-          plan: PLAN_TYPE_TO_BACKEND[plan],
+          plan: PLAN_KEY_TO_BACKEND_PLAN[resolvedPlanKey],
         }).unwrap();
 
         setUserEmail(result.data.email);
@@ -80,7 +125,27 @@ export default function SignUpPage() {
     },
   });
 
-  const currentPlan = PRICING_CONFIG[plan];
+  if (pricingLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center px-5">
+        <div className="rounded-2xl border border-slate-700 bg-slate-900 px-6 py-4 text-sm text-slate-300">
+          Loading plan details...
+        </div>
+      </div>
+    );
+  }
+
+  if (pricingError || !resolvedPlan) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center px-5">
+        <div className="max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 text-center">
+          <h2 className="text-xl font-bold text-white mb-2">Plan details unavailable</h2>
+          <p className="text-sm text-slate-300">{pricingError ?? 'Please try again in a moment.'}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950">
       <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-[linear-gradient(135deg,rgb(15,25,34)_0%,rgb(26,42,58)_100%)] px-5 py-10">
@@ -89,7 +154,7 @@ export default function SignUpPage() {
             Frontline Frameworks
           </div>
 
-          {plan === 'founding' ? (
+          {resolvedPlanKey === 'founding' ? (
             <>
               <h2 className="text-3xl font-extrabold text-white mb-2">Start Your Free Trial</h2>
               <p className="mb-3 text-sm">90 days free · No credit card required to start</p>
@@ -102,28 +167,29 @@ export default function SignUpPage() {
           )}
           <div className="rounded-2xl border border-slate-700 bg-slate-950/60 p-5 mb-4">
             {/* Plan Name */}
-            <div className="text-sm font-extrabold text-(--accent)">{currentPlan.name} Plan</div>
+            <div className="text-sm font-extrabold text-(--accent)">{resolvedPlan.name} Plan</div>
 
             {/* Price */}
             <div className="mt-2 text-3xl font-bold text-white">
-              {currentPlan.pricing.monthly
-                ? `$${currentPlan.pricing.monthly}/month`
-                : `$${currentPlan.pricing.annual}/year`}
+              {resolvedPlan.display.priceLabel}
+              <span className="text-sm font-medium text-slate-300">
+                {resolvedPlan.display.priceIntervalLabel}
+              </span>
             </div>
 
             {/* Trial */}
-            {currentPlan.features.trialDays && (
+            {resolvedPlan.features.trialDays && (
               <div className="text-xs text-green-400 mt-1">
-                {currentPlan.features.trialDays} days free trial
+                {resolvedPlan.features.trialDays} days free trial
               </div>
             )}
 
             {/* Description */}
-            <div className="mt-3 text-xs">{currentPlan.description}</div>
+            <div className="mt-3 text-xs">{resolvedPlan.description}</div>
 
             {/* Seats */}
             <div className="mt-2 text-xs text-slate-400">
-              {currentPlan.features.adminSeats} Admin + {currentPlan.features.viewerSeats} Viewer
+              {resolvedPlan.features.adminSeats} Admin + {resolvedPlan.features.viewerSeats} Viewer
               seats
             </div>
           </div>
