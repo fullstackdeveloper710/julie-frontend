@@ -29,3 +29,8 @@ export enum EUserPlan {
     STANDARD = 'Standard',
     ENTERPRISE = 'Enterprise',
 }
+
+export enum EUserStatus {
+    ACTIVE = 'active',
+    INACTIVE = 'inactive',
+}

@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { TUser } from '../types/user.type';
-import { EUserPlan, EUserRole } from '../enums/agency.enum';
+import { EUserPlan, EUserRole, EUserStatus } from '../enums/agency.enum';
 
 const UserSchema = new Schema<TUser>(
     {
@@ -39,6 +39,11 @@ const UserSchema = new Schema<TUser>(
         createdBy: {
             type: Schema.Types.ObjectId,
             ref: 'User',
+        },
+        status: {
+            type: String,
+            enum: Object.values(EUserStatus),
+            default: EUserStatus.ACTIVE,
         },
         plan: {
             type: String,

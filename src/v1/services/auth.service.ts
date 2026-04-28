@@ -8,7 +8,7 @@ import { generateToken } from '../../utils/random.util.js';
 import { sendVerificationEmail, sendPasswordResetEmail, sendManagerInviteEmail } from '../../email/auth.email.js';
 import crypto from 'crypto';
 import Agency from '../models/agency.model.js';
-import { EUserRole, EUserPlan } from '../enums/agency.enum.js';
+import { EUserRole, EUserPlan, EUserStatus } from '../enums/agency.enum.js';
 import { TAuthBase, TSignUpInput, TUserAccount } from '../types/user.type.js';
 
 /**
@@ -132,6 +132,12 @@ export const signIn = async (credentials: TAuthBase) => {
         throw new CustomError(RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.INVALID_CREDENTIALS);
     }
 
+    // Inactive accounts (disabled by Account Holder) cannot sign in.
+    // Surface the disabled message verbatim per product spec.
+    if (user.status === EUserStatus.INACTIVE) {
+        throw new CustomError(RESPONSE_CODES.FORBIDDEN, MESSAGES.MANAGER.ACCOUNT_DISABLED);
+    }
+
     // Generate tokens
     const tokens = generateAuthTokens({
         user_id: user._id.toString(),
@@ -220,7 +226,7 @@ export const resetPassword = async (token: string, newPassword: string) => {
  */
 export const getProfile = async (userId: string) => {
     const user = await User.findById(userId).select(
-        'email fullName plan role title agencies createdBy createdAt isDeleted'
+        'email fullName plan role title status agencies createdBy createdAt isDeleted'
     );
     if (!user || user.isDeleted) {
         throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.USER.NOT_FOUND);
@@ -239,6 +245,7 @@ export const getProfile = async (userId: string) => {
         plan: user.plan,
         role: user.role,
         title: user.title,
+        status: user.status,
         createdBy: user.createdBy,
         agencies: user.agencies,
         createdAt: user.createdAt,

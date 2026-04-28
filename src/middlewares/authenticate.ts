@@ -3,6 +3,7 @@ import { verify } from "../utils/jwt.util.js";
 import MESSAGES from "../constant/message.js";
 import RESPONSE_CODES from "../constant/responseCode.js";
 import User from "../v1/models/user.model.js";
+import { EUserStatus } from "../v1/enums/agency.enum.js";
 
 export interface AuthenticatedRequest extends Request {
     user?: {
@@ -42,6 +43,15 @@ const authenticate = async (
             return res.status(RESPONSE_CODES.UNAUTHORIZED).json({
                 success: false,
                 message: MESSAGES.AUTH.PROFILE_NOT_FOUND,
+                data: null,
+            });
+        }
+
+        // Disabled by Account Holder mid-session — kick the existing JWT.
+        if (user.status === EUserStatus.INACTIVE) {
+            return res.status(RESPONSE_CODES.FORBIDDEN).json({
+                success: false,
+                message: MESSAGES.MANAGER.ACCOUNT_DISABLED,
                 data: null,
             });
         }

@@ -1,4 +1,4 @@
-import { EAgencyType, EUserPlan, EUserRole } from "../enums/agency.enum.js";
+import { EAgencyType, EUserPlan, EUserRole, EUserStatus } from "../enums/agency.enum.js";
 
 
 
@@ -26,6 +26,7 @@ export type TUser = TUserAccount & {
     isDeleted: boolean;
     title?: string;
     createdBy?: string;
+    status?: EUserStatus;
     createdAt: string;
     updatedAt: string;
 }

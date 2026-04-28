@@ -66,6 +66,10 @@ const MESSAGES = {
     MANAGER: {
         CREATED: "Admin created and invite sent",
         FETCHED: "Admins fetched successfully",
+        UPDATED: "Admin updated successfully",
+        DELETED: "Admin deleted successfully",
+        NOT_FOUND: "Admin not found",
+        ACCOUNT_DISABLED: "Your account is disabled. Please contact the administrator.",
         LIMIT_REACHED: (maxAllowed: number) =>
             `You can create up to ${maxAllowed} admin ${maxAllowed === 1 ? 'seat' : 'seats'} per account`,
     },
