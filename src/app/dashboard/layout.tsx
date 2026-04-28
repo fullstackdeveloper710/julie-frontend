@@ -39,18 +39,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     // Mandatory onboarding: any dashboard route except /agency-setup is blocked
     // until the user has at least one agency.
-    // useEffect(() => {
-    //     if (isUserLoading || isAgenciesLoading) return;
-    //     if (!userRes?.data?.email) return;
+    useEffect(() => {
+        if (isUserLoading || isAgenciesLoading) return;
+        if (!userRes?.data?.email) return;
 
-    //     const onAllowedPath = ALWAYS_ACCESSIBLE.some(
-    //         (p) => pathname === p || pathname.startsWith(`${p}/`)
-    //     );
+        const onAllowedPath = ALWAYS_ACCESSIBLE.some(
+            (p) => pathname === p || pathname.startsWith(`${p}/`)
+        );
 
-    //     if (agencies.length === 0 && !onAllowedPath) {
-    //         router.replace('/dashboard/agency-setup');
-    //     }
-    // }, [agencies, isAgenciesLoading, isUserLoading, pathname, router, userRes]);
+        if (agencies.length === 0 && !onAllowedPath) {
+            router.replace('/dashboard/agency-setup');
+        }
+    }, [agencies, isAgenciesLoading, isUserLoading, pathname, router, userRes]);
 
     // Keep the selected agency id valid: if the persisted id is missing or stale,
     // fall back to the first agency we know about.

@@ -10,6 +10,7 @@ import {
     useListMyAgenciesQuery,
     setSelectedAgencyId,
 } from '@/hooks';
+import { useGetCurrentUserQuery } from '@/redux/api/authApi';
 import { extractRtkErrorMessage } from '@/utils/rtkErrorHandler';
 
 export default function AgenciesPage() {
@@ -17,10 +18,13 @@ export default function AgenciesPage() {
     const dispatch = useAppDispatch();
     const selectedAgencyId = useAppSelector((s) => s.agency.selectedAgencyId);
     const { data, isLoading, error } = useListMyAgenciesQuery();
+    const { data: userResp } = useGetCurrentUserQuery();
 
     const agencies = data?.data?.agencies ?? [];
     const capacity = data?.data?.capacity;
     const errorMessage = extractRtkErrorMessage(error);
+    const isEnterprise = userResp?.data?.plan === 'Enterprise';
+    const canAddAgency = isEnterprise && !!capacity?.canCreateMore;
 
     if (isLoading) {
         return (
@@ -48,7 +52,7 @@ export default function AgenciesPage() {
                     </p>
                 </div>
 
-                {capacity?.canCreateMore && (
+                {canAddAgency && (
                     <Link
                         href="/dashboard/agency-setup?mode=add"
                         className="inline-flex items-center gap-2 px-5 py-3 font-bold text-xs uppercase tracking-widest text-slate-950 bg-(--accent) hover:bg-orange-600 rounded-lg transition-colors"
@@ -109,15 +113,6 @@ export default function AgenciesPage() {
                                         <dt>Coverage</dt>
                                         <dd className="text-slate-200">{agency.coverageArea}</dd>
                                     </div>
-                                    {agency.billing?.cardLast4 && (
-                                        <div className="flex justify-between gap-3">
-                                            <dt>Billing</dt>
-                                            <dd className="text-slate-200">
-                                                {agency.billing.cardBrand ?? 'Card'} ••••
-                                                {agency.billing.cardLast4}
-                                            </dd>
-                                        </div>
-                                    )}
                                 </dl>
                                 <div className="flex gap-2">
                                     {!isActive && (

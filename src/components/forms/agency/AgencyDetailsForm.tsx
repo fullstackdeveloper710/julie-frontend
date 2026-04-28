@@ -14,11 +14,7 @@ import {
     SECONDARY_BUTTON_CLASS,
 } from '@/components/forms/checkins/shared/styles';
 import { agencyValidationSchema } from './validation';
-import {
-    AGENCY_TYPE_OPTIONS,
-    AGENCY_SIZE_OPTIONS,
-    CARD_BRAND_OPTIONS,
-} from './config';
+import { AGENCY_TYPE_OPTIONS, AGENCY_SIZE_OPTIONS } from './config';
 import { AGENCY_INITIAL_VALUES, AgencyFormValues } from './types';
 import { buildAgencyPayload } from './payload';
 import type { Agency, AgencyInput } from '@/redux/api/agencyApi';
@@ -44,7 +40,7 @@ export function AgencyDetailsForm({
     agency,
     onSubmit,
     onCancel,
-    submitLabel = 'Save Agency',
+    submitLabel = 'Save and Continue',
     submittingLabel = 'Saving...',
     isSubmitting = false,
     submitError,
@@ -156,92 +152,6 @@ export function AgencyDetailsForm({
                             onChange={formik.handleChange}
                             onBlur={formik.handleBlur}
                             error={errorOf('coverageArea')}
-                        />
-                    </div>
-                </section>
-
-                <hr className="border-t border-slate-700" />
-
-                <section>
-                    <h2
-                        className="text-xl font-bold text-white mb-1"
-                        style={{ fontFamily: HEADING_FONT_FAMILY }}
-                    >
-                        Billing Details
-                    </h2>
-                    <p className="text-xs text-slate-500 mb-5">
-                        Optional placeholder fields. Stripe integration will replace this section
-                        — only the last 4 digits of the card are stored.
-                    </p>
-
-                    <div className="space-y-5">
-                        <TextField
-                            name="cardholderName"
-                            label="Cardholder Name"
-                            placeholder="Name as it appears on card"
-                            value={formik.values.cardholderName}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={errorOf('cardholderName')}
-                        />
-                        <TextField
-                            name="cardNumber"
-                            label="Card Number"
-                            placeholder="•••• •••• •••• 4242"
-                            helpText="Only the last 4 digits are persisted."
-                            value={formik.values.cardNumber}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={errorOf('cardNumber')}
-                        />
-                        <SelectField
-                            name="cardBrand"
-                            label="Card Brand"
-                            options={CARD_BRAND_OPTIONS}
-                            value={formik.values.cardBrand}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={errorOf('cardBrand')}
-                        />
-                        <div className="grid gap-5 sm:grid-cols-3">
-                            <NumberField
-                                name="expMonth"
-                                label="Exp. Month"
-                                placeholder="MM"
-                                options={{ min: 1, max: 12 }}
-                                value={formik.values.expMonth}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                error={errorOf('expMonth')}
-                            />
-                            <NumberField
-                                name="expYear"
-                                label="Exp. Year"
-                                placeholder="YYYY"
-                                options={{ min: new Date().getFullYear(), max: 2100 }}
-                                value={formik.values.expYear}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                error={errorOf('expYear')}
-                            />
-                            <TextField
-                                name="postalCode"
-                                label="Postal Code"
-                                placeholder="ZIP / postcode"
-                                value={formik.values.postalCode}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                error={errorOf('postalCode')}
-                            />
-                        </div>
-                        <TextField
-                            name="billingEmail"
-                            label="Billing Email"
-                            placeholder="billing@youragency.gov"
-                            value={formik.values.billingEmail}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            error={errorOf('billingEmail')}
                         />
                     </div>
                 </section>

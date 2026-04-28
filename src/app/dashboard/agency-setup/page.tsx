@@ -10,6 +10,7 @@ import {
     useListMyAgenciesQuery,
     setSelectedAgencyId,
 } from '@/hooks';
+import { useGetCurrentUserQuery } from '@/redux/api/authApi';
 import { extractRtkErrorMessage } from '@/utils/rtkErrorHandler';
 
 export default function AgencySetupPage() {
@@ -22,12 +23,14 @@ export default function AgencySetupPage() {
     const isAddMode = searchParams.get('mode') === 'add';
 
     const { data: list, isLoading: isListLoading } = useListMyAgenciesQuery();
+    const { data: userResp, isLoading: isUserLoading } = useGetCurrentUserQuery();
     const [createAgency, { isLoading: isSubmitting, error: submitError }] =
         useCreateAgencyMutation();
     const [success, setSuccess] = useState('');
 
     const agencies = list?.data?.agencies ?? [];
     const capacity = list?.data?.capacity;
+    const isEnterprise = userResp?.data?.plan === 'Enterprise';
 
     // If the user already has at least one agency and they did not explicitly
     // ask to add another, route them onward to the dashboard.
@@ -40,12 +43,20 @@ export default function AgencySetupPage() {
         }
     }, [isListLoading, isAddMode, agencies, dispatch, router]);
 
-    // Block enterprise add-mode if the user is at the limit.
+    // Add-mode is enterprise-only. Non-enterprise users hitting ?mode=add are
+    // bounced: to the dashboard if they already have an agency, otherwise to
+    // the plain setup view (where they create their single allowed agency).
     useEffect(() => {
-        if (isAddMode && capacity && !capacity.canCreateMore) {
+        if (isUserLoading || isListLoading) return;
+        if (!isAddMode) return;
+        if (!isEnterprise) {
+            router.replace(agencies.length > 0 ? '/dashboard' : '/dashboard/agency-setup');
+            return;
+        }
+        if (capacity && !capacity.canCreateMore) {
             router.replace('/dashboard/agencies');
         }
-    }, [isAddMode, capacity, router]);
+    }, [isAddMode, isEnterprise, isUserLoading, isListLoading, agencies.length, capacity, router]);
 
     const handleSubmit = async (payload: any) => {
         setSuccess('');
@@ -62,7 +73,7 @@ export default function AgencySetupPage() {
         }
     };
 
-    if (isListLoading) {
+    if (isListLoading || isUserLoading) {
         return (
             <div className="min-h-[60vh] flex items-center justify-center">
                 <Loading />

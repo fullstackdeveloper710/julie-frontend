@@ -23,7 +23,6 @@ export type {
     Agency,
     AgencyType,
     AgencySize,
-    AgencyBilling,
     AgencyCapacity,
     AgencyInput,
 } from './agencyApi';

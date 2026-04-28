@@ -14,11 +14,3 @@ export const AGENCY_SIZE_OPTIONS: SelectOption[] = [
     { label: 'Large (100-299)', value: 'Large (100-299)' },
     { label: 'Major (300+)', value: 'Major (300+)' },
 ];
-
-export const CARD_BRAND_OPTIONS: SelectOption[] = [
-    { label: 'Visa', value: 'Visa' },
-    { label: 'Mastercard', value: 'Mastercard' },
-    { label: 'American Express', value: 'American Express' },
-    { label: 'Discover', value: 'Discover' },
-    { label: 'Other', value: 'Other' },
-];

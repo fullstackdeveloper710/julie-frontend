@@ -14,16 +14,6 @@ export type AgencySize =
     | 'Large (100-299)'
     | 'Major (300+)';
 
-export interface AgencyBilling {
-    cardholderName?: string;
-    cardLast4?: string;
-    cardBrand?: string;
-    expMonth?: number;
-    expYear?: number;
-    postalCode?: string;
-    billingEmail?: string;
-}
-
 export interface Agency {
     _id: string;
     userId: string;
@@ -32,7 +22,6 @@ export interface Agency {
     sizeCategory: AgencySize;
     primaryServiceJurisdiction: string;
     coverageArea: number;
-    billing?: AgencyBilling;
     createdAt: string;
     updatedAt: string;
 }
@@ -50,7 +39,6 @@ export interface AgencyInput {
     sizeCategory: AgencySize;
     primaryServiceJurisdiction: string;
     coverageArea: number;
-    billing?: AgencyBilling;
 }
 
 export interface ApiSuccess<T> {

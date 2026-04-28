@@ -61,7 +61,7 @@ export default function AgencyEditPage() {
         <AgencyDetailsForm
             agency={agency}
             title="Edit Agency"
-            subtitle="Update agency identity or billing details. Changes propagate to forms that prefill from this agency."
+            subtitle="Update agency identity. Changes propagate to forms that prefill from this agency."
             submitLabel="Save Changes"
             submittingLabel="Saving..."
             isSubmitting={isSubmitting}
