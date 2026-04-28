@@ -10,6 +10,3 @@ export {
   setTheme,
 } from './uiSlice';
 export { default as agencyReducer, setSelectedAgencyId, clearSelectedAgency } from './agencySlice';
-
-// Backwards-compatible alias for code paths that still import `setSession`.
-export { setCredentials as setSession } from './userSlice';

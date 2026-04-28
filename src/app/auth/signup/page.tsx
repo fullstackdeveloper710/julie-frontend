@@ -20,8 +20,6 @@ const PLAN_KEY_TO_BACKEND_PLAN: Record<BackendPlanId, BackendPlan> = {
   enterprise: 'Enterprise',
 };
 const validationSchema = Yup.object({
-  // agencyName: Yup.string().required('Agency name is required'),
-  // agencyType: Yup.string().required('Agency type is required'),
   fullName: Yup.string().required('Full name is required'),
   email: Yup.string().email('Invalid email address').required('Email is required'),
   password: Yup.string()
@@ -95,15 +93,10 @@ export default function SignUpPage() {
 
   const formik = useFormik({
     initialValues: {
-      agencyName: '',
-      agencyType: 'Law Enforcement',
       fullName: '',
       email: '',
       password: '',
       confirmPassword: '',
-      cardNumber: '',
-      expiry: '',
-      cvc: '',
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
@@ -288,73 +281,6 @@ export default function SignUpPage() {
             />
 
             <hr className="border-slate-700" />
-            {/* <div className="text-xs font-extrabold uppercase tracking-widest text-orange-400">
-              Billing (Starts After Free Trial)
-            </div> */}
-
-            {/* <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.04em] text-slate-300">
-                Card Number
-              </label>
-              <input
-                name="cardNumber"
-                value={formik.values.cardNumber}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                placeholder="4242 4242 4242 4242"
-                className={`w-full rounded-xl border px-4 py-3 text-sm text-white outline-none transition bg-slate-800 ${
-                  formik.touched.cardNumber && formik.errors.cardNumber
-                    ? 'border-red-500 focus:border-red-500'
-                    : 'border-slate-700 focus:border-(--accent)'
-                }`}
-              />
-              {formik.touched.cardNumber && formik.errors.cardNumber && (
-                <p className="text-xs text-red-400">{formik.errors.cardNumber}</p>
-              )}
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.04em] text-slate-300">
-                  Expiry
-                </label>
-                <input
-                  name="expiry"
-                  value={formik.values.expiry}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  placeholder="MM / YY"
-                  className={`w-full rounded-xl border px-4 py-3 text-sm text-white outline-none transition bg-slate-800 ${
-                    formik.touched.expiry && formik.errors.expiry
-                      ? 'border-red-500 focus:border-red-500'
-                      : 'border-slate-700 focus:border-(--accent)'
-                  }`}
-                />
-                {formik.touched.expiry && formik.errors.expiry && (
-                  <p className="text-xs text-red-400">{formik.errors.expiry}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.04em] text-slate-300">
-                  CVC
-                </label>
-                <input
-                  name="cvc"
-                  value={formik.values.cvc}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  placeholder="123"
-                  className={`w-full rounded-xl border px-4 py-3 text-sm text-white outline-none transition bg-slate-800 ${
-                    formik.touched.cvc && formik.errors.cvc
-                      ? 'border-red-500 focus:border-red-500'
-                      : 'border-slate-700 focus:border-(--accent)'
-                  }`}
-                />
-                {formik.touched.cvc && formik.errors.cvc && (
-                  <p className="text-xs text-red-400">{formik.errors.cvc}</p>
-                )}
-              </div>
-            </div> */}
             <Button
               type="submit"
               disabled={isLoading}
