@@ -360,7 +360,7 @@ export default function SignUpPage() {
               disabled={isLoading}
               buttonClassName="w-full rounded-xl bg-(--accent) px-5 py-3 text-sm !font-bold uppercase tracking-[0.12em] text-slate-950 transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {isLoading ? 'Starting ' : 'Start '}
+              {isLoading ? 'Signing up...' : 'Sign up'}
             </Button>
           </form>
 
