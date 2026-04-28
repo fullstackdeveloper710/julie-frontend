@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { ShieldCheck, UserCog, Mail, BadgeCheck, Clock } from 'lucide-react';
+import { UserCog, Mail, BadgeCheck, Clock, Trash2, PowerOff, Power } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { TextField } from '@/components/forms/checkins/shared/FormFields';
 import {
@@ -12,7 +12,12 @@ import {
   PRIMARY_BUTTON_CLASS,
 } from '@/components/forms/checkins/shared/styles';
 import { extractRtkErrorMessage, logRtkError } from '@/utils/rtkErrorHandler';
-import { useCreateManagerMutation, useListManagersQuery } from '@/redux/api/managerApi';
+import {
+  useCreateManagerMutation,
+  useListManagersQuery,
+  useSetManagerStatusMutation,
+  useDeleteManagerMutation,
+} from '@/redux/api/managerApi';
 import { useGetCurrentUserQuery } from '@/redux/api/authApi';
 
 type FormValues = {
@@ -46,6 +51,10 @@ export default function CreateManagerPage() {
     skip: isAdmin,
   });
   const [createManager, { isLoading: isSubmitting }] = useCreateManagerMutation();
+  const [setManagerStatus] = useSetManagerStatusMutation();
+  const [deleteManager] = useDeleteManagerMutation();
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string>('');
 
   const admins = listResp?.data?.admins ?? [];
   const capacity = listResp?.data?.capacity;
@@ -76,6 +85,27 @@ export default function CreateManagerPage() {
       }
     },
   });
+
+  const handleToggleStatus = async (id: string, currentStatus: 'active' | 'inactive') => {
+    setActionError('');
+    const next = currentStatus === 'active' ? 'inactive' : 'active';
+    try {
+      await setManagerStatus({ id, status: next }).unwrap();
+    } catch (err) {
+      setActionError(extractRtkErrorMessage(err) || 'Failed to update status');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    setActionError('');
+    try {
+      await deleteManager(id).unwrap();
+      setConfirmDeleteId(null);
+    } catch (err) {
+      setActionError(extractRtkErrorMessage(err) || 'Failed to delete admin');
+      setConfirmDeleteId(null);
+    }
+  };
 
   const errorOf = (name: keyof FormValues): string | undefined => {
     const touched = formik.touched[name];
@@ -132,39 +162,92 @@ export default function CreateManagerPage() {
           </p>
         )}
 
+        {actionError && (
+          <p className="mb-3 text-xs text-red-400 bg-red-500/10 border border-red-500/30 px-3 py-2 rounded">
+            {actionError}
+          </p>
+        )}
+
         {admins.length > 0 && (
           <ul className="divide-y divide-slate-700">
-            {admins.map((admin) => (
-              <li key={admin._id} className="py-3 flex items-start justify-between gap-3 flex-wrap">
-                <div className="min-w-0">
-                  <p className="text-sm text-white font-semibold truncate">
-                    {admin.fullName || admin.email}
-                  </p>
-                  <p className="text-xs text-slate-400 flex items-center gap-1.5 truncate">
-                    <Mail className="w-3.5 h-3.5" />
-                    {admin.email}
-                  </p>
-                  {admin.title && <p className="text-xs text-slate-500 mt-0.5">{admin.title}</p>}
-                </div>
-                <span
-                  className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded inline-flex items-center gap-1 ${
-                    admin.isConfirmed
-                      ? 'text-emerald-400 border border-emerald-400/40'
-                      : 'text-amber-400 border border-amber-400/40'
-                  }`}
-                >
-                  {admin.isConfirmed ? (
-                    <>
-                      <BadgeCheck className="w-3 h-3" /> Active
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="w-3 h-3" /> Pending
-                    </>
-                  )}
-                </span>
-              </li>
-            ))}
+            {admins.map((admin) => {
+              const isInactive = admin.status === 'inactive';
+              return (
+                <li key={admin._id} className="py-3 flex items-start justify-between gap-3 flex-wrap">
+                  <div className="min-w-0 flex-1">
+                    <p className={`text-sm font-semibold truncate ${isInactive ? 'text-slate-500' : 'text-white'}`}>
+                      {admin.fullName || admin.email}
+                    </p>
+                    <p className="text-xs text-slate-400 flex items-center gap-1.5 truncate">
+                      <Mail className="w-3.5 h-3.5" />
+                      {admin.email}
+                    </p>
+                    {admin.title && <p className="text-xs text-slate-500 mt-0.5">{admin.title}</p>}
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded inline-flex items-center gap-1 ${
+                        isInactive
+                          ? 'text-slate-500 border border-slate-600'
+                          : admin.isConfirmed
+                            ? 'text-emerald-400 border border-emerald-400/40'
+                            : 'text-amber-400 border border-amber-400/40'
+                      }`}
+                    >
+                      {isInactive ? (
+                        'Disabled'
+                      ) : admin.isConfirmed ? (
+                        <><BadgeCheck className="w-3 h-3" /> Active</>
+                      ) : (
+                        <><Clock className="w-3 h-3" /> Pending</>
+                      )}
+                    </span>
+
+                    <button
+                      type="button"
+                      title={isInactive ? 'Activate' : 'Deactivate'}
+                      onClick={() => handleToggleStatus(admin._id, admin.status)}
+                      className={`p-1.5 rounded border transition-colors ${
+                        isInactive
+                          ? 'text-emerald-400 border-emerald-400/40 hover:bg-emerald-400/10'
+                          : 'text-amber-400 border-amber-400/40 hover:bg-amber-400/10'
+                      }`}
+                    >
+                      {isInactive ? <Power className="w-3.5 h-3.5" /> : <PowerOff className="w-3.5 h-3.5" />}
+                    </button>
+
+                    {confirmDeleteId === admin._id ? (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(admin._id)}
+                          className="text-[10px] font-bold uppercase px-2 py-1 rounded bg-red-600 hover:bg-red-500 text-white transition-colors"
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="text-[10px] font-bold uppercase px-2 py-1 rounded border border-slate-600 text-slate-400 hover:text-white transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        title="Delete admin"
+                        onClick={() => setConfirmDeleteId(admin._id)}
+                        className="p-1.5 rounded border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>

@@ -7,6 +7,7 @@ export interface AdminSeat {
   fullName?: string;
   title?: string;
   isConfirmed: boolean;
+  status: 'active' | 'inactive';
   createdAt: string;
 }
 
@@ -52,7 +53,32 @@ export const managerApi = createApi({
       }),
       invalidatesTags: ['Manager'],
     }),
+
+    setManagerStatus: builder.mutation<
+      ApiSuccess<{ id: string; email: string; status: string }>,
+      { id: string; status: 'active' | 'inactive' }
+    >({
+      query: ({ id, status }) => ({
+        url: `/managers/${id}/status`,
+        method: 'PATCH',
+        body: { status },
+      }),
+      invalidatesTags: ['Manager'],
+    }),
+
+    deleteManager: builder.mutation<ApiSuccess<{ id: string }>, string>({
+      query: (id) => ({
+        url: `/managers/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Manager'],
+    }),
   }),
 });
 
-export const { useListManagersQuery, useCreateManagerMutation } = managerApi;
+export const {
+  useListManagersQuery,
+  useCreateManagerMutation,
+  useSetManagerStatusMutation,
+  useDeleteManagerMutation,
+} = managerApi;

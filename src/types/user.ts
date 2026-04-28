@@ -8,6 +8,7 @@ export interface User {
   fullName?: string;
   role: UserRole;
   title?: string;
+  status?: 'active' | 'inactive';
   createdBy?: string | null;
   plan?: UserPlan | string;
   agencies?: string[];
