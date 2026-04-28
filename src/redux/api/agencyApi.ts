@@ -63,7 +63,7 @@ export interface ApiSuccess<T> {
 export const agencyApi = createApi({
     reducerPath: 'agencyApi',
     baseQuery: axiosBaseQuery({
-        baseUrl: process.env.NEXT_PUBLIC_API_URL || '',
+        baseUrl: '',
     }),
     tagTypes: ['Agency', 'AgencyList'],
     endpoints: (builder) => ({

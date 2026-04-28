@@ -43,10 +43,14 @@ export interface PricingResponse {
   totalAgencies: number;
 }
 
+import { buildBackendApiUrl } from '@/services/backend';
+
 export const fetchPricingPlans = async (): Promise<PricingResponse> => {
-  const response = await fetch('/api/pricing', {
+  const response = await fetch(buildBackendApiUrl('/pricing'), {
     cache: 'no-store',
   });
+
+  console.log(response)
 
   if (!response.ok) {
     throw new Error(`Failed to load pricing plans (${response.status})`);

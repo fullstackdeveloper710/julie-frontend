@@ -5,7 +5,7 @@ import { User } from '@/types';
 export const authApi = createApi({
     reducerPath: 'authApi',
     baseQuery: axiosBaseQuery({
-        baseUrl: process.env.NEXT_PUBLIC_API_URL || '',
+        baseUrl: '',
     }),
     tagTypes: ['User', 'Auth'],
     endpoints: (builder) => ({

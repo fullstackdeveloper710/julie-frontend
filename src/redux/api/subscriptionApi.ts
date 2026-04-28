@@ -9,7 +9,7 @@ export const subscriptionApi = createApi({
     endpoints: (builder) => ({
         getSubscription: builder.query<{ subscription: Subscription | null }, void>({
             query: () => ({
-                url: '/api/subscriptions',
+                url: '/subscriptions/me',
                 method: 'GET',
             }),
             providesTags: ['Subscription'],
@@ -17,7 +17,7 @@ export const subscriptionApi = createApi({
 
         getSubscriptionById: builder.query<{ subscription: Subscription }, string>({
             query: (subscriptionId) => ({
-                url: `/api/subscriptions/${subscriptionId}`,
+                url: `/subscriptions/${subscriptionId}`,
                 method: 'GET',
             }),
             providesTags: (result, error, subscriptionId) => [{ type: 'Subscriptions', id: subscriptionId }],
@@ -28,7 +28,7 @@ export const subscriptionApi = createApi({
             { planId: string; seats: number }
         >({
             query: (body) => ({
-                url: '/api/subscriptions',
+                url: '/subscriptions',
                 method: 'POST',
                 data: body,
             }),
@@ -41,7 +41,7 @@ export const subscriptionApi = createApi({
             { subscriptionId: string; data: Partial<Subscription> }
         >({
             query: ({ subscriptionId, data }) => ({
-                url: `/api/subscriptions/${subscriptionId}`,
+                url: `/subscriptions/${subscriptionId}`,
                 method: 'PUT',
                 data,
             }),
@@ -57,7 +57,7 @@ export const subscriptionApi = createApi({
             { subscriptionId: string; reason?: string }
         >({
             query: ({ subscriptionId, reason }) => ({
-                url: `/api/subscriptions/${subscriptionId}/cancel`,
+                url: `/subscriptions/${subscriptionId}/cancel`,
                 method: 'POST',
                 data: { reason },
             }),
@@ -67,7 +67,7 @@ export const subscriptionApi = createApi({
         // Get subscription invoices
         getInvoices: builder.query<{ invoices: any[] }, string>({
             query: (subscriptionId) => ({
-                url: `/api/subscriptions/${subscriptionId}/invoices`,
+                url: `/subscriptions/${subscriptionId}/invoices`,
                 method: 'GET',
             }),
             providesTags: (result, error, subscriptionId) => [
@@ -89,7 +89,7 @@ export const subscriptionApi = createApi({
             }
         >({
             query: ({ subscriptionId, testimonial }) => ({
-                url: `/api/subscriptions/${subscriptionId}/testimonial`,
+                url: `/subscriptions/${subscriptionId}/testimonial`,
                 method: 'POST',
                 data: testimonial,
             }),
@@ -106,7 +106,7 @@ export const subscriptionApi = createApi({
             }
         >({
             query: ({ subscriptionId, targetTier, billingInterval }) => ({
-                url: `/api/subscriptions/${subscriptionId}/transition`,
+                url: `/subscriptions/${subscriptionId}/transition`,
                 method: 'POST',
                 data: { targetTier, billingInterval },
             }),
@@ -132,7 +132,7 @@ export const subscriptionApi = createApi({
             }
         >({
             query: ({ subscriptionId, billingInfo }) => ({
-                url: `/api/subscriptions/${subscriptionId}/billing`,
+                url: `/subscriptions/${subscriptionId}/billing`,
                 method: 'PATCH',
                 data: billingInfo,
             }),
@@ -151,7 +151,7 @@ export const subscriptionApi = createApi({
             }
         >({
             query: ({ subscriptionId, checkInData }) => ({
-                url: `/api/subscriptions/${subscriptionId}/checkin`,
+                url: `/subscriptions/${subscriptionId}/checkin`,
                 method: 'POST',
                 data: checkInData,
             }),
@@ -170,7 +170,7 @@ export const subscriptionApi = createApi({
             }
         >({
             query: ({ subscriptionId, agencyData }) => ({
-                url: `/api/subscriptions/${subscriptionId}/agencies`,
+                url: `/subscriptions/${subscriptionId}/agencies`,
                 method: 'POST',
                 data: agencyData,
             }),
@@ -189,7 +189,7 @@ export const subscriptionApi = createApi({
             }
         >({
             query: ({ subscriptionId, inviteData }) => ({
-                url: `/api/subscriptions/${subscriptionId}/invitations`,
+                url: `/subscriptions/${subscriptionId}/invitations`,
                 method: 'POST',
                 data: inviteData,
             }),
@@ -202,7 +202,7 @@ export const subscriptionApi = createApi({
             { subscriptionId: string; redirectUrl: string }
         >({
             query: (body) => ({
-                url: '/api/stripe/create-session',
+                url: '/stripe/create-session',
                 method: 'POST',
                 data: body,
             }),

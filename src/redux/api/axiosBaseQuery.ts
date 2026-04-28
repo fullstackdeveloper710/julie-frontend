@@ -4,15 +4,13 @@ import { axiosInstance } from './axiosInstance';
 
 const resolveRequestUrl = (baseUrl: string, url: string): string => {
     const combinedUrl = `${baseUrl}${url}`;
-    const instanceBaseUrl = String(axiosInstance.defaults.baseURL || '');
-    const normalizedInstanceBaseUrl = instanceBaseUrl.replace(/\/+$/, '');
 
-    if (normalizedInstanceBaseUrl.endsWith('/api') && combinedUrl.startsWith('/api/')) {
-        return combinedUrl.slice(4);
+    if (combinedUrl === '/api') {
+        return '/';
     }
 
-    if (normalizedInstanceBaseUrl.endsWith('/api') && combinedUrl === '/api') {
-        return '/';
+    if (combinedUrl.startsWith('/api/')) {
+        return combinedUrl.slice(4);
     }
 
     return combinedUrl;

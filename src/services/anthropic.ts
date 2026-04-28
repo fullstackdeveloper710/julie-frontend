@@ -1,6 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { supabaseAdmin } from '@/lib/supabase';
-import { Report, ReportGenerationRequest } from '@/types';
+import { ReportGenerationRequest } from '@/types';
 
 if (!process.env.ANTHROPIC_API_KEY) {
   throw new Error('ANTHROPIC_API_KEY is not set');
@@ -8,7 +7,14 @@ if (!process.env.ANTHROPIC_API_KEY) {
 
 const client = new Anthropic();
 
-export async function generateReport(request: ReportGenerationRequest): Promise<Report> {
+export interface GeneratedReportPayload {
+  title: string;
+  content: string;
+  type: 'analytics' | 'scenario';
+  metadata: Record<string, unknown>;
+}
+
+export async function generateReport(request: ReportGenerationRequest): Promise<GeneratedReportPayload> {
   const { userId, type, data } = request;
 
   // Build the prompt based on report type
@@ -38,24 +44,12 @@ export async function generateReport(request: ReportGenerationRequest): Promise<
       ? message.content[0].text
       : 'Unable to generate report';
 
-  // Store report in Supabase
-  const { data: report, error } = await supabaseAdmin
-    .from('reports')
-    .insert([
-      {
-        user_id: userId,
-        title: `${type === 'analytics' ? 'Analytics' : 'Scenario'} Report - ${new Date().toLocaleDateString()}`,
-        content,
-        type,
-        metadata: data,
-      },
-    ])
-    .select()
-    .single();
-
-  if (error) throw error;
-
-  return report;
+  return {
+    title: `${type === 'analytics' ? 'Analytics' : 'Scenario'} Report - ${new Date().toLocaleDateString()}`,
+    content,
+    type,
+    metadata: data,
+  };
 }
 
 function buildAnalyticsPrompt(data: Record<string, unknown>): string {
@@ -109,36 +103,3 @@ Please provide:
 Use professional language and format the report in markdown with clear sections and bullet points.`;
 }
 
-export async function getUserReports(userId: string, limit = 10) {
-  const { data, error } = await supabaseAdmin
-    .from('reports')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error) throw error;
-  return data || [];
-}
-
-export async function getReport(reportId: string, userId: string) {
-  const { data, error } = await supabaseAdmin
-    .from('reports')
-    .select('*')
-    .eq('id', reportId)
-    .eq('user_id', userId)
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteReport(reportId: string, userId: string) {
-  const { error } = await supabaseAdmin
-    .from('reports')
-    .delete()
-    .eq('id', reportId)
-    .eq('user_id', userId);
-
-  if (error) throw error;
-}

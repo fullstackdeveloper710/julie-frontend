@@ -14,7 +14,6 @@ import {
 import storage from 'redux-persist/lib/storage';
 import { authApi } from './api/authApi';
 import { subscriptionApi } from './api/subscriptionApi';
-import { userApi } from './api/userApi';
 import { analyticsApi } from './api/analyticsApi';
 import { checkinApi } from './api/checkinApi';
 import { reportsApi } from './api/reportsApi';
@@ -28,7 +27,6 @@ const rootReducer = combineReducers({
     agency: agencyReducer,
     [authApi.reducerPath]: authApi.reducer,
     [subscriptionApi.reducerPath]: subscriptionApi.reducer,
-    [userApi.reducerPath]: userApi.reducer,
     [analyticsApi.reducerPath]: analyticsApi.reducer,
     [checkinApi.reducerPath]: checkinApi.reducer,
     [reportsApi.reducerPath]: reportsApi.reducer,
@@ -57,7 +55,6 @@ export const store = configureStore({
             .concat(
                 authApi.middleware,
                 subscriptionApi.middleware,
-                userApi.middleware,
                 analyticsApi.middleware,
                 checkinApi.middleware,
                 reportsApi.middleware,

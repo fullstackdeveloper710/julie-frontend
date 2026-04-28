@@ -1,6 +1,6 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
+﻿import { createApi } from '@reduxjs/toolkit/query/react';
 import { axiosBaseQuery } from './axiosBaseQuery';
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { axiosInstance } from './axiosInstance';
 import { WorkforceMetric, AnalyticsFilter } from '@/types';
 
 export interface AnalyticsData {
@@ -8,6 +8,11 @@ export interface AnalyticsData {
     date: string;
     metric: string;
     value: number;
+    category?: string;
+    region?: string;
+    reportId?: string;
+    scenarioId?: string;
+    scenario?: string;
     [key: string]: any;
 }
 
@@ -79,13 +84,13 @@ export interface MonthlyOptionalPayload {
     peerSupportDepthInputs?: {
         eapReferralsOrUtilizations?: number;
         topLeadershipConcern?:
-        | 'Staffing shortage'
-        | 'Budget strain'
-        | 'Burnout concerns'
-        | 'Leadership turnover'
-        | 'Morale'
-        | 'Legal or compliance'
-        | 'Other';
+            | 'Staffing shortage'
+            | 'Budget strain'
+            | 'Burnout concerns'
+            | 'Leadership turnover'
+            | 'Morale'
+            | 'Legal or compliance'
+            | 'Other';
         topLeadershipConcernOther?: string;
         additionalContextOrNotes?: string;
     };
@@ -142,102 +147,74 @@ export interface AnnualBaselineResponse {
     baseline: Record<string, any>;
 }
 
+const getAnalyticsRecords = async (): Promise<AnalyticsData[]> => {
+    const response = await axiosInstance.get('/analytics/me');
+    const payload = response.data;
+    return Array.isArray(payload?.data) ? payload.data : [];
+};
+
+const filterAnalyticsRecords = (records: AnalyticsData[], filters: AnalyticsFilter = {}): AnalyticsData[] => {
+    return records.filter((record) => {
+        const recordDate = record.date ? new Date(record.date) : null;
+        if (filters.startDate && recordDate && recordDate < new Date(filters.startDate)) {
+            return false;
+        }
+        if (filters.endDate && recordDate && recordDate > new Date(filters.endDate)) {
+            return false;
+        }
+        if (filters.region && record.region !== filters.region) {
+            return false;
+        }
+        if (filters.category && record.category !== filters.category) {
+            return false;
+        }
+        return true;
+    });
+};
+
+const summarizeAnalyticsRecords = (records: AnalyticsData[]) => {
+    const byCategory: Record<string, number> = {};
+    const byRegion: Record<string, number> = {};
+
+    for (const record of records) {
+        if (record.category) {
+            byCategory[record.category] = (byCategory[record.category] || 0) + Number(record.value || 0);
+        }
+        if (record.region) {
+            byRegion[record.region] = (byRegion[record.region] || 0) + Number(record.value || 0);
+        }
+    }
+
+    const total = records.length;
+    const values = records.map((record) => Number(record.value || 0));
+
+    return {
+        byCategory,
+        byRegion,
+        total,
+        totalRecords: total,
+        averageValue: total ? values.reduce((sum, value) => sum + value, 0) / total : 0,
+        maxValue: total ? Math.max(...values) : 0,
+        minValue: total ? Math.min(...values) : 0,
+    };
+};
+
 export const analyticsApi = createApi({
     reducerPath: 'analyticsApi',
     baseQuery: axiosBaseQuery({ baseUrl: '' }),
     tagTypes: ['Analytics', 'MetricsData', 'ScenarioData'],
     endpoints: (builder) => ({
-        // Get dashboard metrics
-        getMetrics: builder.query<
-            AnalyticsResponse,
-            { startDate?: string; endDate?: string; granularity?: 'day' | 'week' | 'month' }
-        >({
-            query: (params) => ({
-                url: '/api/analytics/metrics',
-                method: 'GET',
-                params,
-            }),
-            providesTags: ['Analytics', 'MetricsData'],
-        }),
-
-        // Get scenario analytics
-        getScenarioAnalytics: builder.query<
-            AnalyticsResponse,
-            { scenarioId: string; startDate?: string; endDate?: string }
-        >({
-            query: ({ scenarioId, ...params }) => ({
-                url: `/api/analytics/scenarios/${scenarioId}`,
-                method: 'GET',
-                params,
-            }),
-            providesTags: (result, error, { scenarioId }) => [
-                { type: 'ScenarioData', id: scenarioId },
-            ],
-        }),
-
-        // Get custom report data
-        getReportData: builder.query<
-            AnalyticsResponse,
-            { reportId: string; filters?: Record<string, any> }
-        >({
-            query: ({ reportId, filters }) => ({
-                url: `/api/analytics/reports/${reportId}`,
-                method: 'GET',
-                params: filters,
-            }),
-            providesTags: (result, error, { reportId }) => [
-                { type: 'Analytics', id: reportId },
-            ],
-        }),
-
-        // Export analytics data
-        exportAnalytics: builder.mutation<
-            { url: string },
-            { format: 'csv' | 'json' | 'excel'; filters?: Record<string, any> }
-        >({
-            query: (data) => ({
-                url: '/api/analytics/export',
-                method: 'POST',
-                data,
-            }),
-        }),
-
-        submitMonthlyCheckIn: builder.mutation<MonthlyCheckInResponse, MonthlyCheckInRequest>({
-            query: (data) => ({
-                url: '/analytics/monthly-checkin',
-                method: 'POST',
-                data,
-            }),
-            invalidatesTags: ['Analytics'],
-        }),
-
-        submitAnnualBaseline: builder.mutation<AnnualBaselineResponse, AnnualBaselineRequest>({
-            query: (data) => ({
-                url: '/analytics/annual-baseline',
-                method: 'POST',
-                data,
-            }),
-            invalidatesTags: ['Analytics'],
-        }),
-
-        // Insert analytics data (from lib/analytics.ts)
-        insertAnalyticsData: builder.mutation<
-            { success: boolean },
-            { userId: string; metrics: WorkforceMetric[] }
-        >({
-            queryFn: async ({ userId, metrics }) => {
+        insertAnalyticsData: builder.mutation<{ success: boolean }, { userId: string; metrics: WorkforceMetric[] }>({
+            queryFn: async ({ metrics }) => {
                 try {
-                    const data = metrics.map((m) => ({
-                        user_id: userId,
-                        date: m.date,
-                        category: m.category,
-                        region: m.region,
-                        value: m.value,
-                    }));
-
-                    const { error } = await supabaseAdmin.from('analytics_data').insert(data);
-
-                    if (error) throw error;
+                    for (const metric of metrics) {
+                        await axiosInstance.post('/analytics', {
+                            date: metric.date,
+                            category: metric.category,
+                            region: metric.region,
+                            value: metric.value,
+                        });
+                    }
 
                     return { data: { success: true } };
                 } catch (error) {
@@ -252,39 +229,11 @@ export const analyticsApi = createApi({
             invalidatesTags: ['Analytics', 'MetricsData'],
         }),
 
-        // Get analytics data (from lib/analytics.ts)
-        getAnalyticsData: builder.query<
-            AnalyticsData[],
-            { userId: string; filters?: AnalyticsFilter }
-        >({
-            queryFn: async ({ userId, filters = {} }) => {
+        getAnalyticsData: builder.query<AnalyticsData[], { userId: string; filters?: AnalyticsFilter }>({
+            queryFn: async ({ filters = {} }) => {
                 try {
-                    let query = supabase
-                        .from('analytics_data')
-                        .select('*')
-                        .eq('user_id', userId);
-
-                    if (filters.startDate) {
-                        query = query.gte('date', filters.startDate);
-                    }
-
-                    if (filters.endDate) {
-                        query = query.lte('date', filters.endDate);
-                    }
-
-                    if (filters.region) {
-                        query = query.eq('region', filters.region);
-                    }
-
-                    if (filters.category) {
-                        query = query.eq('category', filters.category);
-                    }
-
-                    const { data, error } = await query.order('date', { ascending: false });
-
-                    if (error) throw error;
-
-                    return { data: data || [] };
+                    const records = await getAnalyticsRecords();
+                    return { data: filterAnalyticsRecords(records, filters) };
                 } catch (error) {
                     return {
                         error: {
@@ -297,45 +246,12 @@ export const analyticsApi = createApi({
             providesTags: ['Analytics', 'MetricsData'],
         }),
 
-        // Get dashboard metrics (from lib/analytics.ts)
-        getDashboardMetrics: builder.query<
-            { byCategory: Record<string, number>; byRegion: Record<string, number>; total: number },
-            string
-        >({
-            queryFn: async (userId) => {
+        getDashboardMetrics: builder.query<{ byCategory: Record<string, number>; byRegion: Record<string, number>; total: number }, string>({
+            queryFn: async () => {
                 try {
-                    const { data, error } = await supabase.rpc('get_dashboard_metrics', {
-                        p_user_id: userId,
-                    });
-
-                    if (error) {
-                        // Fallback if RPC doesn't exist yet
-                        console.warn('RPC function not available, returning basic data');
-                        const rawData = await supabase
-                            .from('analytics_data')
-                            .select('category, region, value')
-                            .eq('user_id', userId)
-                            .order('date', { ascending: false })
-                            .limit(100);
-
-                        if (rawData.error) throw rawData.error;
-
-                        // Group by category
-                        const grouped: Record<string, number> = {};
-                        rawData.data?.forEach((item: any) => {
-                            grouped[item.category] = (grouped[item.category] || 0) + item.value;
-                        });
-
-                        return {
-                            data: {
-                                byCategory: grouped,
-                                byRegion: {},
-                                total: Object.values(grouped).reduce((a, b) => a + b, 0),
-                            },
-                        };
-                    }
-
-                    return { data };
+                    const records = await getAnalyticsRecords();
+                    const summary = summarizeAnalyticsRecords(records);
+                    return { data: { byCategory: summary.byCategory, byRegion: summary.byRegion, total: summary.total } };
                 } catch (error) {
                     return {
                         error: {
@@ -348,20 +264,11 @@ export const analyticsApi = createApi({
             providesTags: ['Analytics'],
         }),
 
-        // Get available regions (from lib/analytics.ts)
         getAvailableRegions: builder.query<string[], string>({
-            queryFn: async (userId) => {
+            queryFn: async () => {
                 try {
-                    const { data, error } = await supabase
-                        .from('analytics_data')
-                        .select('region')
-                        .eq('user_id', userId)
-                        .order('region');
-
-                    if (error) throw error;
-
-                    // Remove duplicates
-                    const regions = [...new Set(data?.map((d) => d.region) || [])];
+                    const records = await getAnalyticsRecords();
+                    const regions = Array.from(new Set(records.map((record) => record.region).filter(Boolean))) as string[];
                     return { data: regions };
                 } catch (error) {
                     return {
@@ -375,20 +282,11 @@ export const analyticsApi = createApi({
             providesTags: ['Analytics'],
         }),
 
-        // Get available categories (from lib/analytics.ts)
         getAvailableCategories: builder.query<string[], string>({
-            queryFn: async (userId) => {
+            queryFn: async () => {
                 try {
-                    const { data, error } = await supabase
-                        .from('analytics_data')
-                        .select('category')
-                        .eq('user_id', userId)
-                        .order('category');
-
-                    if (error) throw error;
-
-                    // Remove duplicates
-                    const categories = [...new Set(data?.map((d) => d.category) || [])];
+                    const records = await getAnalyticsRecords();
+                    const categories = Array.from(new Set(records.map((record) => record.category).filter(Boolean))) as string[];
                     return { data: categories };
                 } catch (error) {
                     return {
@@ -402,7 +300,6 @@ export const analyticsApi = createApi({
             providesTags: ['Analytics'],
         }),
 
-        // Get metrics summary (from lib/analytics.ts)
         getMetricsSummary: builder.query<
             {
                 totalRecords: number;
@@ -414,41 +311,11 @@ export const analyticsApi = createApi({
             },
             { userId: string; startDate: string; endDate: string }
         >({
-            queryFn: async ({ userId, startDate, endDate }) => {
+            queryFn: async ({ startDate, endDate }) => {
                 try {
-                    const { data, error } = await supabase
-                        .from('analytics_data')
-                        .select('*')
-                        .eq('user_id', userId)
-                        .gte('date', startDate)
-                        .lte('date', endDate);
-
-                    if (error) throw error;
-
-                    // Calculate summary statistics
-                    const summary = {
-                        totalRecords: data?.length || 0,
-                        averageValue: 0,
-                        maxValue: 0,
-                        minValue: 0,
-                        byCategory: {} as Record<string, number>,
-                        byRegion: {} as Record<string, number>,
-                    };
-
-                    if (data && data.length > 0) {
-                        const values = data.map((d) => d.value);
-                        summary.averageValue = values.reduce((a, b) => a + b, 0) / values.length;
-                        summary.maxValue = Math.max(...values);
-                        summary.minValue = Math.min(...values);
-
-                        // Group by category and region
-                        data.forEach((item: any) => {
-                            summary.byCategory[item.category] = (summary.byCategory[item.category] || 0) + 1;
-                            summary.byRegion[item.region] = (summary.byRegion[item.region] || 0) + 1;
-                        });
-                    }
-
-                    return { data: summary };
+                    const records = await getAnalyticsRecords();
+                    const filteredRecords = filterAnalyticsRecords(records, { startDate, endDate });
+                    return { data: summarizeAnalyticsRecords(filteredRecords) };
                 } catch (error) {
                     return {
                         error: {
@@ -464,12 +331,6 @@ export const analyticsApi = createApi({
 });
 
 export const {
-    useGetMetricsQuery,
-    useGetScenarioAnalyticsQuery,
-    useGetReportDataQuery,
-    useExportAnalyticsMutation,
-    useSubmitMonthlyCheckInMutation,
-    useSubmitAnnualBaselineMutation,
     useInsertAnalyticsDataMutation,
     useGetAnalyticsDataQuery,
     useGetDashboardMetricsQuery,

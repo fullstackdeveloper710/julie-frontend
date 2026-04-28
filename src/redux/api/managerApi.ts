@@ -4,7 +4,7 @@ import { axiosBaseQuery } from './axiosBaseQuery';
 export const managerApi = createApi({
     reducerPath: 'managerApi',
     baseQuery: axiosBaseQuery({
-        baseUrl: process.env.NEXT_PUBLIC_API_URL || '',
+        baseUrl: '',
     }),
     tagTypes: ['Manager'],
 

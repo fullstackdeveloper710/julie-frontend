@@ -4,10 +4,10 @@ import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 /**
- * Legacy auth callback. The Supabase-based OAuth callback was removed in favor
- * of a Node/Express verification flow. If a manager-invite or verification
- * email lands here with a token, forward it to the dedicated /verify page.
- * Otherwise, send the user to /auth/signin.
+ * Legacy auth callback. The OAuth callback was removed in favor of a Node/Express
+ * verification flow. If a manager-invite or verification email lands here with
+ * a token, forward it to the dedicated /verify page. Otherwise, send the user
+ * to /auth/signin.
  */
 export default function AuthCallbackPage() {
     const router = useRouter();

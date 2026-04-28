@@ -1,6 +1,5 @@
 import Stripe from 'stripe';
-import { supabaseAdmin } from '@/lib/supabase';
-import { PlanType } from '@/types';
+import { buildBackendApiUrl } from './backend';
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY is not set');
@@ -29,6 +28,8 @@ export const STRIPE_PRODUCTS = {
   },
 };
 
+type BackendPlan = 'basic' | 'pro' | 'enterprise';
+
 export async function createStripeCustomer(userId: string, email: string, userName: string) {
   const customer = await stripe.customers.create({
     email,
@@ -38,21 +39,14 @@ export async function createStripeCustomer(userId: string, email: string, userNa
     },
   });
 
-  // Store Stripe customer ID in database
-  const { error } = await supabaseAdmin
-    .from('subscriptions')
-    .insert([
-      {
-        user_id: userId,
-        stripe_customer_id: customer.id,
-        plan: 'founding',
-        status: 'trialing',
-        current_period_start: new Date().toISOString(),
-        current_period_end: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-    ]);
-
-  if (error) throw error;
+  await syncSubscriptionRecord(userId, {
+    stripeCustomerId: customer.id,
+    plan: 'basic',
+    status: 'trialing',
+    currentPeriodStart: new Date().toISOString(),
+    currentPeriodEnd: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+    cancelAtPeriodEnd: false,
+  });
 
   return customer;
 }
@@ -83,40 +77,41 @@ export async function createCheckoutSession(
   return session;
 }
 
-export async function getSubscription(userId: string) {
-  const { data, error } = await supabaseAdmin
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
 export async function updateSubscription(
   userId: string,
   updates: Partial<{
-    plan: PlanType;
+    stripeCustomerId: string;
+    stripeSubscriptionId: string;
+    plan: BackendPlan;
     status: string;
-    stripe_subscription_id: string;
-    current_period_start: string;
-    current_period_end: string;
-    cancel_at_period_end: boolean;
+    currentPeriodStart: string;
+    currentPeriodEnd: string;
+    cancelAtPeriodEnd: boolean;
   }>
 ) {
-  const { data, error } = await supabaseAdmin
-    .from('subscriptions')
-    .update({
-      ...updates,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('user_id', userId)
-    .select()
-    .single();
+  const response = await fetch(buildBackendApiUrl('/subscriptions/sync'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      userId,
+      stripeCustomerId: updates.stripeCustomerId,
+      stripeSubscriptionId: updates.stripeSubscriptionId,
+      plan: updates.plan,
+      status: updates.status,
+      currentPeriodStart: updates.currentPeriodStart,
+      currentPeriodEnd: updates.currentPeriodEnd,
+      cancelAtPeriodEnd: updates.cancelAtPeriodEnd,
+    }),
+  });
 
-  if (error) throw error;
-  return data;
+  if (!response.ok) {
+    throw new Error(`Failed to sync subscription (${response.status})`);
+  }
+
+  const payload = await response.json();
+  return payload.data;
 }
 
 export async function getStripeSubscription(subscriptionId: string) {
@@ -132,19 +127,53 @@ export async function createPortalSession(customerId: string, returnUrl: string)
   return session;
 }
 
-export function getPlanFromPriceId(priceId: string): PlanType {
+export function getPlanFromPriceId(priceId: string): BackendPlan {
   // Map Stripe price IDs to plans
   if (
     priceId === process.env.NEXT_PUBLIC_STRIPE_BASIC_MONTHLY_PRICE_ID ||
     priceId === process.env.NEXT_PUBLIC_STRIPE_BASIC_YEARLY_PRICE_ID
   ) {
-    return 'founding';
+    return 'basic';
   }
   if (
     priceId === process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID ||
     priceId === process.env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_PRICE_ID
   ) {
-    return 'standard';
+    return 'pro';
   }
-  return 'founding'; // Default to founding
+  return 'basic';
+}
+
+async function syncSubscriptionRecord(
+  userId: string,
+  updates: Partial<{
+    stripeCustomerId: string;
+    stripeSubscriptionId: string;
+    plan: BackendPlan;
+    status: string;
+    currentPeriodStart: string;
+    currentPeriodEnd: string;
+    cancelAtPeriodEnd: boolean;
+  }>
+) {
+  const response = await fetch(buildBackendApiUrl('/subscriptions/sync'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      userId,
+      stripeCustomerId: updates.stripeCustomerId,
+      stripeSubscriptionId: updates.stripeSubscriptionId,
+      plan: updates.plan,
+      status: updates.status,
+      currentPeriodStart: updates.currentPeriodStart,
+      currentPeriodEnd: updates.currentPeriodEnd,
+      cancelAtPeriodEnd: updates.cancelAtPeriodEnd,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to sync subscription (${response.status})`);
+  }
 }

@@ -22,7 +22,7 @@ export const reportsApi = createApi({
             { page?: number; limit?: number; search?: string }
         >({
             query: (params) => ({
-                url: '/api/reports',
+                url: '/reports',
                 method: 'GET',
                 params,
             }),
@@ -32,7 +32,7 @@ export const reportsApi = createApi({
         // Get report by ID
         getReportById: builder.query<{ report: Report }, string>({
             query: (reportId) => ({
-                url: `/api/reports/${reportId}`,
+                url: `/reports/${reportId}`,
                 method: 'GET',
             }),
             providesTags: (result, error, reportId) => [{ type: 'Report', id: reportId }],
@@ -44,7 +44,7 @@ export const reportsApi = createApi({
             Partial<Report>
         >({
             query: (data) => ({
-                url: '/api/reports',
+                url: '/reports',
                 method: 'POST',
                 data,
             }),
@@ -57,7 +57,7 @@ export const reportsApi = createApi({
             { reportId: string; data: Partial<Report> }
         >({
             query: ({ reportId, data }) => ({
-                url: `/api/reports/${reportId}`,
+                url: `/reports/${reportId}`,
                 method: 'PUT',
                 data,
             }),
@@ -70,7 +70,7 @@ export const reportsApi = createApi({
         // Delete report
         deleteReport: builder.mutation<{ success: boolean }, string>({
             query: (reportId) => ({
-                url: `/api/reports/${reportId}`,
+                url: `/reports/${reportId}`,
                 method: 'DELETE',
             }),
             invalidatesTags: ['Reports'],
@@ -82,7 +82,7 @@ export const reportsApi = createApi({
             { title: string; type: string; parameters: Record<string, any> }
         >({
             query: (data) => ({
-                url: '/api/reports/ai/generate',
+                url: '/reports/ai/generate',
                 method: 'POST',
                 data,
             }),
