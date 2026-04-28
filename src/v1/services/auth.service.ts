@@ -338,7 +338,7 @@ export const listManagers = async (createdByUserId: string | undefined) => {
         role: EUserRole.MANAGER,
         isDeleted: false,
     })
-        .select('email fullName title isConfirmed createdAt')
+        .select('email fullName title isConfirmed status createdAt')
         .sort({ createdAt: 1 });
 
     return {
@@ -349,4 +349,67 @@ export const listManagers = async (createdByUserId: string | undefined) => {
             canCreateMore: admins.length < MAX_ADMIN_SEATS_PER_ACCOUNT,
         },
     };
+};
+
+/**
+ * Activate or deactivate an Admin account.
+ * Only the Account Holder who created the admin may change its status.
+ */
+export const setManagerStatus = async (
+    createdByUserId: string | undefined,
+    adminId: string,
+    status: EUserStatus
+) => {
+    if (!createdByUserId) {
+        throw new CustomError(RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.UNAUTHORIZED);
+    }
+
+    const admin = await User.findOne({
+        _id: adminId,
+        createdBy: createdByUserId as any,
+        role: EUserRole.MANAGER,
+        isDeleted: false,
+    });
+
+    if (!admin) {
+        throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.MANAGER.NOT_FOUND);
+    }
+
+    admin.status = status;
+    await admin.save();
+
+    return {
+        id: admin._id,
+        email: admin.email,
+        status: admin.status,
+    };
+};
+
+/**
+ * Permanently delete an Admin account (soft-delete).
+ * Only the Account Holder who created the admin may delete it.
+ */
+export const deleteManager = async (
+    createdByUserId: string | undefined,
+    adminId: string
+) => {
+    if (!createdByUserId) {
+        throw new CustomError(RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.UNAUTHORIZED);
+    }
+
+    const admin = await User.findOne({
+        _id: adminId,
+        createdBy: createdByUserId as any,
+        role: EUserRole.MANAGER,
+        isDeleted: false,
+    });
+
+    if (!admin) {
+        throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.MANAGER.NOT_FOUND);
+    }
+
+    admin.isDeleted = true;
+    await admin.save();
+
+    return { id: admin._id };
 };
