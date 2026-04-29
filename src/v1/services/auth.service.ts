@@ -253,10 +253,15 @@ export const getProfile = async (userId: string) => {
     };
 };
 
-/**
- * Per-account admin (manager) seat cap. Mirrors the seat-definitions UI:
- * one Account Holder + up to two Admins per organization.
- */
+const ADMIN_SEATS_BY_PLAN: Record<EUserPlan, number> = {
+    [EUserPlan.ENTERPRISE]: 4,
+    [EUserPlan.STANDARD]: 2,
+    [EUserPlan.EARLY_ADOPTER]: 2,
+};
+
+const getMaxAdminSeats = (plan: EUserPlan): number => ADMIN_SEATS_BY_PLAN[plan] ?? 2;
+
+/** @deprecated Use getMaxAdminSeats(plan) instead */
 export const MAX_ADMIN_SEATS_PER_ACCOUNT = 2;
 
 /**
@@ -284,10 +289,11 @@ export const createManager = async (
         role: EUserRole.MANAGER,
         isDeleted: false,
     });
-    if (adminCount >= MAX_ADMIN_SEATS_PER_ACCOUNT) {
+    const maxSeats = getMaxAdminSeats(creatorPlan);
+    if (adminCount >= maxSeats) {
         throw new CustomError(
             RESPONSE_CODES.BAD_REQUEST,
-            MESSAGES.MANAGER.LIMIT_REACHED(MAX_ADMIN_SEATS_PER_ACCOUNT)
+            MESSAGES.MANAGER.LIMIT_REACHED(maxSeats)
         );
     }
 
@@ -333,20 +339,26 @@ export const listManagers = async (createdByUserId: string | undefined) => {
         throw new CustomError(RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.UNAUTHORIZED);
     }
 
-    const admins = await User.find({
-        createdBy: createdByUserId as any,
-        role: EUserRole.MANAGER,
-        isDeleted: false,
-    })
-        .select('email fullName title isConfirmed status createdAt')
-        .sort({ createdAt: 1 });
+    const [admins, creator] = await Promise.all([
+        User.find({
+            createdBy: createdByUserId as any,
+            role: EUserRole.MANAGER,
+            isDeleted: false,
+        })
+            .select('email fullName title isConfirmed status createdAt')
+            .sort({ createdAt: 1 }),
+        User.findById(createdByUserId).select('plan'),
+    ]);
+
+    const creatorPlan = (creator?.plan as EUserPlan) ?? EUserPlan.STANDARD;
+    const maxAllowed = getMaxAdminSeats(creatorPlan);
 
     return {
         admins,
         capacity: {
-            maxAllowed: MAX_ADMIN_SEATS_PER_ACCOUNT,
+            maxAllowed,
             used: admins.length,
-            canCreateMore: admins.length < MAX_ADMIN_SEATS_PER_ACCOUNT,
+            canCreateMore: admins.length < maxAllowed,
         },
     };
 };
