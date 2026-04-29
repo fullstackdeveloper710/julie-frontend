@@ -1,12 +1,12 @@
 import Image from 'next/image';
 import logo from '@/assets/images/logo.png';
 
-interface LogoProps {
+interface Props {
   className?: string;
   size?: number;
 }
 
-export function Logo({ className = '', size = 56 }: LogoProps) {
+export function Logo({ className = '', size = 56 }: Props) {
   return (
     <Image
       src={logo}

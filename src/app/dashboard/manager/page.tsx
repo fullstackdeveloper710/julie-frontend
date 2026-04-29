@@ -408,7 +408,7 @@ export default function CreateManagerPage() {
               {isEnterprise && agencies.length > 0 && (
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5" />
+                    {/* <Building2 className="w-3.5 h-3.5" /> */}
                     Assign Agency
                   </label>
                   <select

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import React from 'react';
 import { Logo } from './Logo';
 
-interface FooterProps {
+interface Props {
   className?: string;
   style?: React.CSSProperties;
   links?: { name: string; href: string }[];
@@ -33,7 +33,7 @@ export function Footer({
     </>
   ),
   contact = <>Training@FrontlineFrameworks.org · www.FrontlineFrameworks.org</>,
-}: FooterProps) {
+}: Props) {
   return (
     <footer className={`bg-slate-950 border-t-4 border-t-(--accent) ${className}`} style={style}>
       <div className="max-w-6xl mx-auto px-4 py-12">

@@ -15,7 +15,7 @@ import { buildAgencyPayload } from './payload';
 import type { Agency, AgencyInput } from '@/redux/api/agencyApi';
 import { agencyToFormValues } from './payload';
 
-type AgencyDetailsFormProps = {
+type Props = {
   agency?: Agency;
   onSubmit: (payload: AgencyInput) => Promise<void> | void;
   onCancel?: () => void;
@@ -39,7 +39,7 @@ export function AgencyDetailsForm({
   successMessage,
   title = 'Agency Details',
   subtitle = 'These fields drive baseline ratios and seed the Annual Baseline form.',
-}: AgencyDetailsFormProps) {
+}: Props) {
   const formik = useFormik<AgencyFormValues>({
     enableReinitialize: true,
     initialValues: agency ? agencyToFormValues(agency) : AGENCY_INITIAL_VALUES,

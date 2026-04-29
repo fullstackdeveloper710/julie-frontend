@@ -1,5 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { axiosBaseQuery } from './axiosBaseQuery';
+import type { ApiSuccess } from '@/types/api-responses';
 
 export interface AdminSeat {
   _id: string;
@@ -18,12 +19,8 @@ export interface AdminCapacity {
   canCreateMore: boolean;
 }
 
-export interface ApiSuccess<T> {
-  success: boolean;
-  statusCode?: number;
-  message?: string;
-  data: T;
-}
+// Re-export ApiSuccess for backward compatibility
+export type { ApiSuccess } from '@/types/api-responses';
 
 export const managerApi = createApi({
   reducerPath: 'managerApi',

@@ -1,4 +1,4 @@
-import type { AgencyInput, AgencyType, AgencySize } from '@/redux/api/agencyApi';
+import type { AgencyInput, AgencyType } from '@/redux/api/agencyApi';
 import type { Agency } from '@/redux/api/agencyApi';
 import { AgencyFormValues, AGENCY_INITIAL_VALUES } from './types';
 
@@ -6,7 +6,7 @@ export const buildAgencyPayload = (values: AgencyFormValues): AgencyInput => {
   return {
     name: values.name.trim(),
     type: values.type as AgencyType,
-    sizeCategory: values.sizeCategory as AgencySize,
+    sizeCategory: values.sizeCategory as AgencyInput['sizeCategory'],
     primaryServiceJurisdiction: values.primaryServiceJurisdiction.trim(),
     coverageArea: Number(values.coverageArea),
   };

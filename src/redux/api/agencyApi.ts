@@ -1,21 +1,14 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { axiosBaseQuery } from './axiosBaseQuery';
+import type { Agency } from '@/types/agency';
+import { AgencyType, AgencySizeCategory } from '@/types/enums';
+import type { ApiSuccess } from '@/types/api-responses';
 
-export type AgencyType = 'Law enforcement' | 'Fire' | 'EMS' | 'Dispatch' | 'Combined';
-
-export type AgencySize = 'Small (<25)' | 'Medium (25-99)' | 'Large (100-299)' | 'Major (300+)';
-
-export interface Agency {
-  _id: string;
-  userId: string;
-  name: string;
-  type: AgencyType;
-  sizeCategory: AgencySize;
-  primaryServiceJurisdiction: string;
-  coverageArea: number;
-  createdAt: string;
-  updatedAt: string;
-}
+/**
+ * API response type for Agency
+ * Alias to canonical Agency type from @/types/agency
+ */
+export type AgencyResponse = Agency;
 
 export interface AgencyCapacity {
   plan?: string;
@@ -27,17 +20,14 @@ export interface AgencyCapacity {
 export interface AgencyInput {
   name: string;
   type: AgencyType;
-  sizeCategory: AgencySize;
+  sizeCategory: AgencySizeCategory;
   primaryServiceJurisdiction: string;
   coverageArea: number;
 }
 
-export interface ApiSuccess<T> {
-  success: boolean;
-  statusCode?: number;
-  message?: string;
-  data: T;
-}
+// Re-export centralized types
+export type { AgencyType, AgencySizeCategory } from '@/types/enums';
+export type { Agency } from '@/types/agency';
 
 export const agencyApi = createApi({
   reducerPath: 'agencyApi',
@@ -47,7 +37,7 @@ export const agencyApi = createApi({
   tagTypes: ['Agency', 'AgencyList'],
   endpoints: (builder) => ({
     listMyAgencies: builder.query<
-      ApiSuccess<{ agencies: Agency[]; capacity: AgencyCapacity }>,
+      ApiSuccess<{ agencies: AgencyResponse[]; capacity: AgencyCapacity }>,
       void
     >({
       query: () => ({
@@ -57,7 +47,7 @@ export const agencyApi = createApi({
       providesTags: ['AgencyList'],
     }),
 
-    getAgencyById: builder.query<ApiSuccess<Agency>, string>({
+    getAgencyById: builder.query<ApiSuccess<AgencyResponse>, string>({
       query: (id) => ({
         url: `/agencies/${id}`,
         method: 'GET',
@@ -65,7 +55,7 @@ export const agencyApi = createApi({
       providesTags: (_result, _error, id) => [{ type: 'Agency', id }],
     }),
 
-    createAgency: builder.mutation<ApiSuccess<Agency>, AgencyInput>({
+    createAgency: builder.mutation<ApiSuccess<AgencyResponse>, AgencyInput>({
       query: (body) => ({
         url: '/agencies',
         method: 'POST',
@@ -75,7 +65,7 @@ export const agencyApi = createApi({
     }),
 
     updateAgencyById: builder.mutation<
-      ApiSuccess<Agency>,
+      ApiSuccess<AgencyResponse>,
       { id: string; data: Partial<AgencyInput> }
     >({
       query: ({ id, data }) => ({

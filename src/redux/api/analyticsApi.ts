@@ -2,150 +2,21 @@
 import { axiosBaseQuery } from './axiosBaseQuery';
 import { axiosInstance } from './axiosInstance';
 import { WorkforceMetric, AnalyticsFilter } from '@/types';
-
-export interface AnalyticsData {
-  id: string;
-  date: string;
-  metric: string;
-  value: number;
-  category?: string;
-  region?: string;
-  reportId?: string;
-  scenarioId?: string;
-  scenario?: string;
-  [key: string]: any;
-}
-
-export interface AnalyticsResponse {
-  data: AnalyticsData[];
-  summary?: Record<string, any>;
-}
-
-export type DataConfidenceLevel = 'High' | 'Moderate' | 'Low';
-export type BinaryAnswer = 'Yes' | 'No';
-export type TernaryAnswer = 'Yes' | 'No' | 'Partially';
-
-export interface MonthlyCorePayload {
-  organizationalStability: {
-    currentlyFilledPositions: number;
-    currentVacancies: number;
-    resignationsThisMonth: number;
-    newHiresAndAcademyGraduates: number;
-    averageTimeToFillDays: number;
-    leadershipLevelVacancies: number;
-  };
-  operationalResilience: {
-    totalOvertimeHours: number;
-    averageShiftLengthHours: number;
-    shiftCoverageShortages: number;
-    mandatoryOvertimePercentage: number;
-    plannedOvertimePercentage: number;
-    unplannedOvertimePercentage: number;
-    callInAndHoldoverIncidents: number;
-  };
-  fatigueResistance: {
-    totalSickLeaveDaysUsed: number;
-  };
-  peerSupportReadiness: {
-    employeesOnFmlaLeave: number;
-    newFmlaRequests: number;
-    workersCompClaimsFiled: number;
-    peerSupportActivations: number;
-    criticalIncidentExposures: number;
-    lineOfDutyDeathsOrSeriousInjuries: BinaryAnswer;
-    lineOfDutyDeathsOrSeriousInjuriesCount: number;
-  };
-  leadershipSustainability: {
-    leadershipMoraleRating: number;
-    frontlineMoraleRating: number;
-    disciplinaryActions: number;
-    formalGrievancesFiled: number;
-    promotionsOrLeadershipDevelopmentCount: number;
-  };
-  dataConfidence: DataConfidenceLevel;
-}
-
-export interface MonthlyOptionalPayload {
-  budgetAndFiscalContext?: {
-    overtimeBudgetUtilizationPercentage?: number;
-    hiringBudgetAvailability?: 'Full' | 'Limited' | 'Frozen';
-    staffingBudgetConstraint?: 'Yes' | 'No' | 'Under review';
-  };
-  operationalDemandContext?: {
-    totalCallsOrIncidents?: number;
-    responseTimeStandardsMet?: TernaryAnswer;
-    specialtyUnitVacancies?: number;
-  };
-  fatiguePrecisionInputs?: {
-    minimumRestPeriodRequirementMet?: 'Yes' | 'No' | 'No policy';
-    ptoVacationAccrualBacklog?: 'Yes' | 'No' | 'Some personnel affected';
-    returnToDutyIncidentsBeforeFullRecovery?: number;
-  };
-  peerSupportDepthInputs?: {
-    eapReferralsOrUtilizations?: number;
-    topLeadershipConcern?:
-      | 'Staffing shortage'
-      | 'Budget strain'
-      | 'Burnout concerns'
-      | 'Leadership turnover'
-      | 'Morale'
-      | 'Legal or compliance'
-      | 'Other';
-    topLeadershipConcernOther?: string;
-    additionalContextOrNotes?: string;
-  };
-}
-
-export interface AnnualBaselineRequest {
-  agencyIdentity: {
-    agencyName: string;
-    agencyType: 'Law enforcement' | 'Fire' | 'EMS' | 'Dispatch' | 'Combined';
-    agencySizeCategory: 'Small (<25)' | 'Medium (25-99)' | 'Large (100-299)' | 'Major (300+)';
-    primaryServiceJurisdiction: string;
-    geographicCoverageArea: number;
-  };
-  structuralStaffingProfile: {
-    totalAuthorizedPositions: number;
-    totalFundedPositions: number;
-    minimumSafeStaffingLevel: number;
-    specialtyUnitPositionsCount: number;
-    supervisorToStaffRatio: string;
-  };
-  operationalInfrastructure: {
-    standardShiftLengthHours: number;
-    shiftScheduleType: '8-hour' | '10-hour' | '12-hour' | 'Mixed';
-    minimumRestPeriodPolicyExists: BinaryAnswer;
-    activePeerSupportTeam: 'Yes' | 'No' | 'In development';
-    hasEmployeeAssistanceProgram: BinaryAnswer;
-  };
-  goalsAndStrategicDirection: {
-    goal1PrimaryAnnualGoal: string;
-    goal1TargetMetric?: string;
-    goal1Timeframe: 'Annual (Q1-Q4)' | 'First half (Q1-Q2)' | 'Second half (Q3-Q4)';
-    goal2SecondaryAnnualGoal?: string;
-    goal2TargetMetric?: string;
-    goal2Timeframe?: 'Annual' | 'First half' | 'Second half';
-  };
-  baselineYear?: string;
-}
-
-export interface MonthlyCheckInRequest {
-  core: MonthlyCorePayload;
-  optional?: MonthlyOptionalPayload;
-  checkinMonth?: string;
-}
-
-export interface MonthlyCheckInResponse {
-  success: boolean;
-  created: boolean;
-  checkIn: Record<string, any>;
-}
-
-export interface AnnualBaselineResponse {
-  success: boolean;
-  created: boolean;
-  baseline: Record<string, any>;
-}
+import {
+  DataConfidenceLevel,
+  BinaryAnswer,
+  TernaryAnswer,
+  MonthlyCorePayload,
+  MonthlyOptionalPayload,
+  MonthlyCheckInRequest as MonthlyCheckInRequestType,
+  AnnualBaselineRequest,
+} from '@/types/checkin';
+import type {
+  AnalyticsData,
+  AnalyticsResponse,
+  MonthlyCheckInResponse,
+  AnnualBaselineResponse,
+} from '@/types/api-responses';
 
 const getAnalyticsRecords = async (): Promise<AnalyticsData[]> => {
   const response = await axiosInstance.get('/analytics/me');

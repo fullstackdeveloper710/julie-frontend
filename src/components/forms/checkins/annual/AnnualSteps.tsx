@@ -271,9 +271,6 @@ export function AnnualStepContent({ step, formik }: { step: number; formik: Annu
             label: 'Timeframe (Optional)',
             options: GOAL_2_TIMEFRAME_OPTIONS,
           })}
-          <div className="rounded-md border border-slate-700 bg-slate-900/60 px-4 py-3 text-xs text-slate-300">
-            Validation rule: If both G-2 and G-5 are blank, submission is blocked.
-          </div>
         </div>
       );
     default:

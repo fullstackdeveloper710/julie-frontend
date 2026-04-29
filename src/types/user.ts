@@ -1,6 +1,5 @@
-export type UserPlan = 'Early Adopter' | 'Standard' | 'Enterprise';
-
-export type UserRole = 'user' | 'manager' | 'viewer';
+import { UserPlan, UserRole } from './enums';
+import type { Agency } from './agency';
 
 export interface User {
   id: string;
@@ -17,14 +16,6 @@ export interface User {
   showAgencyModal?: boolean;
 }
 
-export interface Agency {
-  id: string;
-  userId: string;
-  name: string;
-  type: 'Law enforcement' | 'Fire' | 'EMS' | 'Dispatch' | 'Combined';
-  sizeCategory: 'Small (<25)' | 'Medium (25-99)' | 'Large (100-299)' | 'Major (300+)';
-  primaryServiceJurisdiction: string;
-  coverageArea: number;
-  createdAt: string;
-  updatedAt: string;
-}
+// Re-export for backward compatibility
+export type { UserPlan, UserRole } from './enums';
+export type { Agency } from './agency';

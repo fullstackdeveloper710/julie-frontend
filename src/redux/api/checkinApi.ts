@@ -1,177 +1,55 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { axiosBaseQuery } from './axiosBaseQuery';
+import type { ApiSuccess } from '@/types/api-responses';
+import {
+  DataConfidenceLevel,
+  BinaryAnswer,
+  TernaryAnswer,
+  HiringBudgetAvailability,
+  StaffingBudgetConstraint,
+  RestRequirementMet,
+  PtoBacklog,
+  TopLeadershipConcern,
+  MonthlyCorePayload,
+  MonthlyOptionalPayload,
+  MonthlyCheckInRequest,
+  AnnualCheckinStatus,
+  AnnualBaselineRequest,
+  AnnualCheckInRecord,
+  AnnualCheckInRequest,
+} from '@/types/checkin';
 
-export type DataConfidenceLevel = 'High' | 'Moderate' | 'Low';
-export type BinaryAnswer = 'Yes' | 'No';
-export type TernaryAnswer = 'Yes' | 'No' | 'Partially';
-export type HiringBudgetAvailability = 'Full' | 'Limited' | 'Frozen';
-export type StaffingBudgetConstraint = 'Yes' | 'No' | 'Under review';
-export type RestRequirementMet = 'Yes' | 'No' | 'No policy';
-export type PtoBacklog = 'Yes' | 'No' | 'Some personnel affected';
-export type TopLeadershipConcern =
-  | 'Staffing shortage'
-  | 'Budget strain'
-  | 'Burnout concerns'
-  | 'Leadership turnover'
-  | 'Morale'
-  | 'Legal or compliance'
-  | 'Other';
+// Re-export types for backward compatibility
+export type {
+  DataConfidenceLevel,
+  BinaryAnswer,
+  TernaryAnswer,
+  HiringBudgetAvailability,
+  StaffingBudgetConstraint,
+  RestRequirementMet,
+  PtoBacklog,
+  TopLeadershipConcern,
+  MonthlyCorePayload,
+  MonthlyOptionalPayload,
+  MonthlyCheckInRequest,
+  AnnualCheckinStatus,
+  AnnualBaselineRequest,
+  AnnualCheckInRecord,
+  AnnualCheckInRequest,
+} from '@/types/checkin';
 
-export interface MonthlyCorePayload {
-  organizationalStability: {
-    currentlyFilledPositions: number;
-    currentVacancies: number;
-    resignationsThisMonth: number;
-    newHiresAndAcademyGraduates: number;
-    averageTimeToFillDays: number;
-    leadershipLevelVacancies: number;
-  };
-  operationalResilience: {
-    totalOvertimeHours: number;
-    averageShiftLengthHours: number;
-    shiftCoverageShortages: number;
-    mandatoryOvertimePercentage: number;
-    plannedOvertimePercentage: number;
-    unplannedOvertimePercentage: number;
-    callInAndHoldoverIncidents: number;
-  };
-  fatigueResistance: {
-    totalSickLeaveDaysUsed: number;
-  };
-  peerSupportReadiness: {
-    employeesOnFmlaLeave: number;
-    newFmlaRequests: number;
-    workersCompClaimsFiled: number;
-    peerSupportActivations: number;
-    criticalIncidentExposures: number;
-    lineOfDutyDeathsOrSeriousInjuries: BinaryAnswer;
-    lineOfDutyDeathsOrSeriousInjuriesCount: number;
-  };
-  leadershipSustainability: {
-    leadershipMoraleRating: number;
-    frontlineMoraleRating: number;
-    disciplinaryActions: number;
-    formalGrievancesFiled: number;
-    promotionsOrLeadershipDevelopmentCount: number;
-  };
-  dataConfidence: DataConfidenceLevel;
-}
+// Re-export additional types from enums for backward compatibility
+export type {
+  AgencyType,
+  AgencySizeCategory,
+  ShiftScheduleType,
+  PeerSupportTeamStatus,
+  GoalTimeframe,
+  SecondaryGoalTimeframe,
+} from '@/types/enums';
 
-export interface MonthlyOptionalPayload {
-  budgetAndFiscalContext?: {
-    overtimeBudgetUtilizationPercentage?: number;
-    hiringBudgetAvailability?: HiringBudgetAvailability;
-    staffingBudgetConstraint?: StaffingBudgetConstraint;
-  };
-  operationalDemandContext?: {
-    totalCallsOrIncidents?: number;
-    responseTimeStandardsMet?: TernaryAnswer;
-    specialtyUnitVacancies?: number;
-  };
-  fatiguePrecisionInputs?: {
-    minimumRestPeriodRequirementMet?: RestRequirementMet;
-    ptoVacationAccrualBacklog?: PtoBacklog;
-    returnToDutyIncidentsBeforeFullRecovery?: number;
-  };
-  peerSupportDepthInputs?: {
-    eapReferralsOrUtilizations?: number;
-    topLeadershipConcern?: TopLeadershipConcern;
-    topLeadershipConcernOther?: string;
-    additionalContextOrNotes?: string;
-  };
-}
-
-export type MonthlyCheckInRequest = MonthlyCorePayload & {
-  optional?: MonthlyOptionalPayload;
-  checkinMonth?: string;
-};
-
-export interface AnnualCheckinStatus {
-  hasCurrentYearCheckin: boolean;
-  currentCheckinId: string | null;
-  editCount: number;
-  canEdit: boolean;
-  canSubmit: boolean;
-  maxEdits: number;
-}
-
-export interface AnnualCheckInRecord {
-  _id: string;
-  userId: string;
-  baselineYear: string;
-  editCount: number;
-  agencyIdentity: {
-    agencyName: string;
-    agencyType: string;
-    agencySizeCategory: string;
-    primaryServiceJurisdiction: string;
-    geographicCoverageArea: number;
-  };
-  structuralStaffingProfile: {
-    totalAuthorizedPositions: number;
-    totalFundedPositions: number;
-    minimumSafeStaffingLevel: number;
-    specialtyUnitPositionsCount: number;
-    supervisorToStaffRatio: string;
-  };
-  operationalInfrastructure: {
-    standardShiftLengthHours: number;
-    shiftScheduleType: string;
-    minimumRestPeriodPolicyExists: string;
-    activePeerSupportTeam: string;
-    hasEmployeeAssistanceProgram: string;
-  };
-  goalsAndStrategicDirection: {
-    goal1PrimaryAnnualGoal: string;
-    goal1TargetMetric?: string;
-    goal1Timeframe: string;
-    goal2SecondaryAnnualGoal?: string;
-    goal2TargetMetric?: string;
-    goal2Timeframe?: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface AnnualCheckInRequest {
-  agencyIdentity: {
-    agencyName: string;
-    agencyType: 'Law enforcement' | 'Fire' | 'EMS' | 'Dispatch' | 'Combined';
-    agencySizeCategory: 'Small (<25)' | 'Medium (25-99)' | 'Large (100-299)' | 'Major (300+)';
-    primaryServiceJurisdiction: string;
-    geographicCoverageArea: number;
-  };
-  structuralStaffingProfile: {
-    totalAuthorizedPositions: number;
-    totalFundedPositions: number;
-    minimumSafeStaffingLevel: number;
-    specialtyUnitPositionsCount: number;
-    supervisorToStaffRatio: string;
-  };
-  operationalInfrastructure: {
-    standardShiftLengthHours: number;
-    shiftScheduleType: '8-hour' | '10-hour' | '12-hour' | 'Mixed';
-    minimumRestPeriodPolicyExists: BinaryAnswer;
-    activePeerSupportTeam: 'Yes' | 'No' | 'In development';
-    hasEmployeeAssistanceProgram: BinaryAnswer;
-  };
-  goalsAndStrategicDirection: {
-    goal1PrimaryAnnualGoal: string;
-    goal1TargetMetric?: string;
-    goal1Timeframe: 'Annual (Q1-Q4)' | 'First half (Q1-Q2)' | 'Second half (Q3-Q4)';
-    goal2SecondaryAnnualGoal?: string;
-    goal2TargetMetric?: string;
-    goal2Timeframe?: 'Annual' | 'First half' | 'Second half';
-  };
-  baselineYear?: string;
-}
-
-export interface ApiSuccess<T> {
-  success: boolean;
-  statusCode?: number;
-  message?: string;
-  data: T;
-}
+// Re-export ApiSuccess for backward compatibility
+export type { ApiSuccess } from '@/types/api-responses';
 
 export const checkinApi = createApi({
   reducerPath: 'checkinApi',
