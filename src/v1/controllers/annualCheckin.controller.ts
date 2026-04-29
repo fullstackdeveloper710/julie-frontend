@@ -9,6 +9,27 @@ import { AuthenticatedRequest } from '@/middlewares/authenticate';
 import MESSAGES from '@/constant/message';
 
 /**
+ * @route GET /api/v1/annual-checkins/status
+ * @desc Returns whether the user can submit or edit this year's annual check-in.
+ */
+export const getAnnualCheckinStatus = async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const userId = req.user?.user_id;
+        if (!userId) {
+            return response.failed(req, res, RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.UNAUTHORIZED);
+        }
+        const status = await Services.annualCheckin.getAnnualCheckinStatus(userId);
+        return response.success(req, res, status, RESPONSE_CODES.OK, MESSAGES.ANNUAL_CHECKIN.STATUS_FETCHED);
+    } catch (error) {
+        handleErrorResponse(error, res, next);
+    }
+};
+
+/**
  * @route POST /api/v1/annual-checkins
  * @desc Submit a new annual check-in baseline
  */

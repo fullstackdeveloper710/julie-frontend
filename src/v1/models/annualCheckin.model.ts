@@ -94,6 +94,7 @@ const AnnualCheckinSchema = new Schema<IAnnualCheckin>(
         structuralStaffingProfile: { type: StructuralStaffingProfileSchema, required: true },
         operationalInfrastructure: { type: OperationalInfrastructureSchema, required: true },
         goalsAndStrategicDirection: { type: GoalsAndStrategicDirectionSchema, required: true },
+        editCount: { type: Number, default: 0, min: 0 },
     },
     {
         timestamps: true,

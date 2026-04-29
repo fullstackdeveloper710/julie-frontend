@@ -56,6 +56,16 @@ export interface IAnnualCheckin {
     structuralStaffingProfile: IStructuralStaffingProfile;
     operationalInfrastructure: IOperationalInfrastructure;
     goalsAndStrategicDirection: IGoalsAndStrategicDirection;
+    editCount: number;
     createdAt: Date;
     updatedAt: Date;
+}
+
+export interface IAnnualCheckinStatus {
+    hasCurrentYearCheckin: boolean;
+    currentCheckinId: string | null;
+    editCount: number;
+    canEdit: boolean;
+    canSubmit: boolean;
+    maxEdits: number;
 }

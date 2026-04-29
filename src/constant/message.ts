@@ -102,8 +102,11 @@ const MESSAGES = {
         CREATED: "Annual check-in submitted successfully",
         UPDATED: "Annual check-in updated successfully",
         FETCHED: "Annual check-ins fetched successfully",
+        STATUS_FETCHED: "Annual check-in status fetched successfully",
         NOT_FOUND: "Annual check-in not found",
         ALREADY_EXISTS: "An annual check-in for this baseline year already exists",
+        EDIT_LIMIT_REACHED: (max: number) =>
+            `This annual check-in has already been edited ${max} time${max === 1 ? '' : 's'} — the maximum allowed per year`,
     },
     TEXT: {
         VERFICATION_SEND: "A verification link has been sent to your email. Please check your inbox."

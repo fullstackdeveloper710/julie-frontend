@@ -5,6 +5,7 @@ import authenticate from '@/middlewares/authenticate';
 const router = Router();
 
 router.post('/', authenticate, annualCheckinController.createAnnualCheckin);
+router.get('/status', authenticate, annualCheckinController.getAnnualCheckinStatus);
 router.get('/me', authenticate, annualCheckinController.getMyAnnualCheckins);
 router.get('/current', authenticate, annualCheckinController.getCurrentAnnualCheckin);
 router.patch('/:id', authenticate, annualCheckinController.updateAnnualCheckin);

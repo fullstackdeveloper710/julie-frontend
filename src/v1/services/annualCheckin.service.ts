@@ -2,7 +2,10 @@ import AnnualCheckin from '../models/annualCheckin.model';
 import { CustomError } from '@/errors/custom.error';
 import RESPONSE_CODES from '@/constant/responseCode';
 import MESSAGES from '@/constant/message';
-import { IAnnualCheckinInput } from '../types/annualCheckin.type';
+import { IAnnualCheckinInput, IAnnualCheckinStatus } from '../types/annualCheckin.type';
+
+/** Maximum number of post-submission edits allowed per year. */
+export const MAX_ANNUAL_EDITS = 2;
 
 const normalizeToYear = (date?: Date | string) => {
     const d = date ? new Date(date) : new Date();
@@ -47,6 +50,7 @@ export const createAnnualCheckin = async (userId: string, data: IAnnualCheckinIn
         structuralStaffingProfile: data.structuralStaffingProfile,
         operationalInfrastructure: data.operationalInfrastructure,
         goalsAndStrategicDirection: sanitizeGoals(data.goalsAndStrategicDirection),
+        editCount: 0,
     });
 };
 
@@ -58,11 +62,58 @@ export const getCurrentAnnualCheckin = async (userId: string) => {
     return await AnnualCheckin.findOne({ userId: userId as any }).sort({ baselineYear: -1 });
 };
 
+/**
+ * Returns the submission/edit status for the current calendar year.
+ * Drives the UI gate: form visible only when canSubmit, edit button visible
+ * only when canEdit.
+ */
+export const getAnnualCheckinStatus = async (userId: string): Promise<IAnnualCheckinStatus> => {
+    const currentYear = normalizeToYear();
+    const checkin = await AnnualCheckin.findOne({
+        userId: userId as any,
+        baselineYear: currentYear,
+    }).select('_id editCount');
+
+    if (!checkin) {
+        return {
+            hasCurrentYearCheckin: false,
+            currentCheckinId: null,
+            editCount: 0,
+            canEdit: false,
+            canSubmit: true,
+            maxEdits: MAX_ANNUAL_EDITS,
+        };
+    }
+
+    const editCount = checkin.editCount ?? 0;
+    return {
+        hasCurrentYearCheckin: true,
+        currentCheckinId: String(checkin._id),
+        editCount,
+        canEdit: editCount < MAX_ANNUAL_EDITS,
+        canSubmit: false,
+        maxEdits: MAX_ANNUAL_EDITS,
+    };
+};
+
 export const updateAnnualCheckin = async (
     id: string,
     userId: string,
     data: Partial<IAnnualCheckinInput>
 ) => {
+    const existing = await AnnualCheckin.findOne({ _id: id as any, userId: userId as any });
+    if (!existing) {
+        throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.ANNUAL_CHECKIN.NOT_FOUND);
+    }
+
+    const editCount = existing.editCount ?? 0;
+    if (editCount >= MAX_ANNUAL_EDITS) {
+        throw new CustomError(
+            RESPONSE_CODES.BAD_REQUEST,
+            MESSAGES.ANNUAL_CHECKIN.EDIT_LIMIT_REACHED(MAX_ANNUAL_EDITS)
+        );
+    }
+
     const updates: Record<string, unknown> = { ...data };
 
     if (updates.baselineYear) {
@@ -74,6 +125,8 @@ export const updateAnnualCheckin = async (
             updates.goalsAndStrategicDirection as IAnnualCheckinInput['goalsAndStrategicDirection']
         );
     }
+
+    updates.editCount = editCount + 1;
 
     const checkin = await AnnualCheckin.findOneAndUpdate(
         { _id: id as any, userId: userId as any },
