@@ -1,13 +1,13 @@
 import bcrypt from 'bcryptjs';
 import User from '../models/user.model.js';
-import { generateAuthTokens } from '../../utils/jwt.util.js';
+import Agency from '../models/agency.model.js';
+import { generateAuthTokens, generateAccessToken, verify } from '../../utils/jwt.util.js';
 import MESSAGES from '../../constant/message.js';
 import RESPONSE_CODES from '../../constant/responseCode.js';
 import { CustomError } from '../../errors/custom.error.js';
 import { generateToken } from '../../utils/random.util.js';
 import { sendVerificationEmail, sendPasswordResetEmail, sendManagerInviteEmail } from '../../email/auth.email.js';
 import crypto from 'crypto';
-import Agency from '../models/agency.model.js';
 import { EUserRole, EUserPlan, EUserStatus } from '../enums/agency.enum.js';
 import { TAuthBase, TSignUpInput, TUserAccount } from '../types/user.type.js';
 
@@ -253,6 +253,31 @@ export const getProfile = async (userId: string) => {
     };
 };
 
+/**
+ * Exchange a valid refresh token for a new access token.
+ * Validates the token, checks the user is still active, then issues
+ * a fresh short-lived access token without requiring re-authentication.
+ */
+export const refreshAccessToken = async (refreshToken: string) => {
+    let payload: { user_id: string };
+    try {
+        payload = verify(refreshToken, 'refresh_token') as { user_id: string };
+    } catch {
+        throw new CustomError(RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.SESSION_EXPIRED);
+    }
+
+    const user = await User.findById(payload.user_id).select('isDeleted status');
+    if (!user || user.isDeleted) {
+        throw new CustomError(RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.PROFILE_NOT_FOUND);
+    }
+    if (user.status === EUserStatus.INACTIVE) {
+        throw new CustomError(RESPONSE_CODES.FORBIDDEN, MESSAGES.MANAGER.ACCOUNT_DISABLED);
+    }
+
+    const access_token = generateAccessToken({ user_id: user._id.toString() });
+    return { access_token };
+};
+
 const ADMIN_SEATS_BY_PLAN: Record<EUserPlan, number> = {
     [EUserPlan.ENTERPRISE]: 4,
     [EUserPlan.STANDARD]: 2,
@@ -266,13 +291,15 @@ export const MAX_ADMIN_SEATS_PER_ACCOUNT = 2;
 
 /**
  * Create an Admin (manager) seat under the current Account Holder.
- * Enforces the 2-seat cap and sends an invite + temp password.
+ * Enforces the plan-based seat cap and sends an invite + temp password.
+ * For Enterprise plans the caller may supply an agencyId to pre-assign;
+ * for all other plans the owner's single agency is assigned automatically.
  */
 export const createManager = async (
     createdByUserId: string | undefined,
-    data: { email: string; fullName?: string; title?: string }
+    data: { email: string; fullName?: string; title?: string; agencyId?: string }
 ) => {
-    const { email, fullName, title } = data;
+    const { email, fullName, title, agencyId } = data;
 
     if (!createdByUserId) {
         throw new CustomError(RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.UNAUTHORIZED);
@@ -302,6 +329,20 @@ export const createManager = async (
         throw new CustomError(RESPONSE_CODES.BAD_REQUEST, MESSAGES.AUTH.EMAIL_ALREADY_EXISTS);
     }
 
+    // Resolve the agency to assign. For enterprise the caller may specify one;
+    // for all plans fall back to the owner's first (and typically only) agency.
+    let resolvedAgencyId: string | undefined;
+    if (agencyId) {
+        const owned = await Agency.findOne({ _id: agencyId as any, userId: createdByUserId as any });
+        if (!owned) {
+            throw new CustomError(RESPONSE_CODES.BAD_REQUEST, MESSAGES.MANAGER.AGENCY_NOT_OWNED);
+        }
+        resolvedAgencyId = String(owned._id);
+    } else {
+        const firstAgency = await Agency.findOne({ userId: createdByUserId as any }).sort({ createdAt: 1 });
+        if (firstAgency) resolvedAgencyId = String(firstAgency._id);
+    }
+
     const tempPassword = crypto.randomBytes(6).toString('hex');
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(tempPassword, salt);
@@ -319,6 +360,7 @@ export const createManager = async (
         plan: creatorPlan,
         role: EUserRole.MANAGER,
         createdBy: createdByUserId,
+        assignedAgencyId: resolvedAgencyId ?? undefined,
     });
 
     await sendManagerInviteEmail(email, verificationToken, tempPassword);
@@ -328,6 +370,7 @@ export const createManager = async (
         email: newUser.email,
         fullName: newUser.fullName,
         title: newUser.title,
+        assignedAgencyId: newUser.assignedAgencyId ?? null,
     };
 };
 
@@ -345,7 +388,7 @@ export const listManagers = async (createdByUserId: string | undefined) => {
             role: EUserRole.MANAGER,
             isDeleted: false,
         })
-            .select('email fullName title isConfirmed status createdAt')
+            .select('email fullName title isConfirmed status assignedAgencyId createdAt')
             .sort({ createdAt: 1 }),
         User.findById(createdByUserId).select('plan'),
     ]);
@@ -394,6 +437,86 @@ export const setManagerStatus = async (
         id: admin._id,
         email: admin.email,
         status: admin.status,
+    };
+};
+
+/**
+ * Resend an invite to an admin who hasn't verified their account yet.
+ * Generates a fresh temp password + verification token and re-sends the email.
+ * Throws if the admin is already confirmed (no point resending).
+ */
+export const resendManagerInvite = async (
+    createdByUserId: string | undefined,
+    adminId: string
+) => {
+    if (!createdByUserId) {
+        throw new CustomError(RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.UNAUTHORIZED);
+    }
+
+    const admin = await User.findOne({
+        _id: adminId,
+        createdBy: createdByUserId as any,
+        role: EUserRole.MANAGER,
+        isDeleted: false,
+    });
+    if (!admin) {
+        throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.MANAGER.NOT_FOUND);
+    }
+    if (admin.isConfirmed) {
+        throw new CustomError(RESPONSE_CODES.BAD_REQUEST, MESSAGES.MANAGER.ALREADY_CONFIRMED);
+    }
+
+    const tempPassword = crypto.randomBytes(6).toString('hex');
+    const salt = await bcrypt.genSalt(10);
+    admin.password = await bcrypt.hash(tempPassword, salt);
+    admin.verificationToken = generateToken();
+    admin.verificationExpires = new Date(Date.now() + 48 * 60 * 60 * 1000);
+    await admin.save();
+
+    await sendManagerInviteEmail(admin.email, admin.verificationToken, tempPassword);
+
+    return { id: admin._id, email: admin.email };
+};
+
+/**
+ * Assign (or re-assign) a specific agency to an admin.
+ * Only available on the Enterprise plan where the owner has multiple agencies.
+ * For other plans the assignment is managed automatically.
+ * Pass agencyId=null to clear the assignment (admin loses all agency access).
+ */
+export const assignManagerAgency = async (
+    createdByUserId: string | undefined,
+    adminId: string,
+    agencyId: string | null
+) => {
+    if (!createdByUserId) {
+        throw new CustomError(RESPONSE_CODES.UNAUTHORIZED, MESSAGES.AUTH.UNAUTHORIZED);
+    }
+
+    const admin = await User.findOne({
+        _id: adminId,
+        createdBy: createdByUserId as any,
+        role: EUserRole.MANAGER,
+        isDeleted: false,
+    });
+    if (!admin) {
+        throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.MANAGER.NOT_FOUND);
+    }
+
+    if (agencyId !== null) {
+        const owned = await Agency.findOne({ _id: agencyId as any, userId: createdByUserId as any });
+        if (!owned) {
+            throw new CustomError(RESPONSE_CODES.BAD_REQUEST, MESSAGES.MANAGER.AGENCY_NOT_OWNED);
+        }
+    }
+
+    admin.assignedAgencyId = agencyId === null ? undefined : agencyId;
+    await admin.save();
+
+    return {
+        id: admin._id,
+        email: admin.email,
+        assignedAgencyId: admin.assignedAgencyId ?? null,
     };
 };
 

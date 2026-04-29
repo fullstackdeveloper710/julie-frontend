@@ -124,6 +124,31 @@ export const signIn = async (req: Request, res: Response, next: NextFunction) =>
 };
 
 /**
+ * @route POST /api/v1/auth/refresh
+ * @desc Exchange a refresh token for a new access token (silent renewal).
+ */
+export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { refresh_token } = req.body ?? {};
+        if (!refresh_token || typeof refresh_token !== 'string') {
+            return res.status(RESPONSE_CODES.BAD_REQUEST).json({
+                success: false,
+                message: 'refresh_token is required',
+                data: null,
+            });
+        }
+        const result = await Services.auth.refreshAccessToken(refresh_token);
+        return res.status(RESPONSE_CODES.OK).json({
+            success: true,
+            message: MESSAGES.AUTH.ACCESS_TOKEN_GENERATED,
+            data: result,
+        });
+    } catch (error) {
+        handleErrorResponse(error, res, next);
+    }
+};
+
+/**
  * @route GET /api/v1/auth/me
  */
 export const getMe = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {

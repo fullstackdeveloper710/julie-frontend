@@ -40,6 +40,11 @@ const UserSchema = new Schema<TUser>(
             type: Schema.Types.ObjectId,
             ref: 'User',
         },
+        assignedAgencyId: {
+            type: Schema.Types.ObjectId,
+            ref: 'agencies',
+            default: null,
+        },
         status: {
             type: String,
             enum: Object.values(EUserStatus),

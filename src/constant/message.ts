@@ -72,6 +72,10 @@ const MESSAGES = {
         ACCOUNT_DISABLED: "Your account is disabled. Please contact the administrator.",
         LIMIT_REACHED: (maxAllowed: number) =>
             `You can create up to ${maxAllowed} admin ${maxAllowed === 1 ? 'seat' : 'seats'} per account`,
+        AGENCY_ASSIGNED: 'Agency assigned to admin successfully',
+        AGENCY_NOT_OWNED: 'The specified agency does not belong to your account',
+        INVITE_RESENT: 'Invitation re-sent successfully',
+        ALREADY_CONFIRMED: 'This admin has already verified their account',
     },
     PRICING: {
         FETCHED: "Pricing fetched successfully",

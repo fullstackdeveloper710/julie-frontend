@@ -12,24 +12,29 @@ const maxAgenciesForPlan = (plan?: string): number => {
 const isOwnedBy = (agencyUserId: unknown, userId: string): boolean =>
     String(agencyUserId) === String(userId);
 
+type ResolvedOwner = {
+    ownerId: string;
+    isAdmin: boolean;
+    selfPlan?: string;
+    /** Set for admin callers: the single agency they may access. null = no agency assigned. */
+    assignedAgencyId: string | null;
+};
+
 /**
  * Resolve the user id whose agencies the caller actually sees. For
  * Account Holders that's themselves; for Admins (role=manager) it's the
- * Account Holder who invited them. Throws if the caller is an admin with no
- * Account Holder linked (legacy data) — which shouldn't happen for new admins
- * since `createdBy` is now persisted at invite time.
+ * Account Holder who invited them. When the admin has an assignedAgencyId
+ * set, agency queries will be further scoped to just that one agency.
  */
-const resolveOwner = async (
-    userId: string
-): Promise<{ ownerId: string; isAdmin: boolean; selfPlan?: string }> => {
-    const user = await User.findById(userId).select('plan role createdBy isDeleted');
+const resolveOwner = async (userId: string): Promise<ResolvedOwner> => {
+    const user = await User.findById(userId).select('plan role createdBy assignedAgencyId isDeleted');
     if (!user || user.isDeleted) {
         throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.USER.NOT_FOUND);
     }
 
     const isAdmin = user.role === EUserRole.MANAGER;
     if (!isAdmin) {
-        return { ownerId: String(user._id), isAdmin: false, selfPlan: user.plan };
+        return { ownerId: String(user._id), isAdmin: false, selfPlan: user.plan, assignedAgencyId: null };
     }
 
     if (!user.createdBy) {
@@ -44,7 +49,8 @@ const resolveOwner = async (
         throw new CustomError(RESPONSE_CODES.NOT_FOUND, 'Account Holder not found');
     }
 
-    return { ownerId: String(accountHolder._id), isAdmin: true, selfPlan: accountHolder.plan };
+    const assignedAgencyId = user.assignedAgencyId ? String(user.assignedAgencyId) : null;
+    return { ownerId: String(accountHolder._id), isAdmin: true, selfPlan: accountHolder.plan, assignedAgencyId };
 };
 
 /**
@@ -91,31 +97,49 @@ export const createAgency = async (userId: string, data: any) => {
 };
 
 /**
- * Get the first/only agency in the caller's effective scope (their own as
- * Account Holder, or the inviter's as Admin). Legacy single-agency endpoint.
+ * Get the first/only agency in the caller's effective scope. For admins
+ * with an assignedAgencyId, that specific agency is returned.
  */
 export const getAgencyByUserId = async (userId: string) => {
-    const { ownerId } = await resolveOwner(userId);
-    const agency = await Agency.findOne({ userId: ownerId as any }).sort({ createdAt: 1 });
-    if (!agency) {
-        throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.AGENCY.NOT_FOUND);
+    const { ownerId, isAdmin, assignedAgencyId } = await resolveOwner(userId);
+
+    if (isAdmin && assignedAgencyId) {
+        const agency = await Agency.findOne({ _id: assignedAgencyId as any, userId: ownerId as any });
+        if (!agency) throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.AGENCY.NOT_FOUND);
+        return agency;
     }
+
+    const agency = await Agency.findOne({ userId: ownerId as any }).sort({ createdAt: 1 });
+    if (!agency) throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.AGENCY.NOT_FOUND);
     return agency;
 };
 
 /**
- * All agencies in the caller's effective scope (own or Account Holder's).
+ * All agencies in the caller's effective scope. For admins with an
+ * assignedAgencyId, only that one agency is returned.
  */
 export const getAgenciesByUserId = async (userId: string) => {
-    const { ownerId } = await resolveOwner(userId);
+    const { ownerId, isAdmin, assignedAgencyId } = await resolveOwner(userId);
+
+    if (isAdmin && assignedAgencyId) {
+        return Agency.find({ _id: assignedAgencyId as any, userId: ownerId as any });
+    }
+
     return Agency.find({ userId: ownerId as any }).sort({ createdAt: 1 });
 };
 
 /**
  * One agency by id, restricted to the caller's effective scope.
+ * Admins with an assignedAgencyId may only access that specific agency.
  */
 export const getAgencyByIdForUser = async (userId: string, agencyId: string) => {
-    const { ownerId } = await resolveOwner(userId);
+    const { ownerId, isAdmin, assignedAgencyId } = await resolveOwner(userId);
+
+    // Admin restricted to a specific agency cannot access any other
+    if (isAdmin && assignedAgencyId && assignedAgencyId !== agencyId) {
+        throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.AGENCY.NOT_FOUND);
+    }
+
     const agency = await Agency.findById(agencyId);
     if (!agency || !isOwnedBy(agency.userId, ownerId)) {
         throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.AGENCY.NOT_FOUND);
@@ -190,7 +214,7 @@ export const updateAgencyById = async (userId: string, agencyId: string, data: a
  * always get `canCreateMore: false` (they don't own seats).
  */
 export const getAgencyCapacity = async (userId: string) => {
-    const { ownerId, isAdmin, selfPlan } = await resolveOwner(userId);
+    const { ownerId, isAdmin, selfPlan, assignedAgencyId } = await resolveOwner(userId);
     const plan = selfPlan;
     const maxAllowed = isAdmin ? 0 : maxAgenciesForPlan(plan);
     const used = await Agency.countDocuments({ userId: ownerId as any });

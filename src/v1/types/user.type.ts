@@ -26,6 +26,7 @@ export type TUser = TUserAccount & {
     isDeleted: boolean;
     title?: string;
     createdBy?: string;
+    assignedAgencyId?: string;
     status?: EUserStatus;
     createdAt: string;
     updatedAt: string;
