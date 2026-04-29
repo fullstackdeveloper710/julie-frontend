@@ -86,6 +86,53 @@ export type MonthlyCheckInRequest = MonthlyCorePayload & {
   checkinMonth?: string;
 };
 
+export interface AnnualCheckinStatus {
+  hasCurrentYearCheckin: boolean;
+  currentCheckinId: string | null;
+  editCount: number;
+  canEdit: boolean;
+  canSubmit: boolean;
+  maxEdits: number;
+}
+
+export interface AnnualCheckInRecord {
+  _id: string;
+  userId: string;
+  baselineYear: string;
+  editCount: number;
+  agencyIdentity: {
+    agencyName: string;
+    agencyType: string;
+    agencySizeCategory: string;
+    primaryServiceJurisdiction: string;
+    geographicCoverageArea: number;
+  };
+  structuralStaffingProfile: {
+    totalAuthorizedPositions: number;
+    totalFundedPositions: number;
+    minimumSafeStaffingLevel: number;
+    specialtyUnitPositionsCount: number;
+    supervisorToStaffRatio: string;
+  };
+  operationalInfrastructure: {
+    standardShiftLengthHours: number;
+    shiftScheduleType: string;
+    minimumRestPeriodPolicyExists: string;
+    activePeerSupportTeam: string;
+    hasEmployeeAssistanceProgram: string;
+  };
+  goalsAndStrategicDirection: {
+    goal1PrimaryAnnualGoal: string;
+    goal1TargetMetric?: string;
+    goal1Timeframe: string;
+    goal2SecondaryAnnualGoal?: string;
+    goal2TargetMetric?: string;
+    goal2Timeframe?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AnnualCheckInRequest {
   agencyIdentity: {
     agencyName: string;
@@ -160,7 +207,7 @@ export const checkinApi = createApi({
       invalidatesTags: ['MonthlyCheckin'],
     }),
 
-    submitAnnualCheckIn: builder.mutation<ApiSuccess<Record<string, any>>, AnnualCheckInRequest>({
+    submitAnnualCheckIn: builder.mutation<ApiSuccess<AnnualCheckInRecord>, AnnualCheckInRequest>({
       query: (data) => ({
         url: '/annual-checkins',
         method: 'POST',
@@ -169,7 +216,15 @@ export const checkinApi = createApi({
       invalidatesTags: ['AnnualCheckin'],
     }),
 
-    getMyAnnualCheckIns: builder.query<ApiSuccess<Record<string, any>[]>, void>({
+    getAnnualCheckInStatus: builder.query<ApiSuccess<AnnualCheckinStatus>, void>({
+      query: () => ({
+        url: '/annual-checkins/status',
+        method: 'GET',
+      }),
+      providesTags: ['AnnualCheckin'],
+    }),
+
+    getMyAnnualCheckIns: builder.query<ApiSuccess<AnnualCheckInRecord[]>, void>({
       query: () => ({
         url: '/annual-checkins/me',
         method: 'GET',
@@ -177,7 +232,7 @@ export const checkinApi = createApi({
       providesTags: ['AnnualCheckin'],
     }),
 
-    getCurrentAnnualCheckIn: builder.query<ApiSuccess<Record<string, any> | null>, void>({
+    getCurrentAnnualCheckIn: builder.query<ApiSuccess<AnnualCheckInRecord | null>, void>({
       query: () => ({
         url: '/annual-checkins/current',
         method: 'GET',
@@ -186,7 +241,7 @@ export const checkinApi = createApi({
     }),
 
     updateAnnualCheckIn: builder.mutation<
-      ApiSuccess<Record<string, any>>,
+      ApiSuccess<AnnualCheckInRecord>,
       { id: string; data: Partial<AnnualCheckInRequest> }
     >({
       query: ({ id, data }) => ({
@@ -204,6 +259,7 @@ export const {
   useGetMyMonthlyCheckInsQuery,
   useUpdateMonthlyCheckInMutation,
   useSubmitAnnualCheckInMutation,
+  useGetAnnualCheckInStatusQuery,
   useGetMyAnnualCheckInsQuery,
   useGetCurrentAnnualCheckInQuery,
   useUpdateAnnualCheckInMutation,

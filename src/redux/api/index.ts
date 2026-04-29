@@ -30,6 +30,7 @@ export {
   useGetMyMonthlyCheckInsQuery,
   useUpdateMonthlyCheckInMutation,
   useSubmitAnnualCheckInMutation,
+  useGetAnnualCheckInStatusQuery,
   useGetMyAnnualCheckInsQuery,
   useGetCurrentAnnualCheckInQuery,
   useUpdateAnnualCheckInMutation,
