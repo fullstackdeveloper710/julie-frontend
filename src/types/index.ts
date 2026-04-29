@@ -1,5 +1,5 @@
 export type { User, Agency } from './user';
-export type { PlanType, BillingInterval, Subscription } from './subscription';
+export type { Subscription, SubscriptionPlanKey, BillingInterval, SubscriptionStatus } from './subscription';
 export type { WorkforceMetric, AnalyticsFilter } from './analytics';
 export type { Report, ReportGenerationRequest } from './report';
 export type { ApiResponse } from './api';

@@ -1,4 +1,4 @@
-import { PlanType, BillingInterval } from './subscription';
+import { SubscriptionPlanKey as PlanType, BillingInterval } from '@/redux/api/subscriptionApi';
 
 export interface PlanFeatures {
   maxUsers: number;
