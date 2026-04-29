@@ -1,10 +1,10 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
-import { logout } from '../slices/userSlice';
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { logout, setAccessToken } from '../slices/userSlice';
 import { clearSelectedAgency } from '../slices/agencySlice';
 import { getBackendApiBaseUrl } from '@/services/backend';
 
 type ReduxLikeStore = {
-  getState: () => { user?: { accessToken?: string | null } };
+  getState: () => { user?: { accessToken?: string | null; refreshToken?: string | null } };
   dispatch: (action: unknown) => unknown;
 };
 
@@ -34,45 +34,90 @@ const isOnAuthPage = (): boolean => {
   return AUTH_PAGES.some((page) => pathname === page || pathname.startsWith(`${page}/`));
 };
 
+// --- Silent refresh state ---
+// Only one refresh request should be in flight at a time. Concurrent 401s queue
+// up here and are resolved/rejected together once the refresh completes.
+let isRefreshing = false;
+type QueueEntry = { resolve: (token: string) => void; reject: (err: unknown) => void };
+let refreshQueue: QueueEntry[] = [];
+
+const drainQueue = (err: unknown, token: string | null) => {
+  refreshQueue.forEach((entry) => (err ? entry.reject(err) : entry.resolve(token!)));
+  refreshQueue = [];
+};
+
+const performLogout = (wasAuthenticated: boolean) => {
+  storeRef?.dispatch(logout());
+  storeRef?.dispatch(clearSelectedAgency());
+  if (typeof window !== 'undefined' && !isOnAuthPage()) {
+    window.location.href = wasAuthenticated
+      ? '/auth/signin?error=Your session has expired. Please sign in again.'
+      : '/auth/signin';
+  }
+};
+
+// ---
+
 axiosInstance.interceptors.request.use((config) => {
   const accessToken = storeRef?.getState().user?.accessToken ?? null;
-
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
-
   return config;
 });
 
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      // Capture pre-logout token state so we can tell a real session
-      // expiry apart from a stray 401 fired during/after an intentional
-      // logout (where the token is already gone). Only the former should
-      // surface the "session expired" message on the signin page.
-      const wasAuthenticated = !!storeRef?.getState().user?.accessToken;
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-      // Clear stale credentials so the next render does not immediately
-      // re-fire authenticated requests with the dead token (which would
-      // 401 again and trigger another redirect → infinite loop). RTK
-      // Query caches are reset on the next successful sign-in via
-      // loginSuccess().
-      storeRef?.dispatch(logout());
-      storeRef?.dispatch(clearSelectedAgency());
-
-      // Only redirect if the user is on a protected route. If they are
-      // already on an auth page (signin, signup, verify, etc.), the
-      // 401 is informational — redirecting again would create a loop.
-      if (typeof window !== 'undefined' && !isOnAuthPage()) {
-        window.location.href = wasAuthenticated
-          ? '/auth/signin?error=Your session has expired. Please sign in again.'
-          : '/auth/signin';
-      }
+    if (error.response?.status !== 401 || originalRequest._retry) {
+      return Promise.reject(error);
     }
 
-    return Promise.reject(error);
+    const refreshToken = storeRef?.getState().user?.refreshToken ?? null;
+
+    // No refresh token stored — log out immediately.
+    if (!refreshToken) {
+      const wasAuthenticated = !!storeRef?.getState().user?.accessToken;
+      performLogout(wasAuthenticated);
+      return Promise.reject(error);
+    }
+
+    // A refresh is already in flight — queue this request to retry once done.
+    if (isRefreshing) {
+      return new Promise<string>((resolve, reject) => {
+        refreshQueue.push({ resolve, reject });
+      }).then((newToken) => {
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        return axiosInstance(originalRequest);
+      });
+    }
+
+    // This is the first 401 — kick off a token refresh.
+    originalRequest._retry = true;
+    isRefreshing = true;
+
+    try {
+      const baseUrl = getBackendApiBaseUrl();
+      const resp = await axios.post(`${baseUrl}/auth/refresh`, { refresh_token: refreshToken });
+      const newAccessToken: string = resp.data?.data?.access_token?.token;
+
+      if (!newAccessToken) throw new Error('No access token in refresh response');
+
+      storeRef?.dispatch(setAccessToken(newAccessToken));
+      drainQueue(null, newAccessToken);
+
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+      return axiosInstance(originalRequest);
+    } catch (refreshError) {
+      drainQueue(refreshError, null);
+      const wasAuthenticated = !!storeRef?.getState().user?.refreshToken;
+      performLogout(wasAuthenticated);
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
   },
 );
 

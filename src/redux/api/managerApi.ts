@@ -8,6 +8,7 @@ export interface AdminSeat {
   title?: string;
   isConfirmed: boolean;
   status: 'active' | 'inactive';
+  assignedAgencyId: string | null;
   createdAt: string;
 }
 
@@ -66,6 +67,26 @@ export const managerApi = createApi({
       invalidatesTags: ['Manager'],
     }),
 
+    resendManagerInvite: builder.mutation<ApiSuccess<{ id: string; email: string }>, string>({
+      query: (id) => ({
+        url: `/managers/${id}/resend-invite`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Manager'],
+    }),
+
+    assignManagerAgency: builder.mutation<
+      ApiSuccess<{ id: string; email: string; assignedAgencyId: string | null }>,
+      { id: string; agencyId: string | null }
+    >({
+      query: ({ id, agencyId }) => ({
+        url: `/managers/${id}/agency`,
+        method: 'PATCH',
+        body: { agencyId },
+      }),
+      invalidatesTags: ['Manager'],
+    }),
+
     deleteManager: builder.mutation<ApiSuccess<{ id: string }>, string>({
       query: (id) => ({
         url: `/managers/${id}`,
@@ -80,5 +101,7 @@ export const {
   useListManagersQuery,
   useCreateManagerMutation,
   useSetManagerStatusMutation,
+  useResendManagerInviteMutation,
+  useAssignManagerAgencyMutation,
   useDeleteManagerMutation,
 } = managerApi;

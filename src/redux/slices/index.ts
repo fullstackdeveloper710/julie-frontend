@@ -1,4 +1,4 @@
-export { default as userReducer, setCredentials, setUser, logout } from './userSlice';
+export { default as userReducer, setCredentials, setUser, setAccessToken, logout } from './userSlice';
 export {
   default as uiReducer,
   toggleSidebar,
