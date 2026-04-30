@@ -248,8 +248,8 @@ export const getPricingPlans = async () => {
 
     const totalAgencies = await Agency.countDocuments({});
     const activeFounderCount = await getActiveFounderCount();
-    const founderAvailable = activeFounderCount < FOUNDER_CAP;
-    const founderSpotsRemaining = Math.max(FOUNDER_CAP - activeFounderCount, 0);
+    const founderAvailable = totalAgencies < FOUNDER_CAP;
+    const founderSpotsRemaining = Math.max(FOUNDER_CAP - totalAgencies, 0);
 
     const planDocs = await PricingPlan.find({ isActive: true }).sort({ sortOrder: 1, createdAt: 1 });
 
