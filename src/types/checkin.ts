@@ -136,6 +136,16 @@ export interface AnnualCheckinStatus {
   canSubmit: boolean;
   maxEdits: number;
 }
+
+export interface MonthlyCheckinStatus {
+  hasCurrentMonthCheckin: boolean;
+  currentCheckinId: string | null;
+  editCount: number;
+  canEdit: boolean;
+  canSubmit: boolean;
+  maxEdits: number;
+  isReadOnly?: boolean;
+}
 export interface AnnualCheckInRecord {
   _id: string;
   userId: string;

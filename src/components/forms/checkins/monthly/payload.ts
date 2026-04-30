@@ -159,6 +159,62 @@ export const clearMonthlyOptionalValues = (values: MonthlyFormValues): MonthlyFo
   return next;
 };
 
+export const recordToMonthlyFormValues = (record: Record<string, any>): MonthlyFormValues => {
+  const n = (v: any): string => (v !== undefined && v !== null ? String(v) : '');
+  const os = record.organizationalStability ?? {};
+  const or = record.operationalResilience ?? {};
+  const fr = record.fatigueResistance ?? {};
+  const ps = record.peerSupportReadiness ?? {};
+  const ls = record.leadershipSustainability ?? {};
+  const opt = record.optional ?? {};
+  const bf = opt.budgetAndFiscalContext ?? {};
+  const od = opt.operationalDemandContext ?? {};
+  const fp = opt.fatiguePrecisionInputs ?? {};
+  const pd = opt.peerSupportDepthInputs ?? {};
+  return {
+    currentlyFilledPositions: n(os.currentlyFilledPositions),
+    currentVacancies: n(os.currentVacancies),
+    resignationsThisMonth: n(os.resignationsThisMonth),
+    newHiresAndAcademyGraduates: n(os.newHiresAndAcademyGraduates),
+    averageTimeToFillDays: n(os.averageTimeToFillDays),
+    leadershipLevelVacancies: n(os.leadershipLevelVacancies),
+    totalOvertimeHours: n(or.totalOvertimeHours),
+    averageShiftLengthHours: n(or.averageShiftLengthHours),
+    shiftCoverageShortages: n(or.shiftCoverageShortages),
+    mandatoryOvertimePercentage: n(or.mandatoryOvertimePercentage),
+    plannedOvertimePercentage: n(or.plannedOvertimePercentage),
+    unplannedOvertimePercentage: n(or.unplannedOvertimePercentage),
+    callInAndHoldoverIncidents: n(or.callInAndHoldoverIncidents),
+    totalSickLeaveDaysUsed: n(fr.totalSickLeaveDaysUsed),
+    employeesOnFmlaLeave: n(ps.employeesOnFmlaLeave),
+    newFmlaRequests: n(ps.newFmlaRequests),
+    workersCompClaimsFiled: n(ps.workersCompClaimsFiled),
+    peerSupportActivations: n(ps.peerSupportActivations),
+    criticalIncidentExposures: n(ps.criticalIncidentExposures),
+    lineOfDutyDeathsOrSeriousInjuries: n(ps.lineOfDutyDeathsOrSeriousInjuries),
+    lineOfDutyDeathsOrSeriousInjuriesCount: n(ps.lineOfDutyDeathsOrSeriousInjuriesCount),
+    leadershipMoraleRating: n(ls.leadershipMoraleRating),
+    frontlineMoraleRating: n(ls.frontlineMoraleRating),
+    disciplinaryActions: n(ls.disciplinaryActions),
+    formalGrievancesFiled: n(ls.formalGrievancesFiled),
+    promotionsOrLeadershipDevelopmentCount: n(ls.promotionsOrLeadershipDevelopmentCount),
+    dataConfidence: n(record.dataConfidence),
+    overtimeBudgetUtilizationPercentage: n(bf.overtimeBudgetUtilizationPercentage),
+    hiringBudgetAvailability: n(bf.hiringBudgetAvailability),
+    staffingBudgetConstraint: n(bf.staffingBudgetConstraint),
+    totalCallsOrIncidents: n(od.totalCallsOrIncidents),
+    responseTimeStandardsMet: n(od.responseTimeStandardsMet),
+    specialtyUnitVacancies: n(od.specialtyUnitVacancies),
+    minimumRestPeriodRequirementMet: n(fp.minimumRestPeriodRequirementMet),
+    ptoVacationAccrualBacklog: n(fp.ptoVacationAccrualBacklog),
+    returnToDutyIncidentsBeforeFullRecovery: n(fp.returnToDutyIncidentsBeforeFullRecovery),
+    eapReferralsOrUtilizations: n(pd.eapReferralsOrUtilizations),
+    topLeadershipConcern: n(pd.topLeadershipConcern),
+    topLeadershipConcernOther: n(pd.topLeadershipConcernOther),
+    additionalContextOrNotes: n(pd.additionalContextOrNotes),
+  };
+};
+
 export const getActiveMonthlyStepFields = (
   values: MonthlyFormValues,
   fields: string[],

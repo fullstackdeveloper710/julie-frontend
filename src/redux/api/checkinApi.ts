@@ -13,6 +13,7 @@ import {
   MonthlyCorePayload,
   MonthlyOptionalPayload,
   MonthlyCheckInRequest,
+  MonthlyCheckinStatus,
   AnnualCheckinStatus,
   AnnualBaselineRequest,
   AnnualCheckInRecord,
@@ -32,6 +33,7 @@ export type {
   MonthlyCorePayload,
   MonthlyOptionalPayload,
   MonthlyCheckInRequest,
+  MonthlyCheckinStatus,
   AnnualCheckinStatus,
   AnnualBaselineRequest,
   AnnualCheckInRecord,
@@ -85,6 +87,22 @@ export const checkinApi = createApi({
       invalidatesTags: ['MonthlyCheckin'],
     }),
 
+    getMonthlyCheckInStatus: builder.query<ApiSuccess<MonthlyCheckinStatus>, void>({
+      query: () => ({
+        url: '/checkins/status',
+        method: 'GET',
+      }),
+      providesTags: ['MonthlyCheckin'],
+    }),
+
+    getCurrentMonthlyCheckIn: builder.query<ApiSuccess<Record<string, any> | null>, void>({
+      query: () => ({
+        url: '/checkins/current',
+        method: 'GET',
+      }),
+      providesTags: ['MonthlyCheckin'],
+    }),
+
     submitAnnualCheckIn: builder.mutation<ApiSuccess<AnnualCheckInRecord>, AnnualCheckInRequest>({
       query: (data) => ({
         url: '/annual-checkins',
@@ -133,6 +151,8 @@ export const checkinApi = createApi({
 });
 
 export const {
+  useGetMonthlyCheckInStatusQuery,
+  useGetCurrentMonthlyCheckInQuery,
   useSubmitMonthlyCheckInMutation,
   useGetMyMonthlyCheckInsQuery,
   useUpdateMonthlyCheckInMutation,

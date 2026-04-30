@@ -3,7 +3,7 @@
 import React, { useRef, useState } from 'react';
 import { useFormik } from 'formik';
 import { Button } from '@/components/ui';
-import { useSubmitMonthlyCheckInMutation } from '@/hooks';
+import { useSubmitMonthlyCheckInMutation, useUpdateMonthlyCheckInMutation } from '@/hooks';
 import { extractRtkErrorMessage } from '@/utils/rtkErrorHandler';
 
 import {
@@ -22,40 +22,58 @@ import {
   buildMonthlyRequest,
   clearMonthlyOptionalValues,
   getActiveMonthlyStepFields,
+  recordToMonthlyFormValues,
 } from './payload';
 import { MonthlyCoreStepContent, MonthlyOptionalStepContent } from './MonthlySteps';
 import type { MonthlyFormValues } from './types';
 
-export function MonthlyCheckInForm() {
+interface MonthlyCheckInFormProps {
+  editId?: string;
+  initialRecord?: Record<string, any>;
+  onSuccess?: () => void;
+}
+
+export function MonthlyCheckInForm({ editId, initialRecord, onSuccess }: MonthlyCheckInFormProps = {}) {
+  const isEditMode = !!editId;
+
   const [currentCoreStep, setCurrentCoreStep] = useState(1);
   const [showOptionalFlow, setShowOptionalFlow] = useState(false);
   const [currentOptionalStep, setCurrentOptionalStep] = useState(1);
   const [successMessage, setSuccessMessage] = useState('');
   const submitWithOptionalRef = useRef(false);
 
-  const [submitMonthlyCheckIn, { isLoading: isSubmitting, error: submitError }] =
+  const [submitMonthlyCheckIn, { isLoading: isWorkingLoad, error: submitError }] =
     useSubmitMonthlyCheckInMutation();
+  const [updateMonthlyCheckIn, { isLoading: isUpdating, error: updateError }] =
+    useUpdateMonthlyCheckInMutation();
 
-  const submitErrorMessage = extractRtkErrorMessage(submitError);
+  const isWorking = isWorkingLoad || isUpdating;
+  const submitErrorMessage = extractRtkErrorMessage(submitError ?? updateError);
 
   const formik = useFormik<MonthlyFormValues>({
-    initialValues: MONTHLY_INITIAL_VALUES,
+    initialValues: initialRecord ? recordToMonthlyFormValues(initialRecord) : MONTHLY_INITIAL_VALUES,
     validationSchema: monthlyValidationSchema,
     onSubmit: async (values, { resetForm }) => {
       setSuccessMessage('');
 
       try {
-        await submitMonthlyCheckIn(
-          buildMonthlyRequest(values, submitWithOptionalRef.current),
-        ).unwrap();
+        const payload = buildMonthlyRequest(values, submitWithOptionalRef.current);
 
-        setSuccessMessage('Monthly check-in submitted successfully.');
-        setCurrentCoreStep(1);
-        setShowOptionalFlow(false);
-        setCurrentOptionalStep(1);
-        submitWithOptionalRef.current = false;
-        resetForm();
-        window.scrollTo(0, 0);
+        if (isEditMode && editId) {
+          await updateMonthlyCheckIn({ id: editId, data: payload }).unwrap();
+          setSuccessMessage('Monthly check-in updated successfully.');
+          onSuccess?.();
+        } else {
+          await submitMonthlyCheckIn(payload).unwrap();
+          setSuccessMessage('Monthly check-in submitted successfully.');
+          setCurrentCoreStep(1);
+          setShowOptionalFlow(false);
+          setCurrentOptionalStep(1);
+          submitWithOptionalRef.current = false;
+          resetForm();
+          window.scrollTo(0, 0);
+          onSuccess?.();
+        }
       } catch {
         setSuccessMessage('');
       }
@@ -163,11 +181,11 @@ export function MonthlyCheckInForm() {
 
       <StepNavigation
         onBack={handleBack}
-        backDisabled={(!showOptionalFlow && currentCoreStep === 1) || isSubmitting}
+        backDisabled={(!showOptionalFlow && currentCoreStep === 1) || isWorking}
         rightSlot={
           <>
             {!showOptionalFlow && currentCoreStep < MONTHLY_CORE_STEPS.length && (
-              <PrimaryStepButton onClick={handleNext} disabled={isSubmitting}>
+              <PrimaryStepButton onClick={handleNext} disabled={isWorking}>
                 Next
               </PrimaryStepButton>
             )}
@@ -177,14 +195,14 @@ export function MonthlyCheckInForm() {
                 <Button
                   type="button"
                   onClick={handleOpenOptional}
-                  disabled={isSubmitting}
+                  disabled={isWorking}
                   buttonClassName={TERTIARY_BUTTON_CLASS}
                   style={{ fontFamily: HEADING_FONT_FAMILY }}
                 >
                   More (Optional)
                 </Button>
-                <PrimaryStepButton onClick={() => handleSubmit(false)} disabled={isSubmitting}>
-                  {isSubmitting ? 'Submitting...' : 'Submit Monthly Core'}
+                <PrimaryStepButton onClick={() => handleSubmit(false)} disabled={isWorking}>
+                  {isWorking ? 'Saving...' : isEditMode ? 'Update Monthly Core' : 'Submit Monthly Core'}
                 </PrimaryStepButton>
               </div>
             )}
@@ -192,7 +210,7 @@ export function MonthlyCheckInForm() {
             {showOptionalFlow && (
               <div className="flex gap-3 flex-wrap">
                 {currentOptionalStep < MONTHLY_OPTIONAL_STEPS.length && (
-                  <PrimaryStepButton onClick={handleNext} disabled={isSubmitting}>
+                  <PrimaryStepButton onClick={handleNext} disabled={isWorking}>
                     Next
                   </PrimaryStepButton>
                 )}
@@ -200,16 +218,16 @@ export function MonthlyCheckInForm() {
                 <Button
                   type="button"
                   onClick={() => handleSubmit(false)}
-                  disabled={isSubmitting}
+                  disabled={isWorking}
                   buttonClassName={SECONDARY_BUTTON_CLASS}
                   style={{ fontFamily: HEADING_FONT_FAMILY }}
                 >
-                  {isSubmitting ? 'Submitting...' : 'Skip Optional And Submit Core'}
+                  {isWorking ? 'Saving...' : isEditMode ? 'Skip Optional And Update Core' : 'Skip Optional And Submit Core'}
                 </Button>
 
                 {currentOptionalStep === MONTHLY_OPTIONAL_STEPS.length && (
-                  <PrimaryStepButton onClick={() => handleSubmit(true)} disabled={isSubmitting}>
-                    {isSubmitting ? 'Submitting...' : 'Submit Core + Optional'}
+                  <PrimaryStepButton onClick={() => handleSubmit(true)} disabled={isWorking}>
+                    {isWorking ? 'Saving...' : isEditMode ? 'Update Core + Optional' : 'Submit Core + Optional'}
                   </PrimaryStepButton>
                 )}
               </div>

@@ -33,15 +33,24 @@ export const axiosBaseQuery =
     unknown,
     unknown
   > =>
-  async ({ url, method = 'GET', data, body, params, headers }) => {
+  async ({ url, method = 'GET', data, body, params, headers }, { getState }) => {
     try {
       const requestUrl = resolveRequestUrl(baseUrl, url);
+
+      // Inject the currently selected agency so the backend can scope data correctly.
+      // The backend ignores this for managers/dept_users (uses their assigned agency).
+      const state = getState() as { agency?: { selectedAgencyId?: string | null } };
+      const selectedAgencyId = state.agency?.selectedAgencyId ?? null;
+
+      const mergedParams = selectedAgencyId
+        ? { agencyId: selectedAgencyId, ...params }
+        : params;
 
       const result = await axiosInstance({
         url: requestUrl,
         method,
         data: body ?? data,
-        params,
+        params: mergedParams,
         headers,
       });
 

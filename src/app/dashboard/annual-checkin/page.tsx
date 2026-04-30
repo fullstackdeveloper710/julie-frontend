@@ -278,8 +278,8 @@ export default function AnnualCheckInPage() {
   const { data: userResp } = useGetCurrentUserQuery();
   const isAdmin = [USER_ROLE.MANAGER, USER_ROLE.DEPARTMENT_USER].includes(userResp?.data?.role as USER_ROLE);
 
-  const { data: statusResp, isLoading: isStatusLoading } = useGetAnnualCheckInStatusQuery();
-  const { data: currentResp, isLoading: isCurrentLoading } = useGetCurrentAnnualCheckInQuery();
+  const { data: statusResp, isLoading: isStatusLoading, isFetching: isStatusFetching } = useGetAnnualCheckInStatusQuery();
+  const { data: currentResp, isLoading: isCurrentLoading, isFetching: isCurrentFetching } = useGetCurrentAnnualCheckInQuery();
   const { data: allResp } = useGetMyAnnualCheckInsQuery();
 
   const status = statusResp?.data;
@@ -294,7 +294,7 @@ export default function AnnualCheckInPage() {
     },
   );
 
-  if (isStatusLoading || isCurrentLoading) {
+  if (isStatusLoading || isCurrentLoading || isStatusFetching || isCurrentFetching) {
     return (
       <div className="px-7 py-8">
         <p className="text-sm text-slate-400">Loading…</p>

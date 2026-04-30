@@ -26,6 +26,8 @@ export {
 } from './analyticsApi';
 export {
   checkinApi,
+  useGetMonthlyCheckInStatusQuery,
+  useGetCurrentMonthlyCheckInQuery,
   useSubmitMonthlyCheckInMutation,
   useGetMyMonthlyCheckInsQuery,
   useUpdateMonthlyCheckInMutation,

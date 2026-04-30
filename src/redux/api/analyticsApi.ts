@@ -2,6 +2,7 @@
 import { axiosBaseQuery } from './axiosBaseQuery';
 import { axiosInstance } from './axiosInstance';
 import { WorkforceMetric, AnalyticsFilter } from '@/types';
+import { store } from '../store';
 import {
   DataConfidenceLevel,
   BinaryAnswer,
@@ -19,7 +20,9 @@ import type {
 } from '@/types/api-responses';
 
 const getAnalyticsRecords = async (): Promise<AnalyticsData[]> => {
-  const response = await axiosInstance.get('/analytics/me');
+  const selectedAgencyId = store.getState().agency?.selectedAgencyId ?? null;
+  const params = selectedAgencyId ? { agencyId: selectedAgencyId } : undefined;
+  const response = await axiosInstance.get('/analytics/me', { params });
   const payload = response.data;
   return Array.isArray(payload?.data) ? payload.data : [];
 };
