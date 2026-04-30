@@ -1,9 +1,20 @@
+import { Types } from 'mongoose';
 import Agency from '../models/agency.model';
 import PricingPlan, { IPricingPlan } from '../models/pricingPlan.model';
+import Subscription from '../models/subscription.model';
 
-const FOUNDING_SPOT_LIMIT = 20;
+// ── Constants ────────────────────────────────────────────────────────────────
 
-type PublicPlanId = 'founding' | 'early_adopter' | 'standard' | 'enterprise';
+export const FOUNDER_CAP = 20;
+export const FOUNDER_MONTHLY = 149;
+export const FOUNDER_ANNUAL = 1639;        // 149 × 11
+export const FOUNDER_BILLING_PAUSE_DAYS = 90;
+export const FOUNDER_COMMITMENT_MONTHS = 12;
+export const FOUNDER_REQUIRED_CHECKINS = 3;
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+type PublicPlanId = 'founder' | 'essentials' | 'professional' | 'enterprise';
 
 interface PublicPricingPlan {
     id: PublicPlanId;
@@ -25,11 +36,11 @@ interface PublicPricingPlan {
         scenarioModels: number;
         advancedAnalytics: boolean;
         apiAccess: boolean;
-        trialDays: number | null;
+        aiChat: boolean;
         adminSeats: number;
-        viewerSeats: number;
-        additionalAgencyAdminSeats?: number;
-        additionalAgencyViewerSeats?: number;
+        holderSeats: number;
+        additionalDeptAdminSeats?: number;
+        additionalDeptHolderSeats?: number;
     };
     pricing: {
         monthly: number | null;
@@ -37,87 +48,35 @@ interface PublicPricingPlan {
     };
     available: boolean;
     annualSavings: string | null;
+    founderRules?: {
+        billingPauseDays: number;
+        minCommitmentMonths: number;
+        requiredConsecutiveCheckins: number;
+        earlyCancellationNote: string;
+    };
 }
 
-const PRICING_PLANS: Array<Omit<PublicPricingPlan, 'available' | 'annualSavings'>> = [
+// ── Plan definitions ─────────────────────────────────────────────────────────
+
+const ALL_PLANS: Array<Omit<PublicPricingPlan, 'available' | 'annualSavings'>> = [
     {
-        id: 'founding',
-        name: 'Founding',
-        description: 'Perfect for early adopters',
-        badge: 'Founding Rate',
+        id: 'founder',
+        name: 'Founder',
+        description: 'Full Professional access at a permanently locked rate',
+        badge: 'FOUNDER',
         display: {
-            priceLabel: '$149',
+            priceLabel: `$${FOUNDER_MONTHLY}`,
             priceIntervalLabel: '/mo',
-            priceNote: 'Locked forever after trial',
-            promo: 'Free 90 days to start',
+            priceNote: `$${FOUNDER_ANNUAL}/yr · Price locked forever`,
+            promo: `${FOUNDER_BILLING_PAUSE_DAYS}-day billing pause included`,
             ctaLabel: 'Claim Founding Rate',
         },
         featureHighlights: [
-            '90-day free trial',
-            'Locked for life price on activation',
-            'Full platform access',
-            'All Intelligence Report features',
-        ],
-        features: {
-            maxUsers: 3,
-            maxReports: -1,
-            aiReportsPerMonth: -1,
-            scenarioModels: -1,
-            advancedAnalytics: true,
-            apiAccess: false,
-            trialDays: 90,
-            adminSeats: 2,
-            viewerSeats: 1,
-        },
-        pricing: {
-            monthly: 149,
-            annual: 1499,
-        },
-    },
-    {
-        id: 'early_adopter',
-        name: 'Early Adopter',
-        description: 'Growing agencies',
-        display: {
-            priceLabel: '$249',
-            priceIntervalLabel: '/mo',
-            priceNote: 'Best for teams getting established',
-            ctaLabel: 'Get Started',
-        },
-        featureHighlights: [
-            'Full platform access',
-            'All Intelligence Report features',
-        ],
-        features: {
-            maxUsers: 15,
-            maxReports: -1,
-            aiReportsPerMonth: -1,
-            scenarioModels: -1,
-            advancedAnalytics: true,
-            apiAccess: false,
-            trialDays: null,
-            adminSeats: 2,
-            viewerSeats: 1,
-        },
-        pricing: {
-            monthly: 249,
-            annual: 2739,
-        },
-    },
-    {
-        id: 'standard',
-        name: 'Standard',
-        description: 'Established agencies',
-        display: {
-            priceLabel: '$499',
-            priceIntervalLabel: '/mo',
-            priceNote: 'Annual billing saves 8-10%',
-            ctaLabel: 'Get Started',
-        },
-        featureHighlights: [
-            'API access',
-            'Full platform access',
-            'All Intelligence Report features',
+            'Everything in Professional',
+            'Price locked for life — never auto-upgraded',
+            `${FOUNDER_BILLING_PAUSE_DAYS}-day billing suspension · activates month 4`,
+            `${FOUNDER_COMMITMENT_MONTHS}-month minimum commitment`,
+            `Must maintain ${FOUNDER_REQUIRED_CHECKINS} consecutive monthly check-ins`,
         ],
         features: {
             maxUsers: -1,
@@ -126,29 +85,94 @@ const PRICING_PLANS: Array<Omit<PublicPricingPlan, 'available' | 'annualSavings'
             scenarioModels: -1,
             advancedAnalytics: true,
             apiAccess: true,
-            trialDays: null,
+            aiChat: true,
             adminSeats: 2,
-            viewerSeats: 1,
+            holderSeats: 1,
         },
         pricing: {
-            monthly: 499,
-            annual: 5489,
+            monthly: FOUNDER_MONTHLY,
+            annual: FOUNDER_ANNUAL,
         },
+        founderRules: {
+            billingPauseDays: FOUNDER_BILLING_PAUSE_DAYS,
+            minCommitmentMonths: FOUNDER_COMMITMENT_MONTHS,
+            requiredConsecutiveCheckins: FOUNDER_REQUIRED_CHECKINS,
+            earlyCancellationNote: `Full annual amount ($${FOUNDER_ANNUAL}) charged on early cancellation`,
+        },
+    },
+    {
+        id: 'essentials',
+        name: 'Essentials',
+        description: 'Core tools for growing agencies',
+        display: {
+            priceLabel: '$199',
+            priceIntervalLabel: '/mo',
+            priceNote: '$2,189/yr · Annual saves 1 month',
+            ctaLabel: 'Get Started',
+        },
+        featureHighlights: [
+            'Full platform access',
+            'All Intelligence Report features',
+            'Limited feature set',
+            'No minimum commitment',
+        ],
+        features: {
+            maxUsers: -1,
+            maxReports: -1,
+            aiReportsPerMonth: -1,
+            scenarioModels: -1,
+            advancedAnalytics: true,
+            apiAccess: false,
+            aiChat: false,
+            adminSeats: 2,
+            holderSeats: 1,
+        },
+        pricing: { monthly: 199, annual: 2189 },
+    },
+    {
+        id: 'professional',
+        name: 'Professional',
+        description: 'Full suite including all AI features',
+        display: {
+            priceLabel: '$499',
+            priceIntervalLabel: '/mo',
+            priceNote: '$4,389/yr · Annual saves 1 month',
+            ctaLabel: 'Get Started',
+        },
+        featureHighlights: [
+            'Everything in Essentials',
+            'AI Chat',
+            'API access',
+            'No minimum commitment',
+        ],
+        features: {
+            maxUsers: -1,
+            maxReports: -1,
+            aiReportsPerMonth: -1,
+            scenarioModels: -1,
+            advancedAnalytics: true,
+            apiAccess: true,
+            aiChat: true,
+            adminSeats: 2,
+            holderSeats: 1,
+        },
+        pricing: { monthly: 499, annual: 4389 },
     },
     {
         id: 'enterprise',
         name: 'Government / Enterprise',
-        description: 'Multi-agency solutions',
+        description: 'Multi-department solutions',
         display: {
-            priceLabel: '$7K',
+            priceLabel: '$10K',
             priceIntervalLabel: '/yr',
-            priceNote: 'First dept + $2K each additional',
+            priceNote: 'Base · +$3K/yr per add-on department',
             ctaLabel: 'Get Started',
         },
         featureHighlights: [
-            'Multi-department access',
+            'All Professional features',
+            '1 master holder + 2 dept holders + 4 dept admins (7 seats)',
+            '+3 seats per additional department',
             'Dedicated support',
-            'API access',
         ],
         features: {
             maxUsers: -1,
@@ -157,82 +181,102 @@ const PRICING_PLANS: Array<Omit<PublicPricingPlan, 'available' | 'annualSavings'
             scenarioModels: -1,
             advancedAnalytics: true,
             apiAccess: true,
-            trialDays: null,
+            aiChat: true,
             adminSeats: 4,
-            viewerSeats: 2,
-            additionalAgencyAdminSeats: 2,
-            additionalAgencyViewerSeats: 1,
+            holderSeats: 3,
+            additionalDeptAdminSeats: 2,
+            additionalDeptHolderSeats: 1,
         },
-        pricing: {
-            monthly: null,
-            annual: 7000,
-        },
+        pricing: { monthly: null, annual: 10000 },
     },
 ];
 
-const getAnnualSavings = (pricing: { monthly: number | null; annual: number | null }): string | null => {
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+const calcAnnualSavings = (pricing: { monthly: number | null; annual: number | null }): string | null => {
     const { monthly, annual } = pricing;
-
-    if (!monthly || !annual) {
-        return null;
-    }
-
-    const monthlyTotal = monthly * 12;
-    const savings = (((monthlyTotal - annual) / monthlyTotal) * 100).toFixed(0);
-    return `${savings}%`;
+    if (!monthly || !annual) return null;
+    const saved = monthly * 12 - annual;
+    if (saved <= 0) return null;
+    const pct = ((saved / (monthly * 12)) * 100).toFixed(0);
+    return `${pct}% ($${saved.toLocaleString()})`;
 };
+
+export const getActiveFounderCount = async (): Promise<number> =>
+    Subscription.countDocuments({
+        plan: 'founder',
+        foundingRateDowngradedAt: null,
+    });
+
+export const isFounderPlanAvailable = async (): Promise<boolean> => {
+    const count = await getActiveFounderCount();
+    return count < FOUNDER_CAP;
+};
+
+// ── Seed helper ──────────────────────────────────────────────────────────────
 
 const ensurePricingPlans = async () => {
-    await PricingPlan.bulkWrite(
-        PRICING_PLANS.map((plan, index) => ({
-            updateOne: {
-                filter: { planKey: plan.id },
-                update: {
-                    $setOnInsert: {
-                        ...plan,
-                        planKey: plan.id,
-                        sortOrder: index + 1,
-                        isActive: true,
-                        foundingAgencyLimit: plan.id === 'founding' ? FOUNDING_SPOT_LIMIT : null,
-                        hideWhenSoldOut: plan.id === 'founding',
-                    },
+    for (const [index, plan] of ALL_PLANS.entries()) {
+        await PricingPlan.updateOne(
+            { planKey: plan.id },
+            {
+                $setOnInsert: {
+                    planKey: plan.id,
+                    sortOrder: index + 1,
+                    isActive: true,
+                    foundingAgencyLimit: plan.id === 'founder' ? FOUNDER_CAP : null,
+                    hideWhenSoldOut: plan.id === 'founder',
+                    name: plan.name,
+                    description: plan.description,
+                    badge: plan.badge,
+                    display: plan.display,
+                    featureHighlights: plan.featureHighlights,
+                    features: plan.features,
+                    pricing: plan.pricing,
+                    founderRules: plan.founderRules,
                 },
-                upsert: true,
             },
-        }))
-    );
+            { upsert: true }
+        );
+    }
 };
+
+// ── Public API ───────────────────────────────────────────────────────────────
 
 export const getPricingPlans = async () => {
     await ensurePricingPlans();
 
     const totalAgencies = await Agency.countDocuments({});
+    const activeFounderCount = await getActiveFounderCount();
+    const founderAvailable = activeFounderCount < FOUNDER_CAP;
+    const founderSpotsRemaining = Math.max(FOUNDER_CAP - activeFounderCount, 0);
+
     const planDocs = await PricingPlan.find({ isActive: true }).sort({ sortOrder: 1, createdAt: 1 });
 
     const plans: PublicPricingPlan[] = planDocs
-        .map((plan: IPricingPlan) => ({
-            id: plan.planKey as PublicPlanId,
-            name: plan.name,
-            description: plan.description,
-            badge: plan.badge,
-            display: plan.display,
-            featureHighlights: plan.featureHighlights,
-            features: plan.features,
-            pricing: plan.pricing,
-            available: !plan.hideWhenSoldOut || totalAgencies < (plan.foundingAgencyLimit || 0),
-            annualSavings: getAnnualSavings(plan.pricing),
-        }))
-        .filter((plan) => plan.available);
-
-    const foundingPlan = planDocs.find((plan) => plan.planKey === 'founding');
-    const foundingLimit = foundingPlan?.foundingAgencyLimit || FOUNDING_SPOT_LIMIT;
-    const foundingAvailable = totalAgencies < foundingLimit;
-    const remainingFoundingSpots = Math.max(foundingLimit - totalAgencies, 0);
+        .map((doc: IPricingPlan) => {
+            const base = ALL_PLANS.find((p) => p.id === doc.planKey);
+            if (!base) return null;
+            return {
+                ...base,
+                available: true,
+                annualSavings: calcAnnualSavings(doc.pricing),
+            } as PublicPricingPlan;
+        })
+        .filter((p): p is PublicPricingPlan => p !== null)
+        .filter((p) => {
+            if (p.id === 'founder') return founderAvailable;
+            if (p.id === 'professional') return !founderAvailable;
+            return true;
+        });
 
     return {
         plans,
-        foundingAvailable,
-        remainingFoundingSpots,
+        founderAvailable,
+        founderSpotsRemaining,
+        founderCapTotal: FOUNDER_CAP,
         totalAgencies,
+        foundingAvailable: founderAvailable,
+        remainingFoundingSpots: founderSpotsRemaining,
     };
 };

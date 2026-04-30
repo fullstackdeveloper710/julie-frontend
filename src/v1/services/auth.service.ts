@@ -279,9 +279,10 @@ export const refreshAccessToken = async (refreshToken: string) => {
 };
 
 const ADMIN_SEATS_BY_PLAN: Record<EUserPlan, number> = {
+    [EUserPlan.FOUNDER]: 2,
+    [EUserPlan.ESSENTIALS]: 2,
+    [EUserPlan.PROFESSIONAL]: 2,
     [EUserPlan.ENTERPRISE]: 4,
-    [EUserPlan.STANDARD]: 2,
-    [EUserPlan.EARLY_ADOPTER]: 2,
 };
 
 const getMaxAdminSeats = (plan: EUserPlan): number => ADMIN_SEATS_BY_PLAN[plan] ?? 2;
@@ -309,7 +310,7 @@ export const createManager = async (
     if (!creator || creator.isDeleted) {
         throw new CustomError(RESPONSE_CODES.NOT_FOUND, MESSAGES.USER.NOT_FOUND);
     }
-    const creatorPlan = (creator.plan as EUserPlan) ?? EUserPlan.STANDARD;
+    const creatorPlan = (creator.plan as EUserPlan) ?? EUserPlan.ESSENTIALS;
 
     const adminCount = await User.countDocuments({
         createdBy: createdByUserId as any,
@@ -393,7 +394,7 @@ export const listManagers = async (createdByUserId: string | undefined) => {
         User.findById(createdByUserId).select('plan'),
     ]);
 
-    const creatorPlan = (creator?.plan as EUserPlan) ?? EUserPlan.STANDARD;
+    const creatorPlan = (creator?.plan as EUserPlan) ?? EUserPlan.ESSENTIALS;
     const maxAllowed = getMaxAdminSeats(creatorPlan);
 
     return {

@@ -25,9 +25,10 @@ export enum EUserRole {
 }
 
 export enum EUserPlan {
-    EARLY_ADOPTER = 'Early Adopter',
-    STANDARD = 'Standard',
-    ENTERPRISE = 'Enterprise',
+    FOUNDER = 'founder',
+    ESSENTIALS = 'essentials',
+    PROFESSIONAL = 'professional',
+    ENTERPRISE = 'enterprise',
 }
 
 export enum EUserStatus {
