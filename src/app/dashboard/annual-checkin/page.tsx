@@ -12,12 +12,7 @@ import { USER_ROLE } from '@/types/enums';
 import { AnnualCheckInForm } from '@/components/forms/checkins/annual';
 import { HEADING_FONT_FAMILY } from '@/components/forms/checkins/shared/styles';
 import type { AnnualCheckInRecord } from '@/redux/api/checkinApi';
-
-const formatYear = (iso: string | undefined): number | string => {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return isNaN(d.getTime()) ? '—' : d.getUTCFullYear();
-};
+import { formatYear } from '@/utils/methods';
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <p

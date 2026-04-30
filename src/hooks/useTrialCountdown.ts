@@ -5,11 +5,11 @@ export const useTrialCountdown = (subscription: Subscription | null) => {
   const [countdown, setCountdown] = useState<string>('');
 
   useEffect(() => {
-    if (!subscription?.trialEndDate) return;
+    if (!subscription?.currentPeriodEnd) return;
 
     const updateCountdown = () => {
       const now = new Date();
-      const endDate = new Date(subscription.trialEndDate!);
+      const endDate = new Date(subscription.currentPeriodEnd);
       const diff = endDate.getTime() - now.getTime();
 
       if (diff < 0) {
@@ -31,10 +31,10 @@ export const useTrialCountdown = (subscription: Subscription | null) => {
     };
 
     updateCountdown();
-    const interval = setInterval(updateCountdown, 60000); // Update every minute
+    const interval = setInterval(updateCountdown, 60000);
 
     return () => clearInterval(interval);
-  }, [subscription?.trialEndDate]);
+  }, [subscription?.currentPeriodEnd]);
 
   return countdown;
 };

@@ -1,5 +1,4 @@
 import { PlanType, BillingInterval } from './subscription';
-import { USER_PLAN } from './enums';
 
 export interface PlanFeatures {
   maxUsers: number;
@@ -24,10 +23,9 @@ export interface PlanConfig {
   isLocked?: boolean;
 }
 
-// Founder plan constants — single source of truth for UI and billing logic
 export const FOUNDER_PLAN = {
   monthly: 149,
-  annual: 1639,           // 149 × 11
+  annual: 1639,
   cap: 20,
   billingPauseDays: 90,
   minCommitmentMonths: 12,
@@ -100,7 +98,7 @@ export const PRICING_CONFIG: Record<PlanType, PlanConfig> = {
       apiAccess: true,
       aiChat: true,
       adminSeats: 4,
-      holderSeats: 3, // 1 master + 2 dept holders
+      holderSeats: 3,
       additionalDeptAdminSeats: 2,
       additionalDeptHolderSeats: 1,
     },
@@ -115,31 +113,5 @@ export const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
   enterprise: PRICING_CONFIG.enterprise.features,
 };
 
-export const getPrice = (plan: PlanType, interval: BillingInterval): number | null =>
-  PRICING_CONFIG[plan].pricing[interval];
-
-export const getAnnualSavings = (plan: PlanType): string | null => {
-  const monthly = PRICING_CONFIG[plan].pricing.monthly;
-  const annual = PRICING_CONFIG[plan].pricing.annual;
-  if (!monthly || !annual) return null;
-  const saved = monthly * 12 - annual;
-  if (saved <= 0) return null;
-  return `${((saved / (monthly * 12)) * 100).toFixed(0)}%`;
-};
-
-export const getEnterprisePrice = (numberOfDepts: number): number => {
-  const base = PRICING_CONFIG.enterprise.pricing.annual ?? 10000;
-  return base + (numberOfDepts - 1) * 3000;
-};
-
-export const getSeats = (plan: PlanType, numberOfDepts: number = 1) => {
-  const cfg = PRICING_CONFIG[plan].features;
-  if (plan === USER_PLAN.ENTERPRISE) {
-    const extra = numberOfDepts - 1;
-    return {
-      adminSeats: cfg.adminSeats + extra * (cfg.additionalDeptAdminSeats ?? 0),
-      holderSeats: cfg.holderSeats + extra * (cfg.additionalDeptHolderSeats ?? 0),
-    };
-  }
-  return { adminSeats: cfg.adminSeats, holderSeats: cfg.holderSeats };
-};
+// Calculation helpers — re-exported from utils/methods for backward compat
+export { getPrice, getAnnualSavings, getEnterprisePrice, getSeats } from '@/utils/methods';

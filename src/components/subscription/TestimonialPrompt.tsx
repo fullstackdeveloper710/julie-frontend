@@ -16,7 +16,9 @@ export const TestimonialPrompt: React.FC = () => {
     return null;
   }
 
-  const daysUntilDue = subscription.trialDaysRemaining || 0;
+  const daysUntilDue = subscription.currentPeriodEnd
+    ? Math.max(0, Math.ceil((new Date(subscription.currentPeriodEnd).getTime() - Date.now()) / 86_400_000))
+    : 0;
   const highPriority = daysUntilDue <= 14;
 
   return (

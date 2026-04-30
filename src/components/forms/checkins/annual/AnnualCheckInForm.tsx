@@ -19,56 +19,17 @@ import {
 } from '../shared';
 import { ANNUAL_INITIAL_VALUES, ANNUAL_STEPS } from './config';
 import { annualValidationSchema } from './validation';
-import { buildAnnualRequest } from './payload';
+import { buildAnnualRequest, buildPrefilledValues, buildValuesFromRecord } from './payload';
 import { AnnualStepContent } from './AnnualSteps';
-import type { AnnualFormValues } from './types';
 import type { Agency } from '@/redux/api/agencyApi';
 import type { AnnualCheckInRecord } from '@/redux/api/checkinApi';
+import { AnnualFormValues } from '@/types';
 
 interface Props {
   editId?: string;
   initialRecord?: AnnualCheckInRecord;
   onSuccess?: () => void;
 }
-
-const buildPrefilledValues = (agency: Agency | undefined): AnnualFormValues => {
-  if (!agency) return ANNUAL_INITIAL_VALUES;
-  return {
-    ...ANNUAL_INITIAL_VALUES,
-    agencyName: agency.name ?? '',
-    agencyType: agency.type ?? '',
-    agencySizeCategory: agency.sizeCategory ?? '',
-    primaryServiceJurisdiction: agency.primaryServiceJurisdiction ?? '',
-    geographicCoverageArea:
-      agency.coverageArea !== undefined && agency.coverageArea !== null
-        ? String(agency.coverageArea)
-        : '',
-  };
-};
-
-const buildValuesFromRecord = (record: AnnualCheckInRecord): AnnualFormValues => ({
-  agencyName: record.agencyIdentity.agencyName,
-  agencyType: record.agencyIdentity.agencyType,
-  agencySizeCategory: record.agencyIdentity.agencySizeCategory,
-  primaryServiceJurisdiction: record.agencyIdentity.primaryServiceJurisdiction,
-  geographicCoverageArea: String(record.agencyIdentity.geographicCoverageArea),
-  totalAuthorizedPositions: String(record.structuralStaffingProfile.totalAuthorizedPositions),
-  totalFundedPositions: String(record.structuralStaffingProfile.totalFundedPositions),
-  minimumSafeStaffingLevel: String(record.structuralStaffingProfile.minimumSafeStaffingLevel),
-  specialtyUnitPositionsCount: String(record.structuralStaffingProfile.specialtyUnitPositionsCount),
-  supervisorToStaffRatio: record.structuralStaffingProfile.supervisorToStaffRatio,
-  standardShiftLengthHours: String(record.operationalInfrastructure.standardShiftLengthHours),
-  shiftScheduleType: record.operationalInfrastructure.shiftScheduleType,
-  minimumRestPeriodPolicyExists: record.operationalInfrastructure.minimumRestPeriodPolicyExists,
-  activePeerSupportTeam: record.operationalInfrastructure.activePeerSupportTeam,
-  hasEmployeeAssistanceProgram: record.operationalInfrastructure.hasEmployeeAssistanceProgram,
-  goal1PrimaryAnnualGoal: record.goalsAndStrategicDirection.goal1PrimaryAnnualGoal,
-  goal1TargetMetric: record.goalsAndStrategicDirection.goal1TargetMetric ?? '',
-  goal1Timeframe: record.goalsAndStrategicDirection.goal1Timeframe,
-  goal2SecondaryAnnualGoal: record.goalsAndStrategicDirection.goal2SecondaryAnnualGoal ?? '',
-  goal2TargetMetric: record.goalsAndStrategicDirection.goal2TargetMetric ?? '',
-  goal2Timeframe: record.goalsAndStrategicDirection.goal2Timeframe ?? '',
-});
 
 export function AnnualCheckInForm({ editId, initialRecord, onSuccess }: Props) {
   const isEditMode = !!editId;

@@ -1,10 +1,52 @@
 import type { AnnualCheckInRequest } from '@/redux/api/checkinApi';
+import type { Agency } from '@/redux/api/agencyApi';
 import { AnnualFormValues } from './types';
+import { ANNUAL_INITIAL_VALUES } from './config';
+import type { AnnualCheckInRecord } from '@/redux/api/checkinApi';
 
 const toOptionalString = (value: string): string | undefined => {
   const normalized = value.trim();
   return normalized ? normalized : undefined;
 };
+
+export const buildPrefilledValues = (agency: Agency | undefined): AnnualFormValues => {
+  if (!agency) return ANNUAL_INITIAL_VALUES;
+  return {
+    ...ANNUAL_INITIAL_VALUES,
+    agencyName: agency.name ?? '',
+    agencyType: agency.type ?? '',
+    agencySizeCategory: agency.sizeCategory ?? '',
+    primaryServiceJurisdiction: agency.primaryServiceJurisdiction ?? '',
+    geographicCoverageArea:
+      agency.coverageArea !== undefined && agency.coverageArea !== null
+        ? String(agency.coverageArea)
+        : '',
+  };
+};
+
+export const buildValuesFromRecord = (record: AnnualCheckInRecord): AnnualFormValues => ({
+  agencyName: record.agencyIdentity.agencyName,
+  agencyType: record.agencyIdentity.agencyType,
+  agencySizeCategory: record.agencyIdentity.agencySizeCategory,
+  primaryServiceJurisdiction: record.agencyIdentity.primaryServiceJurisdiction,
+  geographicCoverageArea: String(record.agencyIdentity.geographicCoverageArea),
+  totalAuthorizedPositions: String(record.structuralStaffingProfile.totalAuthorizedPositions),
+  totalFundedPositions: String(record.structuralStaffingProfile.totalFundedPositions),
+  minimumSafeStaffingLevel: String(record.structuralStaffingProfile.minimumSafeStaffingLevel),
+  specialtyUnitPositionsCount: String(record.structuralStaffingProfile.specialtyUnitPositionsCount),
+  supervisorToStaffRatio: record.structuralStaffingProfile.supervisorToStaffRatio,
+  standardShiftLengthHours: String(record.operationalInfrastructure.standardShiftLengthHours),
+  shiftScheduleType: record.operationalInfrastructure.shiftScheduleType,
+  minimumRestPeriodPolicyExists: record.operationalInfrastructure.minimumRestPeriodPolicyExists,
+  activePeerSupportTeam: record.operationalInfrastructure.activePeerSupportTeam,
+  hasEmployeeAssistanceProgram: record.operationalInfrastructure.hasEmployeeAssistanceProgram,
+  goal1PrimaryAnnualGoal: record.goalsAndStrategicDirection.goal1PrimaryAnnualGoal,
+  goal1TargetMetric: record.goalsAndStrategicDirection.goal1TargetMetric ?? '',
+  goal1Timeframe: record.goalsAndStrategicDirection.goal1Timeframe,
+  goal2SecondaryAnnualGoal: record.goalsAndStrategicDirection.goal2SecondaryAnnualGoal ?? '',
+  goal2TargetMetric: record.goalsAndStrategicDirection.goal2TargetMetric ?? '',
+  goal2Timeframe: record.goalsAndStrategicDirection.goal2Timeframe ?? '',
+});
 
 export const buildAnnualRequest = (values: AnnualFormValues): AnnualCheckInRequest => ({
   agencyIdentity: {

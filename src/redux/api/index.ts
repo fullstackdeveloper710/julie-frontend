@@ -51,5 +51,5 @@ export {
   useCreateAgencyMutation,
   useUpdateAgencyByIdMutation,
 } from './agencyApi';
-export type { Agency, AgencyType, AgencySize, AgencyCapacity, AgencyInput } from './agencyApi';
+export type { Agency, AgencyType, AgencySizeCategory, AgencyCapacity, AgencyInput } from './agencyApi';
 export { axiosBaseQuery } from './axiosBaseQuery';
