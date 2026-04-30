@@ -1,21 +1,19 @@
-import { UserPlan, UserRole } from './enums';
-import type { Agency } from './agency';
+import { USER_PLAN, USER_ROLE } from './enums';
 
 export interface User {
   id: string;
   email: string;
   fullName?: string;
-  role: UserRole;
+  role: USER_ROLE;
   title?: string;
   status?: 'active' | 'inactive';
   createdBy?: string | null;
-  plan?: UserPlan | string;
+  plan?: USER_PLAN;
   agencies?: string[];
   createdAt: string;
   updatedAt: string;
   showAgencyModal?: boolean;
 }
 
-// Re-export for backward compatibility
-export type { UserPlan, UserRole } from './enums';
+export { USER_PLAN, USER_ROLE } from './enums';
 export type { Agency } from './agency';

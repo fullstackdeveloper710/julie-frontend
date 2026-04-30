@@ -12,6 +12,8 @@ import {
 } from '@/hooks';
 import { useGetCurrentUserQuery } from '@/redux/api/authApi';
 import { extractRtkErrorMessage } from '@/utils/rtkErrorHandler';
+import { USER_PLAN } from '@/types/enums';
+import { USER_ROLE } from '@/types';
 
 export default function AgencySetupPage() {
   const router = useRouter();
@@ -24,8 +26,8 @@ export default function AgencySetupPage() {
   const [success, setSuccess] = useState('');
   const agencies = list?.data?.agencies ?? [];
   const capacity = list?.data?.capacity;
-  const isEnterprise = userResp?.data?.plan === 'Enterprise';
-  const isAdmin = userResp?.data?.role === 'manager';
+  const isEnterprise = userResp?.data?.plan === USER_PLAN.ENTERPRISE;
+  const isAdmin = userResp?.data?.role === USER_ROLE.MANAGER;
 
   useEffect(() => {
     if (isUserLoading) return;

@@ -1,5 +1,6 @@
 export type { User, Agency as UserAgency } from './user';
-export type { PlanType, BillingInterval, Subscription } from './subscription';
+export { USER_PLAN, USER_ROLE, BILLING_INTERVAL } from './enums';
+export type { PlanType, Subscription } from './subscription';
 export type { WorkforceMetric, AnalyticsFilter } from './analytics';
 export type { Report, ReportGenerationRequest } from './report';
 export type { ApiResponse } from './api';
@@ -15,9 +16,11 @@ export {
 } from './plans';
 
 // ============================================================================
-// CHECKIN TYPES
+// ENUM TYPES (string unions and aliases)
 // ============================================================================
 export type {
+  AgencyType,
+  AgencySizeCategory,
   DataConfidenceLevel,
   BinaryAnswer,
   TernaryAnswer,
@@ -26,6 +29,22 @@ export type {
   RestRequirementMet,
   PtoBacklog,
   TopLeadershipConcern,
+  ShiftScheduleType,
+  PeerSupportTeamStatus,
+  GoalTimeframe,
+  SecondaryGoalTimeframe,
+  UserRole,
+  UserStatus,
+  BillingInterval,
+  SubscriptionStatus,
+  ReportStatus,
+  ReportFormat,
+} from './enums';
+
+// ============================================================================
+// CHECKIN TYPES
+// ============================================================================
+export type {
   MonthlyCorePayload,
   MonthlyOptionalPayload,
   MonthlyCheckInRequest,
@@ -39,33 +58,6 @@ export type {
 // AGENCY TYPES
 // ============================================================================
 export type { Agency, AgencyPayload, AgencyWithCapacity } from './agency';
-
-// ============================================================================
-// ENUM TYPES
-// ============================================================================
-export type {
-  BinaryAnswer as BinaryAnswerEnum,
-  TernaryAnswer as TernaryAnswerEnum,
-  DataConfidenceLevel as DataConfidenceLevelEnum,
-  AgencyType,
-  AgencySizeCategory,
-  HiringBudgetAvailability as HiringBudgetAvailabilityEnum,
-  StaffingBudgetConstraint as StaffingBudgetConstraintEnum,
-  RestRequirementMet as RestRequirementMetEnum,
-  PtoBacklog as PtoBacklogEnum,
-  TopLeadershipConcern as TopLeadershipConcernEnum,
-  ShiftScheduleType,
-  PeerSupportTeamStatus,
-  GoalTimeframe,
-  SecondaryGoalTimeframe,
-  UserRole,
-  UserPlan,
-  UserStatus,
-  BillingInterval as BillingIntervalEnum,
-  SubscriptionStatus,
-  ReportStatus,
-  ReportFormat,
-} from './enums';
 
 // ============================================================================
 // API RESPONSE TYPES

@@ -1,5 +1,9 @@
-export type PlanType = 'founder' | 'essentials' | 'professional' | 'enterprise';
-export type BillingInterval = 'monthly' | 'annual';
+export { USER_PLAN, BILLING_INTERVAL } from './enums';
+import { USER_PLAN, BILLING_INTERVAL } from './enums';
+/** Alias kept for backward compatibility with existing imports of PlanType. */
+export type PlanType = USER_PLAN;
+/** Alias kept for backward compatibility with existing imports of BillingInterval. */
+export type BillingInterval = BILLING_INTERVAL;
 
 export interface Subscription {
   id: string;

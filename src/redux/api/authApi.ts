@@ -1,6 +1,7 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { axiosBaseQuery } from './axiosBaseQuery';
 import { User } from '@/types';
+import { BILLING_INTERVAL } from '@/types/enums';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
@@ -62,7 +63,7 @@ export const authApi = createApi({
         password: string;
         fullName?: string;
         plan?: string;
-        billingInterval?: 'monthly' | 'annual';
+        billingInterval?: BILLING_INTERVAL;
       }
     >({
       query: (body) => ({

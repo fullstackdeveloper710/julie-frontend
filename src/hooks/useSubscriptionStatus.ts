@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Subscription } from '@/types';
+import { USER_PLAN } from '@/types/enums';
 
 const getFounderBillingStatus = (subscription: Subscription) => {
-  if (subscription.plan !== 'founder') return null;
+  if (subscription.plan !== USER_PLAN.FOUNDER) return null;
 
   const now = new Date();
   const pausedUntil = subscription.billingPausedUntil
@@ -30,7 +31,7 @@ const getFounderBillingStatus = (subscription: Subscription) => {
 
 const formatSubscriptionDetails = (subscription: Subscription) => ({
   planName: subscription.plan,
-  isFounder: subscription.plan === 'founder',
+  isFounder: subscription.plan === USER_PLAN.FOUNDER,
   status: subscription.status,
   emails: {
     needsBillingInfo: subscription.status === 'trialing' && !subscription.stripeCustomerId,
@@ -51,7 +52,7 @@ export const useSubscriptionStatus = (subscription: Subscription | null) => {
   return {
     founderStatus,
     formattedDetails,
-    isFounder: subscription?.plan === 'founder',
+    isFounder: subscription?.plan === USER_PLAN.FOUNDER,
     isBillingPaused: founderStatus?.isPaused ?? false,
     needsBillingInfo: formattedDetails?.emails?.needsBillingInfo ?? false,
     needsTestimonial: formattedDetails?.emails?.needsTestimonial ?? false,

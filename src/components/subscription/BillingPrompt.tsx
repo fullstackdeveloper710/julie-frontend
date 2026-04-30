@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGetSubscriptionQuery } from '@/hooks';
 import { Card, Button } from '@/components/ui';
 import { AlertCircle } from 'lucide-react';
+import { USER_PLAN } from '@/types/enums';
 
 export const BillingPrompt: React.FC = () => {
   const { data, isLoading } = useGetSubscriptionQuery();
@@ -18,7 +19,7 @@ export const BillingPrompt: React.FC = () => {
   if (
     isLoading ||
     !subscription ||
-    subscription.plan !== 'founder' ||
+    subscription.plan !== USER_PLAN.FOUNDER ||
     pauseDaysRemaining > 14 ||
     pauseDaysRemaining <= 0 ||
     dismissed

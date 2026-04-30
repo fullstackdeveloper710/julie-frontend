@@ -12,6 +12,7 @@ import {
 } from '@/hooks';
 import { useGetCurrentUserQuery } from '@/redux/api/authApi';
 import { extractRtkErrorMessage } from '@/utils/rtkErrorHandler';
+import { USER_ROLE } from '@/types/enums';
 
 export default function AgencyEditPage() {
   const params = useParams<{ id: string }>();
@@ -33,7 +34,7 @@ export default function AgencyEditPage() {
 
   // Admins can't edit agency details — bounce them back to the read-only list.
   useEffect(() => {
-    if (userResp?.data?.role === 'manager') {
+    if (userResp?.data?.role === USER_ROLE.MANAGER) {
       router.replace('/dashboard/agencies');
     }
   }, [userResp, router]);

@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import type { PricingPlan } from '@/lib/pricing';
+import { USER_PLAN, BILLING_INTERVAL } from '@/types/enums';
 
 interface PricingCardProps {
   plan: PricingPlan;
-  billingInterval: 'monthly' | 'annual';
+  billingInterval: BILLING_INTERVAL;
   founderSpotsRemaining?: number;
 }
 
@@ -35,9 +36,9 @@ function SavingsDisplay({
 }
 
 export function PricingCard({ plan, billingInterval, founderSpotsRemaining }: PricingCardProps) {
-  const isFounder = plan.id === 'founder';
-  const isEnterprise = plan.id === 'enterprise';
-  const isAnnual = billingInterval === 'annual';
+  const isFounder = plan.id === USER_PLAN.FOUNDER;
+  const isEnterprise = plan.id === USER_PLAN.ENTERPRISE;
+  const isAnnual = billingInterval === BILLING_INTERVAL.ANNUAL;
 
   const monthlyPrice = plan.pricing.monthly;
   const annualPrice = plan.pricing.annual;

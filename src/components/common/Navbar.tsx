@@ -16,6 +16,8 @@ import {
 import { useGetCurrentUserQuery } from '@/redux/api/authApi';
 import AgencyBadge from '../AgencyBadge';
 import { HEADING_FONT } from '@/utils/constant';
+import { USER_PLAN } from '@/types/enums';
+import { USER_ROLE } from '@/types';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -32,8 +34,8 @@ export function Navbar() {
   const userEmail = user?.email || 'User';
   const userInitial = userEmail ? userEmail.charAt(0).toUpperCase() : 'U';
   const plan = user?.plan;
-  const isEnterprise = plan === 'Enterprise';
-  const isAdmin = user?.role === 'manager';
+  const isEnterprise = plan === USER_PLAN.ENTERPRISE;
+  const isAdmin = user?.role === USER_ROLE.MANAGER;
   const agencies = agencyResp?.data?.agencies ?? [];
   const capacity = agencyResp?.data?.capacity;
   const selectedAgency = agencies.find((a) => a._id === selectedAgencyId) ?? agencies[0];
@@ -150,7 +152,7 @@ export function Navbar() {
     <nav className="relative bg-slate-900 border-b-4 h-20 border-(--accent)">
       <div className="mx-auto md:px-7 px-3">
         <div className="flex items-center justify-between h-20">
-          <Link href="/" className="flex relative top-[-2px] items-center mt-3 mb-3 ml-1">
+          <Link href="/" className="flex relative -top-0.5 items-center mt-3 mb-3 ml-1">
             <Logo size={120} className="mx-auto" />
           </Link>
 
@@ -260,7 +262,7 @@ export function Navbar() {
         </div>
 
         <div
-          className={`absolute left-0 right-0 top-20 w-full z-[300] sm:hidden bg-slate-900 border-b-4 border-(--accent) transition-all duration-300 ease-out ${showMobileMenu ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+          className={`absolute left-0 right-0 top-20 w-full z-300 sm:hidden bg-slate-900 border-b-4 border-(--accent) transition-all duration-300 ease-out ${showMobileMenu ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
           id="mobile-menu"
         >
           <div className="space-y-3 px-2 pt-2 pb-4">

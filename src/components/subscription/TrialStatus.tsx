@@ -2,6 +2,7 @@ import React from 'react';
 import { useGetSubscriptionQuery, useTrialCountdown } from '@/hooks';
 import { Card, Badge } from '@/components/ui';
 import { Clock } from 'lucide-react';
+import { USER_PLAN } from '@/types/enums';
 
 export const TrialStatus: React.FC = () => {
   const { data, isLoading } = useGetSubscriptionQuery();
@@ -16,7 +17,7 @@ export const TrialStatus: React.FC = () => {
     ? Math.max(0, Math.ceil((billingPausedUntil.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
 
-  if (isLoading || !subscription || subscription.plan !== 'founder' || pauseDaysRemaining <= 0) {
+  if (isLoading || !subscription || subscription.plan !== USER_PLAN.FOUNDER || pauseDaysRemaining <= 0) {
     return null;
   }
 

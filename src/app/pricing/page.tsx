@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react';
 import { fetchPricingPlans, type PricingResponse } from '@/lib/pricing';
 import { PricingCard } from '@/components/subscription/PricingCard';
+import { USER_PLAN, BILLING_INTERVAL } from '@/types/enums';
 
 export default function Pricing() {
   const [pricing, setPricing] = useState<PricingResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [billingInterval, setBillingInterval] = useState<'monthly' | 'annual'>('monthly');
+  const [billingInterval, setBillingInterval] = useState<BILLING_INTERVAL>(BILLING_INTERVAL.MONTHLY);
 
   useEffect(() => {
     let alive = true;
@@ -78,9 +79,9 @@ export default function Pricing() {
           <div className="flex items-center justify-center mb-10">
             <div className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900 p-1 gap-1">
               <button
-                onClick={() => setBillingInterval('monthly')}
+                onClick={() => setBillingInterval(BILLING_INTERVAL.MONTHLY)}
                 className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                  billingInterval === 'monthly'
+                  billingInterval === BILLING_INTERVAL.MONTHLY
                     ? 'bg-slate-700 text-white'
                     : 'text-slate-400 hover:text-white'
                 }`}
@@ -88,9 +89,9 @@ export default function Pricing() {
                 Monthly
               </button>
               <button
-                onClick={() => setBillingInterval('annual')}
+                onClick={() => setBillingInterval(BILLING_INTERVAL.ANNUAL)}
                 className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                  billingInterval === 'annual'
+                  billingInterval === BILLING_INTERVAL.ANNUAL
                     ? 'bg-slate-700 text-white'
                     : 'text-slate-400 hover:text-white'
                 }`}
@@ -103,7 +104,7 @@ export default function Pricing() {
             </div>
           </div>
 
-          {billingInterval === 'annual' && (
+          {billingInterval === BILLING_INTERVAL.ANNUAL && (
             <p className="mb-8 text-center text-xs text-slate-400">
               Annual plans are billed for 11 months — the 12th month is free.
             </p>
@@ -117,7 +118,7 @@ export default function Pricing() {
                 plan={plan}
                 billingInterval={billingInterval}
                 founderSpotsRemaining={
-                  plan.id === 'founder' ? founderSpotsRemaining : undefined
+                  plan.id === USER_PLAN.FOUNDER ? founderSpotsRemaining : undefined
                 }
               />
             ))}

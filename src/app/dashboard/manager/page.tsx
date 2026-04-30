@@ -22,6 +22,7 @@ import {
 } from '@/redux/api/managerApi';
 import { useGetCurrentUserQuery } from '@/redux/api/authApi';
 import { useListMyAgenciesQuery } from '@/redux/api/agencyApi';
+import { USER_ROLE } from '@/types/enums';
 
 type FormValues = {
   fullName: string;
@@ -50,7 +51,7 @@ const buildValidationSchema = (isEnterprise: boolean) =>
 export default function CreateManagerPage() {
   const router = useRouter();
   const { data: userResp } = useGetCurrentUserQuery();
-  const isAdmin = userResp?.data?.role === 'manager';
+  const isAdmin = userResp?.data?.role === USER_ROLE.MANAGER;
 
   useEffect(() => {
     if (isAdmin) router.replace('/dashboard');

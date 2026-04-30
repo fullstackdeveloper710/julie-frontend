@@ -10,6 +10,7 @@ import { Input, Button } from '@/components/ui';
 import { useAppDispatch } from '@/redux';
 import { useSignUpMutation } from '@/redux/api';
 import { fetchPricingPlans, type BackendPlanId, type PricingPlan } from '@/lib/pricing';
+import { USER_PLAN, BILLING_INTERVAL } from '@/types/enums';
 
 type BackendPlan = 'founder' | 'essentials' | 'professional' | 'enterprise';
 
@@ -46,7 +47,7 @@ export default function SignUpPage() {
   const searchParams = useSearchParams();
   const selectedPlanKey = searchParams.get('plan') as BackendPlanId | null;
   const isFoundingRate = searchParams.get('foundingRate') === 'true';
-  const selectedBilling = (searchParams.get('billing') ?? 'monthly') as 'monthly' | 'annual';
+  const selectedBilling = (searchParams.get('billing') ?? BILLING_INTERVAL.MONTHLY) as BILLING_INTERVAL;
 
   useEffect(() => {
     let isMounted = true;
@@ -84,7 +85,7 @@ export default function SignUpPage() {
 
   const currentPlan =
     pricingPlans.find((plan) => plan.id === selectedPlanKey) ??
-    pricingPlans.find((plan) => plan.id === 'essentials') ??
+    pricingPlans.find((plan) => plan.id === USER_PLAN.ESSENTIALS) ??
     pricingPlans[0] ??
     null;
 
@@ -159,7 +160,7 @@ export default function SignUpPage() {
             Frontline Frameworks
           </div>
 
-          {resolvedPlanKey === 'founder' ? (
+          {resolvedPlanKey === USER_PLAN.FOUNDER ? (
             <>
               <h2 className="text-3xl font-extrabold text-white mb-2">Claim Your Founder Plan</h2>
               <p className="mb-3 text-sm">
@@ -174,7 +175,7 @@ export default function SignUpPage() {
           )}
 
           {(() => {
-            const isAnnual = selectedBilling === 'annual';
+            const isAnnual = selectedBilling === BILLING_INTERVAL.ANNUAL;
             const monthly = resolvedPlan.pricing.monthly;
             const annual = resolvedPlan.pricing.annual;
             const price = isAnnual ? annual : monthly;
@@ -190,12 +191,12 @@ export default function SignUpPage() {
                       type="button"
                       onClick={() => {
                         const url = new URL(window.location.href);
-                        url.searchParams.set('billing', 'monthly');
+                        url.searchParams.set('billing', BILLING_INTERVAL.MONTHLY);
                         window.history.replaceState({}, '', url.toString());
                         // re-navigate to pick up new param
                         window.location.replace(url.toString());
                       }}
-                      className={`px-3 py-1 transition ${selectedBilling === 'monthly' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
+                      className={`px-3 py-1 transition ${selectedBilling === BILLING_INTERVAL.MONTHLY ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
                     >
                       Monthly
                     </button>
@@ -203,11 +204,11 @@ export default function SignUpPage() {
                       type="button"
                       onClick={() => {
                         const url = new URL(window.location.href);
-                        url.searchParams.set('billing', 'annual');
+                        url.searchParams.set('billing', BILLING_INTERVAL.ANNUAL);
                         window.history.replaceState({}, '', url.toString());
                         window.location.replace(url.toString());
                       }}
-                      className={`px-3 py-1 transition ${selectedBilling === 'annual' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
+                      className={`px-3 py-1 transition ${selectedBilling === BILLING_INTERVAL.ANNUAL ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
                     >
                       Annual
                     </button>

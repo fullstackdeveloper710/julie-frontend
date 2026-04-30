@@ -1,17 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { CalendarCheck, ChevronRight, Pencil, Lock, Eye, Clock } from 'lucide-react';
+import { CalendarCheck, ChevronRight, Pencil, Lock, Eye, Clock, ShieldOff } from 'lucide-react';
 import {
   useGetAnnualCheckInStatusQuery,
   useGetCurrentAnnualCheckInQuery,
   useGetMyAnnualCheckInsQuery,
 } from '@/hooks';
+import { useGetCurrentUserQuery } from '@/redux/api/authApi';
+import { USER_ROLE } from '@/types/enums';
 import { AnnualCheckInForm } from '@/components/forms/checkins/annual';
 import { HEADING_FONT_FAMILY } from '@/components/forms/checkins/shared/styles';
 import type { AnnualCheckInRecord } from '@/redux/api/checkinApi';
 
-const formatYear = (iso: string) => new Date(iso).getUTCFullYear();
+const formatYear = (iso: string | undefined): number | string => {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? '—' : d.getUTCFullYear();
+};
 
 const SectionLabel = ({ children }: { children: React.ReactNode }) => (
   <p
@@ -34,18 +40,23 @@ function AnnualCheckinReadOnly({
   canEdit,
   editsRemaining,
   onEditClick,
+  isAdmin = false,
 }: {
   record: AnnualCheckInRecord;
   canEdit: boolean;
   editsRemaining: number;
   onEditClick: () => void;
+  isAdmin?: boolean;
 }) {
   const year = formatYear(record.baselineYear);
-  const nextEditDate = new Date(Date.UTC(year + 1, 0, 1)).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const yearNum = typeof year === 'number' ? year : null;
+  const nextEditDate = yearNum
+    ? new Date(Date.UTC(yearNum + 1, 0, 1)).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '—';
 
   return (
     <div className="space-y-6">
@@ -60,11 +71,13 @@ function AnnualCheckinReadOnly({
             {year} Annual Check-In
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Submitted {new Date(record.createdAt).toLocaleDateString()}
+            {record.createdAt && !isNaN(new Date(record.createdAt).getTime())
+              ? `Submitted ${new Date(record.createdAt).toLocaleDateString()}`
+              : 'Submitted'}
             {record.editCount > 0 &&
               ` · edited ${record.editCount} time${record.editCount > 1 ? 's' : ''}`}
           </p>
-          {!canEdit && (
+          {!isAdmin && !canEdit && (
             <p className="flex items-center gap-1.5 text-xs text-slate-500 mt-1.5">
               <Clock className="w-3.5 h-3.5 shrink-0" />
               Next edit available <span className="text-slate-400 font-medium ml-1">{nextEditDate}</span>
@@ -72,7 +85,12 @@ function AnnualCheckinReadOnly({
           )}
         </div>
 
-        {canEdit ? (
+        {isAdmin ? (
+          <span className="flex items-center gap-1.5 text-xs text-slate-500 border border-slate-700 px-3 py-2 rounded">
+            <ShieldOff className="w-3.5 h-3.5" />
+            View only — managed by Primary User
+          </span>
+        ) : canEdit ? (
           <button
             type="button"
             onClick={onEditClick}
@@ -94,16 +112,16 @@ function AnnualCheckinReadOnly({
         {/* Agency Identity */}
         <div className="bg-slate-800 border border-slate-700 rounded-lg p-5">
           <SectionLabel>Agency Identity</SectionLabel>
-          <FieldRow label="Agency Name" value={record.agencyIdentity.agencyName} />
-          <FieldRow label="Agency Type" value={record.agencyIdentity.agencyType} />
-          <FieldRow label="Size Category" value={record.agencyIdentity.agencySizeCategory} />
+          <FieldRow label="Agency Name" value={record.agencyIdentity?.agencyName} />
+          <FieldRow label="Agency Type" value={record.agencyIdentity?.agencyType} />
+          <FieldRow label="Size Category" value={record.agencyIdentity?.agencySizeCategory} />
           <FieldRow
             label="Primary Service Jurisdiction"
-            value={record.agencyIdentity.primaryServiceJurisdiction}
+            value={record.agencyIdentity?.primaryServiceJurisdiction}
           />
           <FieldRow
             label="Geographic Coverage Area (sq mi)"
-            value={record.agencyIdentity.geographicCoverageArea}
+            value={record.agencyIdentity?.geographicCoverageArea}
           />
         </div>
 
@@ -112,23 +130,23 @@ function AnnualCheckinReadOnly({
           <SectionLabel>Structural Staffing Profile</SectionLabel>
           <FieldRow
             label="Total Authorized Positions"
-            value={record.structuralStaffingProfile.totalAuthorizedPositions}
+            value={record.structuralStaffingProfile?.totalAuthorizedPositions}
           />
           <FieldRow
             label="Total Funded Positions"
-            value={record.structuralStaffingProfile.totalFundedPositions}
+            value={record.structuralStaffingProfile?.totalFundedPositions}
           />
           <FieldRow
             label="Minimum Safe Staffing Level"
-            value={record.structuralStaffingProfile.minimumSafeStaffingLevel}
+            value={record.structuralStaffingProfile?.minimumSafeStaffingLevel}
           />
           <FieldRow
             label="Specialty Unit Positions"
-            value={record.structuralStaffingProfile.specialtyUnitPositionsCount}
+            value={record.structuralStaffingProfile?.specialtyUnitPositionsCount}
           />
           <FieldRow
             label="Supervisor-to-Staff Ratio"
-            value={record.structuralStaffingProfile.supervisorToStaffRatio}
+            value={record.structuralStaffingProfile?.supervisorToStaffRatio}
           />
         </div>
 
@@ -137,23 +155,23 @@ function AnnualCheckinReadOnly({
           <SectionLabel>Operational Infrastructure</SectionLabel>
           <FieldRow
             label="Standard Shift Length (hours)"
-            value={record.operationalInfrastructure.standardShiftLengthHours}
+            value={record.operationalInfrastructure?.standardShiftLengthHours}
           />
           <FieldRow
             label="Shift Schedule Type"
-            value={record.operationalInfrastructure.shiftScheduleType}
+            value={record.operationalInfrastructure?.shiftScheduleType}
           />
           <FieldRow
             label="Minimum Rest Period Policy"
-            value={record.operationalInfrastructure.minimumRestPeriodPolicyExists}
+            value={record.operationalInfrastructure?.minimumRestPeriodPolicyExists}
           />
           <FieldRow
             label="Active Peer Support Team"
-            value={record.operationalInfrastructure.activePeerSupportTeam}
+            value={record.operationalInfrastructure?.activePeerSupportTeam}
           />
           <FieldRow
             label="Employee Assistance Program"
-            value={record.operationalInfrastructure.hasEmployeeAssistanceProgram}
+            value={record.operationalInfrastructure?.hasEmployeeAssistanceProgram}
           />
         </div>
 
@@ -162,9 +180,9 @@ function AnnualCheckinReadOnly({
           <SectionLabel>Goals & Strategic Direction</SectionLabel>
           <FieldRow
             label="Primary Annual Goal"
-            value={record.goalsAndStrategicDirection.goal1PrimaryAnnualGoal}
+            value={record.goalsAndStrategicDirection?.goal1PrimaryAnnualGoal}
           />
-          {record.goalsAndStrategicDirection.goal1TargetMetric && (
+          {record.goalsAndStrategicDirection?.goal1TargetMetric && (
             <FieldRow
               label="Goal 1 Target Metric"
               value={record.goalsAndStrategicDirection.goal1TargetMetric}
@@ -172,21 +190,21 @@ function AnnualCheckinReadOnly({
           )}
           <FieldRow
             label="Goal 1 Timeframe"
-            value={record.goalsAndStrategicDirection.goal1Timeframe}
+            value={record.goalsAndStrategicDirection?.goal1Timeframe}
           />
-          {record.goalsAndStrategicDirection.goal2SecondaryAnnualGoal && (
+          {record.goalsAndStrategicDirection?.goal2SecondaryAnnualGoal && (
             <FieldRow
               label="Secondary Annual Goal"
               value={record.goalsAndStrategicDirection.goal2SecondaryAnnualGoal}
             />
           )}
-          {record.goalsAndStrategicDirection.goal2TargetMetric && (
+          {record.goalsAndStrategicDirection?.goal2TargetMetric && (
             <FieldRow
               label="Goal 2 Target Metric"
               value={record.goalsAndStrategicDirection.goal2TargetMetric}
             />
           )}
-          {record.goalsAndStrategicDirection.goal2Timeframe && (
+          {record.goalsAndStrategicDirection?.goal2Timeframe && (
             <FieldRow
               label="Goal 2 Timeframe"
               value={record.goalsAndStrategicDirection.goal2Timeframe}
@@ -234,17 +252,19 @@ function PastYearsSection({ records }: { records: AnnualCheckInRecord[] }) {
               </button>
               {isOpen && (
                 <div className="border-t border-slate-700 px-4 pb-4 pt-3 space-y-1">
-                  <FieldRow label="Agency Name" value={r.agencyIdentity.agencyName} />
+                  <FieldRow label="Agency Name" value={r.agencyIdentity?.agencyName} />
                   <FieldRow
                     label="Primary Annual Goal"
-                    value={r.goalsAndStrategicDirection.goal1PrimaryAnnualGoal}
+                    value={r.goalsAndStrategicDirection?.goal1PrimaryAnnualGoal}
                   />
                   <FieldRow
                     label="Goal 1 Timeframe"
-                    value={r.goalsAndStrategicDirection.goal1Timeframe}
+                    value={r.goalsAndStrategicDirection?.goal1Timeframe}
                   />
                   <p className="text-xs text-slate-500 pt-1">
-                    Submitted {new Date(r.createdAt).toLocaleDateString()}
+                    {r.createdAt && !isNaN(new Date(r.createdAt).getTime())
+                      ? `Submitted ${new Date(r.createdAt).toLocaleDateString()}`
+                      : 'Submitted'}
                     {r.editCount > 0 && ` · edited ${r.editCount}×`}
                   </p>
                 </div>
@@ -260,6 +280,9 @@ function PastYearsSection({ records }: { records: AnnualCheckInRecord[] }) {
 export default function AnnualCheckInPage() {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
+  const { data: userResp } = useGetCurrentUserQuery();
+  const isAdmin = userResp?.data?.role === USER_ROLE.MANAGER;
+
   const { data: statusResp, isLoading: isStatusLoading } = useGetAnnualCheckInStatusQuery();
   const { data: currentResp, isLoading: isCurrentLoading } = useGetCurrentAnnualCheckInQuery();
   const { data: allResp } = useGetMyAnnualCheckInsQuery();
@@ -270,7 +293,10 @@ export default function AnnualCheckInPage() {
 
   const currentYear = new Date().getUTCFullYear();
   const pastRecords = allRecords.filter(
-    (r) => new Date(r.baselineYear).getUTCFullYear() < currentYear,
+    (r) => {
+      const d = new Date(r.baselineYear);
+      return !isNaN(d.getTime()) && d.getUTCFullYear() < currentYear;
+    },
   );
 
   if (isStatusLoading || isCurrentLoading) {
@@ -281,7 +307,8 @@ export default function AnnualCheckInPage() {
     );
   }
 
-  if (status?.canSubmit) {
+  // Admin users are always read-only — skip create/edit flows entirely
+  if (!isAdmin && status?.canSubmit) {
     return (
       <div className="px-7 py-8">
         <AnnualCheckInForm onSuccess={() => {}} />
@@ -290,7 +317,7 @@ export default function AnnualCheckInPage() {
     );
   }
 
-  if (mode === 'edit' && status?.canEdit && currentRecord) {
+  if (!isAdmin && mode === 'edit' && status?.canEdit && currentRecord) {
     return (
       <div className="px-7 py-8">
         <button
@@ -318,6 +345,7 @@ export default function AnnualCheckInPage() {
           canEdit={status?.canEdit ?? false}
           editsRemaining={editsRemaining}
           onEditClick={() => setMode('edit')}
+          isAdmin={isAdmin}
         />
         <PastYearsSection records={pastRecords} />
       </div>
@@ -326,7 +354,11 @@ export default function AnnualCheckInPage() {
 
   return (
     <div className="px-7 py-8">
-      <p className="text-sm text-slate-400">Your annual check-in is not available right now.</p>
+      <p className="text-sm text-slate-400">
+        {isAdmin
+          ? 'The primary user has not yet submitted an annual baseline.'
+          : 'Your annual check-in is not available right now.'}
+      </p>
     </div>
   );
 }

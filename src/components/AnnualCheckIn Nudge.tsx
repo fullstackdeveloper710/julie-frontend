@@ -1,11 +1,12 @@
 import { useGetAnnualCheckInStatusQuery } from "@/hooks";
 import { useGetCurrentUserQuery } from "@/redux/api/authApi";
 import { ArrowRight, CalendarCheck } from "lucide-react";
+import { USER_ROLE } from "@/types/enums";
 import Link from "next/link";
 
 function AnnualCheckinNudge() {
   const { data: userResp } = useGetCurrentUserQuery();
-  const isAdmin = userResp?.data?.role === 'manager';
+  const isAdmin = userResp?.data?.role === USER_ROLE.MANAGER;
   const { data: statusResp } = useGetAnnualCheckInStatusQuery(undefined, { skip: isAdmin });
   const status = statusResp?.data;
 

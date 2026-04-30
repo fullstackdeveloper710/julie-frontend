@@ -1,4 +1,5 @@
 import { PlanType, BillingInterval } from './subscription';
+import { USER_PLAN } from './enums';
 
 export interface PlanFeatures {
   maxUsers: number;
@@ -133,7 +134,7 @@ export const getEnterprisePrice = (numberOfDepts: number): number => {
 
 export const getSeats = (plan: PlanType, numberOfDepts: number = 1) => {
   const cfg = PRICING_CONFIG[plan].features;
-  if (plan === 'enterprise') {
+  if (plan === USER_PLAN.ENTERPRISE) {
     const extra = numberOfDepts - 1;
     return {
       adminSeats: cfg.adminSeats + extra * (cfg.additionalDeptAdminSeats ?? 0),

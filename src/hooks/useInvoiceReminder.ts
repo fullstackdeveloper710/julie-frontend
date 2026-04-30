@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Subscription } from '@/types';
+import { USER_PLAN } from '@/types/enums';
 
 export const useInvoiceReminder = (subscription: Subscription | null) => {
   const [shouldShow, setShouldShow] = useState(false);
@@ -7,7 +8,7 @@ export const useInvoiceReminder = (subscription: Subscription | null) => {
 
   useEffect(() => {
     // Only relevant for Founder plan during the billing pause window
-    if (subscription?.plan !== 'founder' || !subscription.billingPausedUntil) {
+    if (subscription?.plan !== USER_PLAN.FOUNDER || !subscription.billingPausedUntil) {
       setShouldShow(false);
       return;
     }

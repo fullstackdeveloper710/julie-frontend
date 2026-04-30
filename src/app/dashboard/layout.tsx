@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { USER_ROLE } from '@/types/enums';
 import { Tabs } from '@/components/common/Tabs';
 import { Loading } from '@/components/ui';
 import {
@@ -29,7 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   });
   const selectedAgencyId = useAppSelector((s) => s.agency.selectedAgencyId);
   const agencies = agencyRes?.data?.agencies ?? [];
-  const isAdmin = userRes?.data?.role === 'manager';
+  const isAdmin = userRes?.data?.role === USER_ROLE.MANAGER;
 
   useEffect(() => {
     if (!hasToken) {

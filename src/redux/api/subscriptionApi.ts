@@ -1,6 +1,7 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { axiosBaseQuery } from './axiosBaseQuery';
 import { Subscription } from '@/types';
+import { BILLING_INTERVAL } from '@/types/enums';
 
 export const subscriptionApi = createApi({
   reducerPath: 'subscriptionApi',
@@ -104,7 +105,7 @@ export const subscriptionApi = createApi({
       {
         subscriptionId: string;
         targetTier: string;
-        billingInterval?: 'monthly' | 'annual';
+        billingInterval?: BILLING_INTERVAL;
       }
     >({
       query: ({ subscriptionId, targetTier, billingInterval }) => ({
