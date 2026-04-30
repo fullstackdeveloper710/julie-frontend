@@ -10,6 +10,9 @@ import { sendVerificationEmail, sendPasswordResetEmail, sendManagerInviteEmail }
 import crypto from 'crypto';
 import { EUserRole, EUserPlan, EUserStatus } from '../enums/agency.enum.js';
 import { TAuthBase, TSignUpInput, TUserAccount } from '../types/user.type.js';
+import * as stripeService from './stripe.service.js';
+import * as subscriptionService from './subscription.service.js';
+import Subscription from '../models/subscription.model.js';
 
 /**
  * Register a new user
@@ -65,6 +68,9 @@ export const signUp = async (userData: TSignUpInput) => {
  * valid link multiple times returns success instead of "invalid token", so
  * dev-mode double effects, browser back-button, or network retries don't
  * surface a fake error to the user.
+ * 
+ * On first verification, if founder slots are available, create a founder plan
+ * subscription with 3-month trial and 12-month commitment.
  */
 export const verifyEmail = async (token: string) => {
     const user = await User.findOne({
@@ -85,6 +91,54 @@ export const verifyEmail = async (token: string) => {
     if (!alreadyVerified) {
         user.isConfirmed = true;
         await user.save();
+
+        // Create founder plan subscription for new users (first 20)
+        try {
+            const existingSubscription = await Subscription.findOne({ userId: user._id });
+
+            // Only create subscription if user doesn't already have one
+            if (!existingSubscription) {
+                const isFounderAvailable = await subscriptionService.isFoundingRateAvailable();
+
+                if (isFounderAvailable) {
+                    // Create Stripe customer and subscription with 90-day trial
+                    const stripeResult = await stripeService.createCustomerAndSubscription(
+                        user._id.toString(),
+                        user.email,
+                        'founder',
+                        90 // 3 months trial
+                    );
+
+                    // Calculate commitment end date (12 months from now)
+                    const now = new Date();
+                    const commitmentEnd = new Date(now);
+                    commitmentEnd.setMonth(commitmentEnd.getMonth() + 12);
+
+                    // Create subscription record in MongoDB
+                    await Subscription.create({
+                        userId: user._id,
+                        stripeCustomerId: stripeResult.stripeCustomerId,
+                        stripeSubscriptionId: stripeResult.subscriptionId,
+                        plan: 'founder',
+                        billingInterval: 'monthly',
+                        status: 'trialing',
+                        isFoundingRate: true,
+                        foundingRateLockedPrice: 149,
+                        foundingRateActivatedAt: null, // Will be set when trial ends
+                        foundingRateCommitmentEndDate: commitmentEnd,
+                        currentPeriodStart: now,
+                        currentPeriodEnd: stripeResult.trialEndsAt,
+                        pricingLocked: true,
+                        lockedPrice: 149,
+                        lockedAt: now,
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error creating founder subscription:', error);
+            // Don't throw - let user continue with sign up even if subscription creation fails
+            // They can be assigned a plan later
+        }
     }
     // Token is intentionally retained until natural expiration so repeat
     // clicks on the same link stay idempotent.

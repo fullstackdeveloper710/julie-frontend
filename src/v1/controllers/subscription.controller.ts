@@ -5,6 +5,7 @@ import { handleErrorResponse } from '@/utils/error.util';
 import RESPONSE_CODES from '@/constant/responseCode';
 import { AuthenticatedRequest } from '@/middlewares/authenticate';
 import MESSAGES from '@/constant/message';
+import * as stripeService from '../services/stripe.service';
 
 /**
  * @route GET /api/v1/subscriptions/me
@@ -34,6 +35,62 @@ export const getMySubscription = async (req: AuthenticatedRequest, res: Response
             success: true,
             message: 'Subscription details fetched successfully',
             data: subscription,
+        });
+    } catch (error) {
+        handleErrorResponse(error, res, next);
+    }
+};
+
+/**
+ * @route POST /api/v1/subscriptions/cancel
+ * @desc Cancel user's subscription (with restrictions for founder plan)
+ */
+export const cancelSubscription = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.user?.user_id;
+        if (!userId) {
+            return res.status(RESPONSE_CODES.UNAUTHORIZED).json({
+                success: false,
+                message: MESSAGES.AUTH.UNAUTHORIZED,
+                data: null,
+            });
+        }
+
+        // Fetch user's subscription
+        const subscription = await Services.subscription.getSubscriptionByUserId(userId);
+        if (!subscription) {
+            return res.status(RESPONSE_CODES.NOT_FOUND).json({
+                success: false,
+                message: 'No active subscription found',
+                data: null,
+            });
+        }
+
+        // Validate if cancellation is allowed
+        const cancellationValidation = stripeService.validateCancellationAllowed(subscription);
+        if (!cancellationValidation.allowed) {
+            return res.status(RESPONSE_CODES.FORBIDDEN).json({
+                success: false,
+                message: cancellationValidation.reason || 'Subscription cannot be canceled at this time',
+                data: null,
+            });
+        }
+
+        // Cancel subscription in Stripe
+        if (subscription.stripeSubscriptionId) {
+            await stripeService.cancelStripeSubscriptionImmediately(subscription.stripeSubscriptionId);
+        }
+
+        // Update subscription status in MongoDB
+        await Services.subscription.createOrUpdateSubscription(userId, {
+            status: 'canceled',
+            cancelAtPeriodEnd: true,
+        });
+
+        return res.status(RESPONSE_CODES.OK).json({
+            success: true,
+            message: 'Subscription canceled successfully',
+            data: null,
         });
     } catch (error) {
         handleErrorResponse(error, res, next);

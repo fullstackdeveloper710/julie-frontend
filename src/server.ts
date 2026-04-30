@@ -7,6 +7,8 @@ import { connectDB, syncIndexes } from './config/db.js';
 import './v1/models/index.js';
 import v1Routes from './v1/routes/index.js';
 import * as subscriptionController from './v1/controllers/subscription.controller.js';
+import { founderTrialMonitor, stopFounderTrialMonitor } from './jobs/founderTrialMonitor.job.js';
+import cron from 'node-cron';
 
 // Load environment variables
 dotenv.config();
@@ -54,6 +56,31 @@ connectDB()
     .then(() => {
         server.listen(PORT, () => {
             console.log(`Server is running on ${PORT}`);
+        });
+
+        // Schedule founder trial monitor cron job
+        const founderTrialTask = founderTrialMonitor();
+        console.log('✓ Founder trial monitor cron job scheduled (runs daily at 2 AM UTC)');
+
+        // Graceful shutdown
+        process.on('SIGTERM', () => {
+            console.log('SIGTERM received, shutting down gracefully...');
+            stopFounderTrialMonitor(founderTrialTask);
+            cron.getTasks().forEach((task) => task.stop());
+            server.close(() => {
+                console.log('Server closed');
+                process.exit(0);
+            });
+        });
+
+        process.on('SIGINT', () => {
+            console.log('SIGINT received, shutting down gracefully...');
+            stopFounderTrialMonitor(founderTrialTask);
+            cron.getTasks().forEach((task) => task.stop());
+            server.close(() => {
+                console.log('Server closed');
+                process.exit(0);
+            });
         });
     });
 
