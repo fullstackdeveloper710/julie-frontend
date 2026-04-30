@@ -45,7 +45,8 @@ export default function SignUpPage() {
   const searchParams = useSearchParams();
   const selectedPlanKey = searchParams.get('plan') as BackendPlanId | null;
   const isFoundingRate = searchParams.get('foundingRate') === 'true';
-  const selectedBilling = (searchParams.get('billing') ?? BILLING_INTERVAL.MONTHLY) as BILLING_INTERVAL;
+  const selectedBilling = (searchParams.get('billing') ??
+    BILLING_INTERVAL.MONTHLY) as BILLING_INTERVAL;
 
   useEffect(() => {
     let isMounted = true;
@@ -93,7 +94,10 @@ export default function SignUpPage() {
       : (pricingPlans.find((plan) => plan.available)?.id ?? 'essentials');
 
   const resolvedPlan = pricingPlans.find((plan) => plan.id === resolvedPlanKey) ?? currentPlan;
-
+  const onGotitClickHandler = () => {
+    setShowModal(false);
+    router.push('/auth/signin');
+  };
   const formik = useFormik({
     initialValues: {
       agencyName: '',
@@ -183,7 +187,9 @@ export default function SignUpPage() {
             return (
               <div className="rounded-2xl border border-slate-700 bg-slate-950/60 p-5 mb-4">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-sm font-extrabold text-(--accent)">{resolvedPlan.name} Plan</div>
+                  <div className="text-sm font-extrabold text-(--accent)">
+                    {resolvedPlan.name} Plan
+                  </div>
                   <div className="flex rounded-full border border-slate-700 overflow-hidden text-xs">
                     <button
                       type="button"
@@ -228,7 +234,9 @@ export default function SignUpPage() {
                     )}
                     {isAnnual && saved > 0 && monthly && (
                       <div className="mt-2 flex flex-col gap-0.5">
-                        <span className="text-2xl font-extrabold text-emerald-400">1 month FREE</span>
+                        <span className="text-2xl font-extrabold text-emerald-400">
+                          1 month FREE
+                        </span>
                         <span className="text-sm font-semibold text-emerald-400">
                           Save ${saved.toLocaleString()}
                         </span>
@@ -246,8 +254,9 @@ export default function SignUpPage() {
 
                 <div className="mt-3 text-xs text-slate-500">{resolvedPlan.description}</div>
                 <div className="mt-1 text-xs text-slate-400">
-                  {resolvedPlan.features.holderSeats} holder + {resolvedPlan.features.adminSeats} admins
-                  {' '}({resolvedPlan.features.holderSeats + resolvedPlan.features.adminSeats} seats total)
+                  {resolvedPlan.features.holderSeats} holder + {resolvedPlan.features.adminSeats}{' '}
+                  admins ({resolvedPlan.features.holderSeats + resolvedPlan.features.adminSeats}{' '}
+                  seats total)
                 </div>
               </div>
             );
@@ -263,7 +272,7 @@ export default function SignUpPage() {
                   Please check your inbox and verify your email to continue.
                 </p>
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={onGotitClickHandler}
                   className="w-full rounded-xl bg-(--accent) px-4 py-2 text-sm font-semibold text-black transition hover:bg-orange-600 cursor-pointer"
                 >
                   Got it
