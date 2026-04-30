@@ -117,11 +117,15 @@ export function PricingCard({ plan, billingInterval, founderSpotsRemaining }: Pr
             {/* Seat line */}
             <li className="flex items-start gap-3 border-b border-slate-700 pb-2">
               <span className="mt-0.5 text-(--accent)!">✓</span>
-              <span>
-                {plan.features.holderSeats} holder{plan.features.holderSeats > 1 ? 's' : ''} +{' '}
-                {plan.features.adminSeats} admin{plan.features.adminSeats > 1 ? 's' : ''}
-                {' '}({plan.features.holderSeats + plan.features.adminSeats} seats total)
-              </span>
+              {isEnterprise ? (
+                <span>1 master + 2 dept holders + 4 managers (7 seats total)</span>
+              ) : (
+                <span>
+                  {plan.features.departmentUserSeats} holder{plan.features.departmentUserSeats > 1 ? 's' : ''} +{' '}
+                  {plan.features.managerSeats} manager{plan.features.managerSeats > 1 ? 's' : ''}
+                  {' '}({plan.features.departmentUserSeats + plan.features.managerSeats} seats total)
+                </span>
+              )}
             </li>
             {plan.featureHighlights.map((f) => (
               <li key={f} className="flex items-start gap-3 border-b border-slate-700 pb-2">

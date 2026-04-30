@@ -35,7 +35,7 @@ export function Navbar() {
   const userInitial = userEmail ? userEmail.charAt(0).toUpperCase() : 'U';
   const plan = user?.plan;
   const isEnterprise = plan === USER_PLAN.ENTERPRISE;
-  const isAdmin = user?.role === USER_ROLE.MANAGER;
+  const isAdmin = [USER_ROLE.MANAGER, USER_ROLE.DEPARTMENT_USER].includes(user?.role as USER_ROLE);
   const agencies = agencyResp?.data?.agencies ?? [];
   const capacity = agencyResp?.data?.capacity;
   const selectedAgency = agencies.find((a) => a._id === selectedAgencyId) ?? agencies[0];
@@ -132,6 +132,17 @@ export function Navbar() {
                     className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-(--accent) transition-colors uppercase"
                   >
                     Manage Admin
+                  </button>
+                )}
+                {!isAdmin && isEnterprise && (
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      router.push('/dashboard/dept-users');
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-(--accent) transition-colors uppercase"
+                  >
+                    Manage Department Users
                   </button>
                 )}
                 <button

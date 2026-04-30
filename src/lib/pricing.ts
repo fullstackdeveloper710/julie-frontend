@@ -8,8 +8,8 @@ export interface PricingPlanFeatures {
   advancedAnalytics: boolean;
   apiAccess: boolean;
   aiChat: boolean;
-  adminSeats: number;
-  holderSeats: number;
+  managerSeats: number;
+  departmentUserSeats: number;
   additionalDeptAdminSeats?: number;
   additionalDeptHolderSeats?: number;
 }

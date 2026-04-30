@@ -276,7 +276,7 @@ export default function AnnualCheckInPage() {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
   const { data: userResp } = useGetCurrentUserQuery();
-  const isAdmin = userResp?.data?.role === USER_ROLE.MANAGER;
+  const isAdmin = [USER_ROLE.MANAGER, USER_ROLE.DEPARTMENT_USER].includes(userResp?.data?.role as USER_ROLE);
 
   const { data: statusResp, isLoading: isStatusLoading } = useGetAnnualCheckInStatusQuery();
   const { data: currentResp, isLoading: isCurrentLoading } = useGetCurrentAnnualCheckInQuery();

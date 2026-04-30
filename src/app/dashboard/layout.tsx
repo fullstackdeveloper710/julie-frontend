@@ -30,7 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   });
   const selectedAgencyId = useAppSelector((s) => s.agency.selectedAgencyId);
   const agencies = agencyRes?.data?.agencies ?? [];
-  const isAdmin = userRes?.data?.role === USER_ROLE.MANAGER;
+  const isAdmin = [USER_ROLE.MANAGER, USER_ROLE.DEPARTMENT_USER].includes(userRes?.data?.role as USER_ROLE);
 
   useEffect(() => {
     if (!hasToken) {

@@ -254,8 +254,8 @@ export default function SignUpPage() {
 
                 <div className="mt-3 text-xs text-slate-500">{resolvedPlan.description}</div>
                 <div className="mt-1 text-xs text-slate-400">
-                  {resolvedPlan.features.holderSeats} holder + {resolvedPlan.features.adminSeats}{' '}
-                  admins ({resolvedPlan.features.holderSeats + resolvedPlan.features.adminSeats}{' '}
+                  {resolvedPlan.features.departmentUserSeats} holder + {resolvedPlan.features.managerSeats}{' '}
+                  managers ({resolvedPlan.features.departmentUserSeats + resolvedPlan.features.managerSeats}{' '}
                   seats total)
                 </div>
               </div>

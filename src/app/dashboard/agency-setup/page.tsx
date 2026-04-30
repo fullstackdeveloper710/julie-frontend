@@ -27,7 +27,7 @@ export default function AgencySetupPage() {
   const agencies = list?.data?.agencies ?? [];
   const capacity = list?.data?.capacity;
   const isEnterprise = userResp?.data?.plan === USER_PLAN.ENTERPRISE;
-  const isAdmin = userResp?.data?.role === USER_ROLE.MANAGER;
+  const isAdmin = [USER_ROLE.MANAGER, USER_ROLE.DEPARTMENT_USER].includes(userResp?.data?.role as USER_ROLE);
 
   useEffect(() => {
     if (isUserLoading) return;
