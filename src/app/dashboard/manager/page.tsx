@@ -23,15 +23,9 @@ import {
 import { useGetCurrentUserQuery } from '@/redux/api/authApi';
 import { useListMyAgenciesQuery } from '@/redux/api/agencyApi';
 import { USER_ROLE } from '@/types/enums';
+import { ManagerFormValues } from '@/types';
 
-type FormValues = {
-  fullName: string;
-  email: string;
-  title: string;
-  agencyId: string;
-};
-
-const INITIAL_VALUES: FormValues = {
+const INITIAL_VALUES: ManagerFormValues = {
   fullName: '',
   email: '',
   title: '',
@@ -88,7 +82,7 @@ export default function CreateManagerPage() {
     return agencies.find((a) => a._id === id)?.name ?? null;
   };
 
-  const formik = useFormik<FormValues>({
+  const formik = useFormik<ManagerFormValues>({
     initialValues: INITIAL_VALUES,
     validationSchema: buildValidationSchema(isEnterprise),
     onSubmit: async (values, { resetForm, setStatus }) => {
@@ -162,7 +156,7 @@ export default function CreateManagerPage() {
     }
   };
 
-  const errorOf = (name: keyof FormValues): string | undefined => {
+  const errorOf = (name: keyof ManagerFormValues): string | undefined => {
     const touched = formik.touched[name];
     const error = formik.errors[name];
     return touched && typeof error === 'string' ? error : undefined;

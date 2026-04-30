@@ -2,7 +2,7 @@ import React from 'react';
 import { HEADING_FONT_FAMILY } from './styles';
 import { StepProgress } from './StepProgress';
 
-type CheckInShellProps = {
+type Props = {
   title: string;
   subtitle?: string;
   errorMessage?: string;
@@ -22,7 +22,7 @@ export function CheckInShell({
   currentStep,
   children,
   banner,
-}: CheckInShellProps) {
+}: Props) {
   return (
     <div className="px-7 py-8 max-w-6xl mx-auto">
       <div className="mb-8">

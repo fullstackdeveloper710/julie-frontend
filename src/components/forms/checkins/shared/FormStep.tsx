@@ -1,14 +1,14 @@
 import React from 'react';
 import { HEADING_FONT_FAMILY } from './styles';
 
-type FormStepProps = {
+type Props = {
   title: string;
   description: string;
   stepLabel: string;
   children: React.ReactNode;
 };
 
-export function FormStep({ title, description, stepLabel, children }: FormStepProps) {
+export function FormStep({ title, description, stepLabel, children }: Props) {
   return (
     <>
       <div className="mb-8">

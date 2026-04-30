@@ -3,7 +3,7 @@ import { Building2, ChevronDown, Plus, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { HEADING_FONT } from '@/utils/constant';
 
-type AgencyBadgeProps = {
+type Props = {
   isEnterprise: boolean;
   selected: { _id: string; name: string };
   agencies: Array<{ _id: string; name: string }>;
@@ -21,7 +21,7 @@ function AgencyBadge({
   isOpen,
   onToggle,
   onSwitch,
-}: AgencyBadgeProps) {
+}: Props) {
   // Standard plan: render a static badge with the single agency name. No dropdown.
   if (!isEnterprise) {
     return (

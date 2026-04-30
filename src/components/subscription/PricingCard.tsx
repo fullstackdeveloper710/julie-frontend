@@ -4,7 +4,7 @@ import Link from 'next/link';
 import type { PricingPlan } from '@/lib/pricing';
 import { USER_PLAN, BILLING_INTERVAL } from '@/types/enums';
 
-interface PricingCardProps {
+interface Props {
   plan: PricingPlan;
   billingInterval: BILLING_INTERVAL;
   founderSpotsRemaining?: number;
@@ -35,7 +35,7 @@ function SavingsDisplay({
   return null;
 }
 
-export function PricingCard({ plan, billingInterval, founderSpotsRemaining }: PricingCardProps) {
+export function PricingCard({ plan, billingInterval, founderSpotsRemaining }: Props) {
   const isFounder = plan.id === USER_PLAN.FOUNDER;
   const isEnterprise = plan.id === USER_PLAN.ENTERPRISE;
   const isAnnual = billingInterval === BILLING_INTERVAL.ANNUAL;

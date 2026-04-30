@@ -1,4 +1,12 @@
 export type { User, Agency as UserAgency } from './user';
+export type {
+  TabType,
+  AlertConfig,
+  ManagerFormValues,
+  AgencyFormValues,
+  MonthlyFormValues,
+  AnnualFormValues,
+} from './forms';
 export { USER_PLAN, USER_ROLE, BILLING_INTERVAL } from './enums';
 export type { PlanType, Subscription } from './subscription';
 export type { WorkforceMetric, AnalyticsFilter } from './analytics';

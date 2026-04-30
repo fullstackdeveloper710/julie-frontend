@@ -1,4 +1,4 @@
-interface EmptyStateProps {
+interface Props {
   icon: string | React.ReactNode;
   title: string;
   description: string;
@@ -14,7 +14,7 @@ export function EmptyState({
   subtitle,
   children,
   layout = 'centered',
-}: EmptyStateProps) {
+}: Props) {
   if (layout === 'default') {
     return (
       <div>

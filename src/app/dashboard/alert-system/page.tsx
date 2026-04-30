@@ -2,14 +2,7 @@
 
 import { useState } from 'react';
 import { Input, Button } from '@/components/ui';
-
-interface AlertConfig {
-  id: string;
-  label: string;
-  description: string;
-  threshold: number;
-  enabled: boolean;
-}
+import type { AlertConfig } from '@/types/forms';
 
 const DEFAULT_ALERTS: AlertConfig[] = [
   {

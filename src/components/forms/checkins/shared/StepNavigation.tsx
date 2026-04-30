@@ -2,14 +2,14 @@ import React from 'react';
 import { Button } from '@/components/ui';
 import { HEADING_FONT_FAMILY, PRIMARY_BUTTON_CLASS, SECONDARY_BUTTON_CLASS } from './styles';
 
-type StepNavigationProps = {
+type Props = {
   onBack: () => void;
   backDisabled?: boolean;
   leftSlot?: React.ReactNode;
   rightSlot: React.ReactNode;
 };
 
-export function StepNavigation({ onBack, backDisabled, leftSlot, rightSlot }: StepNavigationProps) {
+export function StepNavigation({ onBack, backDisabled, leftSlot, rightSlot }: Props) {
   return (
     <>
       <hr className="border-t border-slate-700 mb-6" />
@@ -31,13 +31,13 @@ export function StepNavigation({ onBack, backDisabled, leftSlot, rightSlot }: St
   );
 }
 
-type PrimaryStepButtonProps = {
+type ButtonProps = {
   onClick: () => void;
   disabled?: boolean;
   children: React.ReactNode;
 };
 
-export function PrimaryStepButton({ onClick, disabled, children }: PrimaryStepButtonProps) {
+export function PrimaryStepButton({ onClick, disabled, children }: ButtonProps) {
   return (
     <Button
       type="button"

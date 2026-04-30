@@ -2,17 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-
-type TabType =
-  | 'dashboard'
-  | 'annual-checkin'
-  | 'monthly-checkin'
-  | 'intelligence-graphs'
-  | 'fmla-ot-patterns'
-  | 'alert-system'
-  | 'peer-benchmarking'
-  | 'grant-writer'
-  | 'intelligence-report';
+import type { TabType } from '@/types/forms';
 
 const TABS: { id: TabType; label: string }[] = [
   { id: 'dashboard', label: 'Dashboard' },

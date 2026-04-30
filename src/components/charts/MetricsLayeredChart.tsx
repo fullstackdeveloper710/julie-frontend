@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import CustomTooltip from '../common/CustomTooltip';
 
-interface MetricsLayeredChartProps {
+interface Props {
   data: any[];
   title: string;
   description: string;
@@ -24,7 +24,7 @@ export function MetricsLayeredChart({
   title,
   description,
   height = 350,
-}: MetricsLayeredChartProps) {
+}: Props) {
   return (
     <div className="bg-slate-800 border border-t-4 border-t-(--accent) border-slate-700 rounded-lg p-6">
       <div className="mb-6 border-b border-slate-700 pb-4">

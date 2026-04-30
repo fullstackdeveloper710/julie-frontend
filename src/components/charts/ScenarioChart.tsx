@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import CustomTooltip from '../common/CustomTooltip';
 
-interface ScenarioChartProps {
+interface Props {
   data: any[];
   title: string;
   description: string;
@@ -26,7 +26,7 @@ export function ScenarioChart({
   description,
   height = 350,
   yAxisDomain = [0, 100],
-}: ScenarioChartProps) {
+}: Props) {
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-8">
       <div className="mb-6 border-b border-slate-700 pb-4">

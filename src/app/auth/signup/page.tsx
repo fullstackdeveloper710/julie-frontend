@@ -12,13 +12,11 @@ import { useSignUpMutation } from '@/redux/api';
 import { fetchPricingPlans, type BackendPlanId, type PricingPlan } from '@/lib/pricing';
 import { USER_PLAN, BILLING_INTERVAL } from '@/types/enums';
 
-type BackendPlan = 'founder' | 'essentials' | 'professional' | 'enterprise';
-
-const PLAN_KEY_TO_BACKEND_PLAN: Record<BackendPlanId, BackendPlan> = {
-  founder: 'founder',
-  essentials: 'essentials',
-  professional: 'professional',
-  enterprise: 'enterprise',
+const PLAN_KEY_TO_BACKEND_PLAN: Record<BackendPlanId, USER_PLAN> = {
+  founder: USER_PLAN.FOUNDER,
+  essentials: USER_PLAN.ESSENTIALS,
+  professional: USER_PLAN.PROFESSIONAL,
+  enterprise: USER_PLAN.ENTERPRISE,
 };
 const validationSchema = Yup.object({
   // agencyName: Yup.string().required('Agency name is required'),

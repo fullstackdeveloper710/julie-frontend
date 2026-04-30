@@ -1,10 +1,5 @@
-export type AgencyFormValues = {
-  name: string;
-  type: string;
-  sizeCategory: string;
-  primaryServiceJurisdiction: string;
-  coverageArea: string;
-};
+export type { AgencyFormValues } from '@/types/forms';
+import type { AgencyFormValues } from '@/types/forms';
 
 export const AGENCY_INITIAL_VALUES: AgencyFormValues = {
   name: '',
