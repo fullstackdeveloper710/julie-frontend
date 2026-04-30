@@ -8,16 +8,19 @@ export const TrialStatus: React.FC = () => {
   const subscription = data?.subscription ?? null;
   const countdown = useTrialCountdown(subscription);
 
-  if (
-    isLoading ||
-    !subscription ||
-    subscription.plan !== 'founding' ||
-    subscription.status !== 'trialing'
-  ) {
+  // Show for founding rate subscriptions during their 90-day billing pause
+  const billingPausedUntil = subscription?.billingPausedUntil
+    ? new Date(subscription.billingPausedUntil)
+    : null;
+  const pauseDaysRemaining = billingPausedUntil
+    ? Math.max(0, Math.ceil((billingPausedUntil.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : 0;
+
+  if (isLoading || !subscription || subscription.plan !== 'founder' || pauseDaysRemaining <= 0) {
     return null;
   }
 
-  const daysRemaining = subscription.trialDaysRemaining || 0;
+  const daysRemaining = pauseDaysRemaining;
   const percentComplete = ((90 - daysRemaining) / 90) * 100;
 
   // Show more urgent messaging as trial ends
@@ -43,7 +46,7 @@ export const TrialStatus: React.FC = () => {
           />
           <div>
             <p className="font-semibold text-gray-900">
-              {isCritical ? '⚠️ Trial Ending Soon' : 'Founding Tier Trial'}
+              {isCritical ? '⚠️ Billing Activating Soon' : 'Founding Rate — Billing Pause'}
             </p>
             <p className="text-sm text-gray-600">
               {countdown || `${daysRemaining} days remaining`}
@@ -66,13 +69,12 @@ export const TrialStatus: React.FC = () => {
 
       {isCritical && (
         <p className="mt-3 text-sm text-red-700 font-medium">
-          Your trial expires in {daysRemaining} days. Submit a testimonial or add billing
-          information to continue.
+          Billing activates in {daysRemaining} days at $149/mo. Ensure your payment method is on file.
         </p>
       )}
       {isUrgent && !isCritical && (
         <p className="mt-3 text-sm text-orange-700">
-          Trial expires in {daysRemaining} days. Prepare for transition to standard pricing.
+          Billing pause ends in {daysRemaining} days. Your locked rate of $149/mo activates then.
         </p>
       )}
     </Card>

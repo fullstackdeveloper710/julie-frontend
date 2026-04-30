@@ -11,13 +11,13 @@ import { useAppDispatch } from '@/redux';
 import { useSignUpMutation } from '@/redux/api';
 import { fetchPricingPlans, type BackendPlanId, type PricingPlan } from '@/lib/pricing';
 
-type BackendPlan = 'Early Adopter' | 'Standard' | 'Enterprise';
+type BackendPlan = 'founder' | 'essentials' | 'professional' | 'enterprise';
 
 const PLAN_KEY_TO_BACKEND_PLAN: Record<BackendPlanId, BackendPlan> = {
-  founding: 'Early Adopter',
-  early_adopter: 'Early Adopter',
-  standard: 'Standard',
-  enterprise: 'Enterprise',
+  founder: 'founder',
+  essentials: 'essentials',
+  professional: 'professional',
+  enterprise: 'enterprise',
 };
 const validationSchema = Yup.object({
   // agencyName: Yup.string().required('Agency name is required'),
@@ -45,6 +45,8 @@ export default function SignUpPage() {
 
   const searchParams = useSearchParams();
   const selectedPlanKey = searchParams.get('plan') as BackendPlanId | null;
+  const isFoundingRate = searchParams.get('foundingRate') === 'true';
+  const selectedBilling = (searchParams.get('billing') ?? 'monthly') as 'monthly' | 'annual';
 
   useEffect(() => {
     let isMounted = true;
@@ -82,14 +84,14 @@ export default function SignUpPage() {
 
   const currentPlan =
     pricingPlans.find((plan) => plan.id === selectedPlanKey) ??
-    pricingPlans.find((plan) => plan.id === 'early_adopter') ??
+    pricingPlans.find((plan) => plan.id === 'essentials') ??
     pricingPlans[0] ??
     null;
 
   const resolvedPlanKey: BackendPlanId =
     currentPlan?.available && currentPlan.id
       ? currentPlan.id
-      : (pricingPlans.find((plan) => plan.available)?.id ?? 'early_adopter');
+      : (pricingPlans.find((plan) => plan.available)?.id ?? 'essentials');
 
   const resolvedPlan = pricingPlans.find((plan) => plan.id === resolvedPlanKey) ?? currentPlan;
 
@@ -113,6 +115,7 @@ export default function SignUpPage() {
           password: values.password,
           fullName: values.fullName,
           plan: PLAN_KEY_TO_BACKEND_PLAN[resolvedPlanKey],
+          billingInterval: selectedBilling,
         }).unwrap();
 
         setUserEmail(result.data.email);
@@ -156,10 +159,12 @@ export default function SignUpPage() {
             Frontline Frameworks
           </div>
 
-          {resolvedPlanKey === 'founding' ? (
+          {resolvedPlanKey === 'founder' ? (
             <>
-              <h2 className="text-3xl font-extrabold text-white mb-2">Start Your Free Trial</h2>
-              <p className="mb-3 text-sm">90 days free · No credit card required to start</p>
+              <h2 className="text-3xl font-extrabold text-white mb-2">Claim Your Founder Plan</h2>
+              <p className="mb-3 text-sm">
+                $149/mo locked forever · 90-day billing pause · 1-year commitment
+              </p>
             </>
           ) : (
             <>
@@ -167,29 +172,87 @@ export default function SignUpPage() {
               <p className="mb-3 text-sm">Get started with the {currentPlan.name} plan</p>
             </>
           )}
-          <div className="rounded-2xl border border-slate-700 bg-slate-950/60 p-5 mb-4">
-            <div className="text-sm font-extrabold text-(--accent)">{resolvedPlan.name} Plan</div>
 
-            <div className="mt-2 text-3xl font-bold text-white">
-              {resolvedPlan.display.priceLabel}
-              <span className="text-sm font-medium text-slate-300">
-                {resolvedPlan.display.priceIntervalLabel}
-              </span>
-            </div>
+          {(() => {
+            const isAnnual = selectedBilling === 'annual';
+            const monthly = resolvedPlan.pricing.monthly;
+            const annual = resolvedPlan.pricing.annual;
+            const price = isAnnual ? annual : monthly;
+            const saved = monthly && annual ? monthly * 12 - annual : 0;
+            const isFounderPlan = resolvedPlanKey === 'founder';
 
-            {resolvedPlan.features.trialDays && (
-              <div className="text-xs text-green-400 mt-1">
-                {resolvedPlan.features.trialDays} days free trial
+            return (
+              <div className="rounded-2xl border border-slate-700 bg-slate-950/60 p-5 mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-sm font-extrabold text-(--accent)">{resolvedPlan.name} Plan</div>
+                  <div className="flex rounded-full border border-slate-700 overflow-hidden text-xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('billing', 'monthly');
+                        window.history.replaceState({}, '', url.toString());
+                        // re-navigate to pick up new param
+                        window.location.replace(url.toString());
+                      }}
+                      className={`px-3 py-1 transition ${selectedBilling === 'monthly' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      Monthly
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('billing', 'annual');
+                        window.history.replaceState({}, '', url.toString());
+                        window.location.replace(url.toString());
+                      }}
+                      className={`px-3 py-1 transition ${selectedBilling === 'annual' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      Annual
+                    </button>
+                  </div>
+                </div>
+
+                {price !== null ? (
+                  <>
+                    <div className="text-3xl font-bold text-white">
+                      ${price.toLocaleString()}
+                      <span className="text-sm font-medium text-slate-300">
+                        {isAnnual ? '/yr' : '/mo'}
+                      </span>
+                    </div>
+                    {isAnnual && monthly && (
+                      <p className="mt-1 text-xs text-slate-400">
+                        ${monthly}/mo × 11 months billed annually
+                      </p>
+                    )}
+                    {isAnnual && saved > 0 && monthly && (
+                      <div className="mt-2 flex flex-col gap-0.5">
+                        <span className="text-2xl font-extrabold text-emerald-400">1 month FREE</span>
+                        <span className="text-sm font-semibold text-emerald-400">
+                          Save ${saved.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {isFounderPlan && (
+                      <p className="mt-1 text-xs font-semibold text-orange-400">
+                        Price locked for life · no auto-upgrade
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-sm text-slate-400">Contact us for pricing</div>
+                )}
+
+                <div className="mt-3 text-xs text-slate-500">{resolvedPlan.description}</div>
+                <div className="mt-1 text-xs text-slate-400">
+                  {resolvedPlan.features.holderSeats} holder + {resolvedPlan.features.adminSeats} admins
+                  {' '}({resolvedPlan.features.holderSeats + resolvedPlan.features.adminSeats} seats total)
+                </div>
               </div>
-            )}
-
-            <div className="mt-3 text-xs">{resolvedPlan.description}</div>
-
-            <div className="mt-2 text-xs text-slate-400">
-              {resolvedPlan.features.adminSeats} Admin + {resolvedPlan.features.viewerSeats} Viewer
-              seats
-            </div>
-          </div>
+            );
+          })()}
           {showModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm ">
               <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 text-center shadow-2xl animate-fadeIn">

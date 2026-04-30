@@ -1,4 +1,4 @@
-export type BackendPlanId = 'founding' | 'early_adopter' | 'standard' | 'enterprise';
+export type BackendPlanId = 'founder' | 'essentials' | 'professional' | 'enterprise';
 
 export interface PricingPlanFeatures {
   maxUsers: number;
@@ -7,11 +7,18 @@ export interface PricingPlanFeatures {
   scenarioModels: number;
   advancedAnalytics: boolean;
   apiAccess: boolean;
-  trialDays: number | null;
+  aiChat: boolean;
   adminSeats: number;
-  viewerSeats: number;
-  additionalAgencyAdminSeats?: number;
-  additionalAgencyViewerSeats?: number;
+  holderSeats: number;
+  additionalDeptAdminSeats?: number;
+  additionalDeptHolderSeats?: number;
+}
+
+export interface FounderRules {
+  billingPauseDays: number;
+  minCommitmentMonths: number;
+  requiredConsecutiveCheckins: number;
+  earlyCancellationNote: string;
 }
 
 export interface PricingPlan {
@@ -34,13 +41,19 @@ export interface PricingPlan {
   };
   available: boolean;
   annualSavings: string | null;
+  // Only present on the Founder plan
+  founderRules?: FounderRules;
 }
 
 export interface PricingResponse {
   plans: PricingPlan[];
+  founderAvailable: boolean;
+  founderSpotsRemaining: number;
+  founderCapTotal: number;
+  totalAgencies: number;
+  // Legacy aliases
   foundingAvailable: boolean;
   remainingFoundingSpots: number;
-  totalAgencies: number;
 }
 
 import { buildBackendApiUrl } from '@/services/backend';
@@ -49,8 +62,6 @@ export const fetchPricingPlans = async (): Promise<PricingResponse> => {
   const response = await fetch(buildBackendApiUrl('/pricing'), {
     cache: 'no-store',
   });
-
-  console.log(response);
 
   if (!response.ok) {
     throw new Error(`Failed to load pricing plans (${response.status})`);

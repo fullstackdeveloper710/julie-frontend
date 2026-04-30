@@ -1,75 +1,58 @@
 import { useEffect, useState } from 'react';
 import { Subscription } from '@/types';
 
-const getTrialStatus = (subscription: Subscription) => {
-  if (subscription.plan !== 'founding' || subscription.status !== 'trialing') {
-    return null;
-  }
+const getFounderBillingStatus = (subscription: Subscription) => {
+  if (subscription.plan !== 'founder') return null;
 
-  const trialEnd = new Date(subscription.trialEndDate || '');
   const now = new Date();
-  const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  const pausedUntil = subscription.billingPausedUntil
+    ? new Date(subscription.billingPausedUntil)
+    : null;
+  const commitmentEnd = subscription.foundingRateCommitmentEndDate
+    ? new Date(subscription.foundingRateCommitmentEndDate)
+    : null;
+
+  const isPaused = pausedUntil !== null && now < pausedUntil;
+  const pauseDaysRemaining = pausedUntil
+    ? Math.max(0, Math.ceil((pausedUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
+    : 0;
 
   return {
-    isActive: subscription.status === 'trialing',
-    daysRemaining: Math.max(0, daysRemaining),
-    isEnding: daysRemaining <= 14,
-    isCritical: daysRemaining <= 3,
+    isPaused,
+    pauseDaysRemaining,
+    isActivated: !!subscription.foundingRateActivatedAt,
+    consecutiveCheckins: subscription.consecutiveCheckins,
+    checkinsNeeded: Math.max(0, 3 - subscription.consecutiveCheckins),
+    commitmentEndDate: commitmentEnd,
+    isDowngraded: !!subscription.foundingRateDowngradedAt,
   };
 };
 
-const formatSubscriptionDetails = (subscription: Subscription) => {
-  return {
-    planName: subscription.plan,
-    status: subscription.status,
-    emails: {
-      needsBillingInfo: subscription.status === 'trialing' && !subscription.stripeCustomerId,
-      needsTestimonial: subscription.testimonialRequired && !subscription.testimonialSubmitted,
-    },
-  };
-};
-
-const checkFoundingTierTransition = (subscription: Subscription) => {
-  if (subscription.plan !== 'founding') return null;
-
-  const trialEnd = new Date(subscription.trialEndDate || '');
-  const now = new Date();
-  const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-  return {
-    isAboutToTransition: daysRemaining <= 0,
-    daysUntilTransition: Math.max(0, daysRemaining),
-    requiresAction: !subscription.stripeCustomerId || !subscription.testimonialSubmitted,
-  };
-};
+const formatSubscriptionDetails = (subscription: Subscription) => ({
+  planName: subscription.plan,
+  isFounder: subscription.plan === 'founder',
+  status: subscription.status,
+  emails: {
+    needsBillingInfo: subscription.status === 'trialing' && !subscription.stripeCustomerId,
+    needsTestimonial: subscription.testimonialRequired && !subscription.testimonialSubmitted,
+  },
+});
 
 export const useSubscriptionStatus = (subscription: Subscription | null) => {
-  const [trialStatus, setTrialStatus] = useState<any>(null);
+  const [founderStatus, setFounderStatus] = useState<ReturnType<typeof getFounderBillingStatus>>(null);
   const [formattedDetails, setFormattedDetails] = useState<any>(null);
-  const [shouldTransition, setShouldTransition] = useState<any>(null);
 
   useEffect(() => {
     if (!subscription) return;
-
-    // Update trial status
-    if (subscription.plan === 'founding') {
-      setTrialStatus(getTrialStatus(subscription));
-
-      // Check for tier transition
-      const transition = checkFoundingTierTransition(subscription);
-      setShouldTransition(transition);
-    }
-
-    // Format details for display
+    setFounderStatus(getFounderBillingStatus(subscription));
     setFormattedDetails(formatSubscriptionDetails(subscription));
   }, [subscription]);
 
   return {
-    trialStatus,
+    founderStatus,
     formattedDetails,
-    shouldTransition,
-    isTrialActive: trialStatus?.isActive ?? false,
-    daysRemaining: trialStatus?.daysRemaining ?? 0,
+    isFounder: subscription?.plan === 'founder',
+    isBillingPaused: founderStatus?.isPaused ?? false,
     needsBillingInfo: formattedDetails?.emails?.needsBillingInfo ?? false,
     needsTestimonial: formattedDetails?.emails?.needsTestimonial ?? false,
   };

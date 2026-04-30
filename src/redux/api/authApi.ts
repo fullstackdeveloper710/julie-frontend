@@ -62,6 +62,7 @@ export const authApi = createApi({
         password: string;
         fullName?: string;
         plan?: string;
+        billingInterval?: 'monthly' | 'annual';
       }
     >({
       query: (body) => ({

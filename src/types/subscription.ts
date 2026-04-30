@@ -1,4 +1,4 @@
-export type PlanType = 'founding' | 'early_adopter' | 'standard' | 'enterprise';
+export type PlanType = 'founder' | 'essentials' | 'professional' | 'enterprise';
 export type BillingInterval = 'monthly' | 'annual';
 
 export interface Subscription {
@@ -11,18 +11,20 @@ export interface Subscription {
   status: 'active' | 'canceled' | 'past_due' | 'trialing';
   billingInterval: BillingInterval;
 
-  // Trial tracking
-  trialStartDate: string | null;
-  trialEndDate: string | null;
-  trialDaysRemaining: number | null;
-  isTrialEnded: boolean;
+  isFoundingRate: boolean;
+  foundingRateLockedPrice: number | null;      
+  billingPausedUntil: string | null;           
+  foundingRateActivatedAt: string | null;       
+  foundingRateCommitmentEndDate: string | null; 
+  consecutiveCheckins: number;                  
+  foundingRateDowngradedAt: string | null;    
 
   // Testimonial tracking
   testimonialRequired: boolean;
   testimonialSubmitted: boolean;
   testimonialSubmittedAt: string | null;
 
-  // Pricing lock (for founding tier)
+  // Pricing lock
   pricingLocked: boolean;
   lockedPrice: number | null;
   lockedAt: string | null;
@@ -32,7 +34,7 @@ export interface Subscription {
   lastCheckinAt: string | null;
 
   // Enterprise multi-agency
-  numberOfAgencies: number; // For enterprise tier
+  numberOfAgencies: number;
 
   // Seats allocation
   adminSeats: number;

@@ -6,19 +6,21 @@ export const useInvoiceReminder = (subscription: Subscription | null) => {
   const [daysUntilDue, setDaysUntilDue] = useState(0);
 
   useEffect(() => {
-    if (!subscription || subscription.plan !== 'founding') {
+    // Only relevant for Founder plan during the billing pause window
+    if (subscription?.plan !== 'founder' || !subscription.billingPausedUntil) {
       setShouldShow(false);
       return;
     }
 
-    const trialEnd = new Date(subscription.trialEndDate!);
-    const warningDate = new Date(trialEnd.getTime() - 1 * 24 * 60 * 60 * 1000); // 1 day before
+    const pauseEnd = new Date(subscription.billingPausedUntil);
+    const warningStart = new Date(pauseEnd.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days before
     const now = new Date();
 
-    if (now >= warningDate && subscription.status === 'trialing') {
+    if (now >= warningStart && now < pauseEnd) {
       setShouldShow(true);
-      const diff = Math.floor((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      setDaysUntilDue(Math.max(0, diff));
+      setDaysUntilDue(Math.max(0, Math.ceil((pauseEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))));
+    } else {
+      setShouldShow(false);
     }
   }, [subscription]);
 

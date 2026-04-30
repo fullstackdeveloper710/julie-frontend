@@ -7,17 +7,11 @@ export interface PlanFeatures {
   scenarioModels: number;
   advancedAnalytics: boolean;
   apiAccess: boolean;
-  trialDays: number | null;
+  aiChat: boolean;
   adminSeats: number;
-  viewerSeats: number;
-  additionalAgencyAdminSeats?: number;
-  additionalAgencyViewerSeats?: number;
-}
-
-export interface PlanPrice {
-  monthly: number | null; // null = not available
-  annual: number | null; // null = not available
-  description?: string;
+  holderSeats: number;
+  additionalDeptAdminSeats?: number;
+  additionalDeptHolderSeats?: number;
 }
 
 export interface PlanConfig {
@@ -26,54 +20,25 @@ export interface PlanConfig {
   features: PlanFeatures;
   pricing: Record<BillingInterval, number | null>;
   badge?: string;
-  isLocked?: boolean; // For founding tier permanent pricing
+  isLocked?: boolean;
 }
 
-// Pricing configuration - config-driven approach
+// Founder plan constants — single source of truth for UI and billing logic
+export const FOUNDER_PLAN = {
+  monthly: 149,
+  annual: 1639,           // 149 × 11
+  cap: 20,
+  billingPauseDays: 90,
+  minCommitmentMonths: 12,
+  requiredConsecutiveCheckins: 3,
+} as const;
+
 export const PRICING_CONFIG: Record<PlanType, PlanConfig> = {
-  founding: {
-    name: 'Founding',
-    description: 'Perfect for early adopters',
-    badge: 'Founding Rate',
-    features: {
-      maxUsers: 3,
-      maxReports: -1,
-      aiReportsPerMonth: -1,
-      scenarioModels: -1,
-      advancedAnalytics: true,
-      apiAccess: false,
-      trialDays: 90,
-      adminSeats: 2,
-      viewerSeats: 1,
-    },
-    pricing: {
-      monthly: 149,
-      annual: 1499,
-    },
+  founder: {
+    name: 'Founder',
+    description: 'Full Professional access at a permanently locked rate',
+    badge: 'FOUNDER',
     isLocked: true,
-  },
-  early_adopter: {
-    name: 'Early Adopter',
-    description: 'Growing agencies',
-    features: {
-      maxUsers: 15,
-      maxReports: -1,
-      aiReportsPerMonth: -1,
-      scenarioModels: -1,
-      advancedAnalytics: true,
-      apiAccess: false,
-      trialDays: null,
-      adminSeats: 2,
-      viewerSeats: 1,
-    },
-    pricing: {
-      monthly: 249,
-      annual: 2739,
-    },
-  },
-  standard: {
-    name: 'Standard',
-    description: 'Established agencies',
     features: {
       maxUsers: -1,
       maxReports: -1,
@@ -81,18 +46,50 @@ export const PRICING_CONFIG: Record<PlanType, PlanConfig> = {
       scenarioModels: -1,
       advancedAnalytics: true,
       apiAccess: true,
-      trialDays: null,
+      aiChat: true,
       adminSeats: 2,
-      viewerSeats: 1,
+      holderSeats: 1,
     },
     pricing: {
-      monthly: 499,
-      annual: 5489,
+      monthly: FOUNDER_PLAN.monthly,
+      annual: FOUNDER_PLAN.annual,
     },
+  },
+  essentials: {
+    name: 'Essentials',
+    description: 'Core tools for growing agencies',
+    features: {
+      maxUsers: -1,
+      maxReports: -1,
+      aiReportsPerMonth: -1,
+      scenarioModels: -1,
+      advancedAnalytics: true,
+      apiAccess: false,
+      aiChat: false,
+      adminSeats: 2,
+      holderSeats: 1,
+    },
+    pricing: { monthly: 199, annual: 2189 },
+  },
+  professional: {
+    name: 'Professional',
+    description: 'Full suite including all AI features',
+    features: {
+      maxUsers: -1,
+      maxReports: -1,
+      aiReportsPerMonth: -1,
+      scenarioModels: -1,
+      advancedAnalytics: true,
+      apiAccess: true,
+      aiChat: true,
+      adminSeats: 2,
+      holderSeats: 1,
+    },
+    pricing: { monthly: 499, annual: 4389 },
   },
   enterprise: {
     name: 'Government / Enterprise',
-    description: 'Multi-agency solutions',
+    description: 'Multi-department solutions',
     features: {
       maxUsers: -1,
       maxReports: -1,
@@ -100,66 +97,48 @@ export const PRICING_CONFIG: Record<PlanType, PlanConfig> = {
       scenarioModels: -1,
       advancedAnalytics: true,
       apiAccess: true,
-      trialDays: null,
+      aiChat: true,
       adminSeats: 4,
-      viewerSeats: 2,
-      additionalAgencyAdminSeats: 2,
-      additionalAgencyViewerSeats: 1,
+      holderSeats: 3, // 1 master + 2 dept holders
+      additionalDeptAdminSeats: 2,
+      additionalDeptHolderSeats: 1,
     },
-    pricing: {
-      monthly: null, // Enterprise only supports annual
-      annual: 7000, // First agency; +$2000 per additional
-    },
+    pricing: { monthly: null, annual: 10000 },
   },
 };
 
 export const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
-  founding: PRICING_CONFIG.founding.features,
-  early_adopter: PRICING_CONFIG.early_adopter.features,
-  standard: PRICING_CONFIG.standard.features,
+  founder: PRICING_CONFIG.founder.features,
+  essentials: PRICING_CONFIG.essentials.features,
+  professional: PRICING_CONFIG.professional.features,
   enterprise: PRICING_CONFIG.enterprise.features,
 };
 
-// Helper functions
-export const getFoundingPrice = (interval: BillingInterval): number => {
-  return PRICING_CONFIG.founding.pricing[interval] || 0;
-};
-
-export const getPrice = (plan: PlanType, interval: BillingInterval): number | null => {
-  return PRICING_CONFIG[plan].pricing[interval];
-};
+export const getPrice = (plan: PlanType, interval: BillingInterval): number | null =>
+  PRICING_CONFIG[plan].pricing[interval];
 
 export const getAnnualSavings = (plan: PlanType): string | null => {
   const monthly = PRICING_CONFIG[plan].pricing.monthly;
   const annual = PRICING_CONFIG[plan].pricing.annual;
-
   if (!monthly || !annual) return null;
-
-  const monthlyTotal = monthly * 12;
-  const savings = (((monthlyTotal - annual) / monthlyTotal) * 100).toFixed(0);
-  return `${savings}%`;
+  const saved = monthly * 12 - annual;
+  if (saved <= 0) return null;
+  return `${((saved / (monthly * 12)) * 100).toFixed(0)}%`;
 };
 
-export const getEnterprisePrice = (numberOfAgencies: number): number => {
-  const firstAgency = PRICING_CONFIG.enterprise.pricing.annual || 7000;
-  const additionalPrice = 2000;
-  return firstAgency + (numberOfAgencies - 1) * additionalPrice;
+export const getEnterprisePrice = (numberOfDepts: number): number => {
+  const base = PRICING_CONFIG.enterprise.pricing.annual ?? 10000;
+  return base + (numberOfDepts - 1) * 3000;
 };
 
-export const getSeats = (plan: PlanType, numberOfAgencies: number = 1) => {
-  const config = PRICING_CONFIG[plan].features;
-
+export const getSeats = (plan: PlanType, numberOfDepts: number = 1) => {
+  const cfg = PRICING_CONFIG[plan].features;
   if (plan === 'enterprise') {
-    const additionalAgencies = numberOfAgencies - 1;
+    const extra = numberOfDepts - 1;
     return {
-      adminSeats: config.adminSeats + additionalAgencies * (config.additionalAgencyAdminSeats || 0),
-      viewerSeats:
-        config.viewerSeats + additionalAgencies * (config.additionalAgencyViewerSeats || 0),
+      adminSeats: cfg.adminSeats + extra * (cfg.additionalDeptAdminSeats ?? 0),
+      holderSeats: cfg.holderSeats + extra * (cfg.additionalDeptHolderSeats ?? 0),
     };
   }
-
-  return {
-    adminSeats: config.adminSeats,
-    viewerSeats: config.viewerSeats,
-  };
+  return { adminSeats: cfg.adminSeats, holderSeats: cfg.holderSeats };
 };

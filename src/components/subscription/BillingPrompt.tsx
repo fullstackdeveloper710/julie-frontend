@@ -8,13 +8,19 @@ export const BillingPrompt: React.FC = () => {
   const subscription = data?.subscription;
   const [dismissed, setDismissed] = useState(false);
 
+  const billingPausedUntil = subscription?.billingPausedUntil
+    ? new Date(subscription.billingPausedUntil)
+    : null;
+  const pauseDaysRemaining = billingPausedUntil
+    ? Math.max(0, Math.ceil((billingPausedUntil.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : 0;
+
   if (
     isLoading ||
     !subscription ||
-    subscription.plan !== 'founding' ||
-    subscription.status !== 'trialing' ||
-    subscription.trialDaysRemaining === null ||
-    subscription.trialDaysRemaining > 14 ||
+    subscription.plan !== 'founder' ||
+    pauseDaysRemaining > 14 ||
+    pauseDaysRemaining <= 0 ||
     dismissed
   ) {
     return null;
@@ -25,10 +31,10 @@ export const BillingPrompt: React.FC = () => {
       <div className="flex gap-3">
         <AlertCircle className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
         <div className="flex-1">
-          <p className="font-semibold text-gray-900">Add Billing Information</p>
+          <p className="font-semibold text-gray-900">Billing Activating Soon</p>
           <p className="text-sm text-gray-700 mt-1">
-            Your trial ends in {subscription.trialDaysRemaining} days. Add your billing information
-            now to ensure uninterrupted access.
+            Your Founding Rate billing pause ends in {pauseDaysRemaining} day{pauseDaysRemaining !== 1 ? 's' : ''}.
+            Ensure your payment method is on file to keep your locked $149/mo rate.
           </p>
           <div className="flex gap-2 mt-3">
             <Button size="sm" variant="primary">

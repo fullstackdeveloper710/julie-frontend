@@ -8,36 +8,22 @@ export default function Pricing() {
   const [pricing, setPricing] = useState<PricingResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [billingInterval, setBillingInterval] = useState<'monthly' | 'annual'>('monthly');
 
   useEffect(() => {
     let alive = true;
-    const loadPricing = async () => {
+    const load = async () => {
       try {
         const data = await fetchPricingPlans();
-
-        if (!alive) {
-          return;
-        }
-
-        setPricing(data);
+        if (alive) setPricing(data);
       } catch (err) {
-        if (!alive) {
-          return;
-        }
-
-        setError(err instanceof Error ? err.message : 'Failed to load pricing plans');
+        if (alive) setError(err instanceof Error ? err.message : 'Failed to load pricing plans');
       } finally {
-        if (alive) {
-          setLoading(false);
-        }
+        if (alive) setLoading(false);
       }
     };
-
-    void loadPricing();
-
-    return () => {
-      alive = false;
-    };
+    void load();
+    return () => { alive = false; };
   }, []);
 
   if (loading) {
@@ -56,71 +42,133 @@ export default function Pricing() {
     );
   }
 
-  const plans = pricing.plans.filter((plan) => plan.available);
-  const foundingMessage = pricing.foundingAvailable
-    ? 'Founding spots are limited to the first 20 agencies.'
-    : 'Founding spots are currently sold out.';
+  // Backend already filters: founder XOR professional based on active founder count.
+  // This page renders whatever the API returns — no client-side exclusivity logic needed.
+  const { founderAvailable, founderSpotsRemaining } = pricing;
 
   return (
     <div className="min-h-screen bg-slate-950">
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
+
           <div className="font-bold text-xs tracking-widest text-(--accent)! uppercase mb-3">
             Transparent Pricing
           </div>
           <h2 className="font-bold text-4xl text-white mb-4 leading-tight">
             Plans For Every Agency
           </h2>
-          <p className="leading-relaxed max-w-2xl mb-12">
-            Start with the plan that fits your agency. Every plan includes full platform access with
-            AI capabilities.
+          <p className="leading-relaxed max-w-2xl mb-6">
+            Start with the plan that fits your agency. Every plan includes the full platform.
           </p>
-          <p className="mb-12 text-sm text-slate-400">{foundingMessage}</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 items-stretch">
-            {plans.map((plan) => (
-              <PricingCard key={plan.id} plan={plan} />
+          {/* Founder availability banner */}
+          {founderAvailable && (
+            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-2">
+              <span className="h-2 w-2 rounded-full bg-orange-400" />
+              <span className="text-sm text-orange-300">
+                Founder Plan available ·{' '}
+                <span className="font-semibold">
+                  {founderSpotsRemaining} of {pricing.founderCapTotal} spots remaining
+                </span>
+              </span>
+            </div>
+          )}
+
+          {/* Billing toggle */}
+          <div className="flex items-center justify-center mb-10">
+            <div className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900 p-1 gap-1">
+              <button
+                onClick={() => setBillingInterval('monthly')}
+                className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
+                  billingInterval === 'monthly'
+                    ? 'bg-slate-700 text-white'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setBillingInterval('annual')}
+                className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
+                  billingInterval === 'annual'
+                    ? 'bg-slate-700 text-white'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Annual
+                <span className="ml-2 rounded-full border border-emerald-500/30 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                  1 month free
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {billingInterval === 'annual' && (
+            <p className="mb-8 text-center text-xs text-slate-400">
+              Annual plans are billed for 11 months — the 12th month is free.
+            </p>
+          )}
+
+          {/* Plan grid — always 3 cards (founder/professional swap handled by backend) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-start">
+            {pricing.plans.map((plan) => (
+              <PricingCard
+                key={plan.id}
+                plan={plan}
+                billingInterval={billingInterval}
+                founderSpotsRemaining={
+                  plan.id === 'founder' ? founderSpotsRemaining : undefined
+                }
+              />
             ))}
           </div>
 
+          {/* Grant eligibility */}
           <div className="bg-slate-800 border border-slate-700 rounded-md p-6 text-center mb-12">
             <h3 className="font-bold text-lg text-white mb-2">Grant-Eligible Platform</h3>
-            <p className=" text-sm leading-relaxed max-w-2xl mx-auto">
+            <p className="text-sm leading-relaxed max-w-2xl mx-auto">
               Frontline Frameworks is a SHRM Recertification Provider. Subscription costs and
               training engagements may qualify for public safety wellness grants, workforce
-              development funding, and HR professional development budgets. We provide grant support
-              letters and budget justification language.
+              development funding, and HR professional development budgets.
             </p>
           </div>
 
+          {/* FAQ */}
           <div className="bg-slate-800/50 border border-slate-700 rounded-md p-8">
             <h3 className="text-2xl font-bold text-white mb-6">Frequently Asked Questions</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
+                <h4 className="font-bold text-white mb-2">How does annual billing work?</h4>
+                <p className="text-sm">
+                  Annual plans are billed for 11 months upfront — the 12th month is free.
+                  The exact dollar savings are shown on each card when Annual is selected.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-bold text-white mb-2">Can I upgrade my plan later?</h4>
+                <p className="text-sm">
+                  Yes. You can upgrade at any time. Billing adjustments are prorated to your
+                  current cycle.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-bold text-white mb-2">What is the Founder Plan?</h4>
+                <p className="text-sm">
+                  The Founder Plan offers full Professional access at $149/mo — locked for life.
+                  Billing is suspended for 90 days after signup; it activates at month 4.
+                  A 12-month minimum commitment applies (early cancellation = full annual charged).
+                  You must submit 3 consecutive monthly check-ins to maintain the rate;
+                  missing a month downgrades you to Essentials. Limited to the first 20 agencies.
+                </p>
+              </div>
+              <div>
                 <h4 className="font-bold text-white mb-2">
-                  What happens after my trial or billing cycle starts?
+                  What happens when Founder spots are gone?
                 </h4>
-                <p className="text-sm ">
-                  Your selected plan stays active until you change it. You can update billing
-                  details before the trial or renewal period ends.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-bold text-white mb-2">Can I change my plan later?</h4>
-                <p className="text-sm ">
-                  Yes. You can upgrade at any time from your account settings.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-bold text-white mb-2">Do you offer annual discounts?</h4>
-                <p className="text-sm ">
-                  Yes. Annual plans save 8-10% compared to monthly billing across all tiers.
-                </p>
-              </div>
-              <div>
-                <h4 className="font-bold text-white mb-2">Is there a setup fee?</h4>
-                <p className="text-sm ">
-                  No setup fees. Start your 90-day trial immediately with no credit card required.
+                <p className="text-sm">
+                  Once 20 agencies have activated Founder pricing, the plan is permanently closed.
+                  New users see the Professional plan ($499/mo) in its place. Existing Founder
+                  members keep their locked rate and all benefits.
                 </p>
               </div>
             </div>

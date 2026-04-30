@@ -1,111 +1,139 @@
+'use client';
+
 import Link from 'next/link';
 import type { PricingPlan } from '@/lib/pricing';
 
 interface PricingCardProps {
   plan: PricingPlan;
+  billingInterval: 'monthly' | 'annual';
+  founderSpotsRemaining?: number;
 }
 
-export function PricingCard({ plan }: PricingCardProps) {
-  const isFounding = plan.id === 'founding';
+function SavingsDisplay({
+  monthly,
+  annual,
+  isAnnual,
+}: {
+  monthly: number;
+  annual: number;
+  isAnnual: boolean;
+}) {
+  const saved = monthly * 12 - annual;
+  if (saved <= 0) return null;
+  if (isAnnual) {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-2xl font-extrabold text-emerald-400">1 month FREE</span>
+        <span className="text-sm font-semibold text-emerald-400">
+          Save ${saved.toLocaleString()}
+        </span>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+export function PricingCard({ plan, billingInterval, founderSpotsRemaining }: PricingCardProps) {
+  const isFounder = plan.id === 'founder';
   const isEnterprise = plan.id === 'enterprise';
+  const isAnnual = billingInterval === 'annual';
+
+  const monthlyPrice = plan.pricing.monthly;
+  const annualPrice = plan.pricing.annual;
+  const displayPrice = isAnnual ? annualPrice : monthlyPrice;
+  const intervalLabel = isAnnual ? '/yr' : '/mo';
 
   return (
     <div
       className={`relative flex h-full flex-col rounded-xl border p-8 shadow-2xl shadow-slate-950/40 transition-transform duration-200 hover:-translate-y-1 ${
-        isFounding ? 'border-(--accent)! bg-slate-900' : 'border-slate-700 bg-slate-900/95'
+        isFounder
+          ? 'border-(--accent)! bg-slate-900'
+          : 'border-slate-700 bg-slate-900/95'
       }`}
     >
+      {/* Badge */}
       {plan.badge && (
         <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full border border-(--accent)! bg-slate-950 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-orange-400 shadow-lg shadow-(--accent)!/20">
           {plan.badge}
         </div>
       )}
 
-      <div className="flex h-full flex-col justify-between gap-4">
-        <div className="space-y-3">
-          <div className="text-center">
-            <h3 className="text-xs uppercase tracking-[0.28em] text-white">{plan.name}</h3>
-            <p className="mt-3 text-sm text-slate-300">{plan.description}</p>
-          </div>
+      <div className="flex h-full flex-col gap-4">
 
-          <div className="space-y-4 text-center">
-            <div className="space-y-2">
-              {plan.display.promo && !isEnterprise && (
-                <div className="rounded-3xl bg-slate-800 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400">
-                    {plan.display.promo}
-                  </p>
-                  {plan.display.priceNote && (
-                    <p className="mt-2 text-xs text-slate-300">{plan.display.priceNote}</p>
-                  )}
-                </div>
-              )}
+        {/* Plan name + description */}
+        <div className="text-center">
+          <h3 className="text-xs uppercase tracking-[0.28em] text-white">{plan.name}</h3>
+          <p className="mt-2 text-sm text-slate-300">{plan.description}</p>
+          {isFounder && founderSpotsRemaining !== undefined && (
+            <p className="mt-1.5 text-xs font-semibold text-orange-400">
+              {founderSpotsRemaining} spot{founderSpotsRemaining !== 1 ? 's' : ''} remaining
+            </p>
+          )}
+        </div>
 
+        {/* Pricing block */}
+        <div className="text-center space-y-2">
+          {isEnterprise ? (
+            <>
               <div className="flex flex-wrap items-end justify-center gap-2">
-                <span className="text-4xl font-bold text-white">{plan.display.priceLabel}</span>
-                <span className="pb-2 text-sm text-slate-300">
-                  {plan.display.priceIntervalLabel}
+                <span className="text-4xl font-bold text-white">$10K</span>
+                <span className="pb-2 text-sm text-slate-300">/yr</span>
+              </div>
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                Base · +$3K/yr per add-on department
+              </p>
+              <p className="text-xs text-slate-500">Annual only · 7 seats included</p>
+            </>
+          ) : displayPrice !== null ? (
+            <>
+              <div className="flex flex-wrap items-end justify-center gap-2">
+                <span className="text-4xl font-bold text-white">
+                  ${displayPrice.toLocaleString()}
                 </span>
+                <span className="pb-2 text-sm text-slate-300">{intervalLabel}</span>
               </div>
 
-              {isEnterprise && plan.display.priceNote && (
-                <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
-                  {plan.display.priceNote}
+              {/* Annual: formula line */}
+              {isAnnual && monthlyPrice && (
+                <p className="text-xs text-slate-400">
+                  ${monthlyPrice}/mo × 11 months billed annually
                 </p>
               )}
 
-              {plan.annualSavings && !isEnterprise && (
-                <p className="text-xs text-emerald-400">Save {plan.annualSavings}</p>
+              {/* Savings display — annual shows "1 month FREE", monthly shows "X% off" */}
+              {monthlyPrice && annualPrice && (
+                <SavingsDisplay monthly={monthlyPrice} annual={annualPrice} isAnnual={isAnnual} />
               )}
-            </div>
-          </div>
+
+            </>
+          ) : null}
         </div>
 
+        {/* Feature list + CTA */}
         <div className="flex flex-1 flex-col justify-end gap-3 mt-auto">
-          <ul className="space-y-2 text-sm text-slate-300 mt-auto md:min-h-52">
-            <li className="flex items-start gap-3 border-b border-slate-700">
-              <span className="mt-1 text-(--accent)!">✓</span>
+          <ul className="space-y-2 text-sm text-slate-300 md:min-h-52">
+            {/* Seat line */}
+            <li className="flex items-start gap-3 border-b border-slate-700 pb-2">
+              <span className="mt-0.5 text-(--accent)!">✓</span>
               <span>
-                {plan.features.adminSeats} Admin + {plan.features.viewerSeats} Viewer seats
+                {plan.features.holderSeats} holder{plan.features.holderSeats > 1 ? 's' : ''} +{' '}
+                {plan.features.adminSeats} admin{plan.features.adminSeats > 1 ? 's' : ''}
+                {' '}({plan.features.holderSeats + plan.features.adminSeats} seats total)
               </span>
             </li>
-            {plan.features.trialDays && (
-              <li className="flex items-start gap-3 border-b border-slate-700">
-                <span className="mt-1 text-(--accent)!">✓</span>
-                <span>{plan.features.trialDays}-day free trial</span>
-              </li>
-            )}
-            {plan.featureHighlights.map((feature) => (
-              <li key={feature} className="flex items-start gap-3 border-b border-slate-700">
-                <span className="mt-1 text-(--accent)!">✓</span>
-                <span>{feature}</span>
+            {plan.featureHighlights.map((f) => (
+              <li key={f} className="flex items-start gap-3 border-b border-slate-700 pb-2">
+                <span className="mt-0.5 text-(--accent)!">✓</span>
+                <span>{f}</span>
               </li>
             ))}
-            {plan.features.apiAccess &&
-              !plan.featureHighlights.some((feature) => feature === 'API access') && (
-                <li className="flex items-start gap-3 border-b border-slate-700">
-                  <span className="mt-1 text-(--accent)!">✓</span>
-                  <span>API access</span>
-                </li>
-              )}
-            {isEnterprise && (
-              <>
-                <li className="flex items-start gap-3 border-b border-slate-700">
-                  <span className="mt-1 text-(--accent)!">✓</span>
-                  <span>Multi-department access</span>
-                </li>
-                <li className="flex items-start gap-3 border-b border-slate-700">
-                  <span className="mt-1 text-(--accent)!">✓</span>
-                  <span>Dedicated support</span>
-                </li>
-              </>
-            )}
           </ul>
 
           <Link
-            href={`/auth/signup?plan=${plan.id}`}
+            href={`/auth/signup?plan=${plan.id}&billing=${billingInterval}`}
             className={`inline-flex w-full items-center justify-center rounded-md px-5 py-3 text-sm font-semibold transition ${
-              isFounding
+              isFounder
                 ? 'bg-(--accent)! hover:bg-orange-600 text-(--foreground)! shadow-lg shadow-(--accent)!/20'
                 : 'bg-slate-700 hover:bg-slate-600 text-white'
             }`}
