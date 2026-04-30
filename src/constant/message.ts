@@ -107,6 +107,7 @@ const MESSAGES = {
         ALREADY_EXISTS: "An annual check-in for this baseline year already exists",
         EDIT_LIMIT_REACHED: (max: number) =>
             `This annual check-in has already been edited ${max} time${max === 1 ? '' : 's'} — the maximum allowed per year`,
+        READ_ONLY_ACCESS: "Admin users have read-only access to the Annual Baseline",
     },
     TEXT: {
         VERFICATION_SEND: "A verification link has been sent to your email. Please check your inbox."

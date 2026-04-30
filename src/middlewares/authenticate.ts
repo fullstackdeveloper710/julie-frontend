@@ -8,6 +8,7 @@ import { EUserStatus } from "../v1/enums/agency.enum.js";
 export interface AuthenticatedRequest extends Request {
     user?: {
         user_id: string;
+        role: string;
     };
 }
 
@@ -58,6 +59,7 @@ const authenticate = async (
 
         req.user = {
             user_id: user._id.toString(),
+            role: user.role ?? '',
         };
 
         return next();

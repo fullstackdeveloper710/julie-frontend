@@ -8,10 +8,12 @@ export const signUpValidation = joi.object({
     fullName: joi.string().required(),
     email: joi.string().email().required(),
     password: joi.string().min(6).required(),
-    plan: joi.string().valid(...Object.values(EUserPlan)).required()
+    plan: joi.string().valid(...Object.values(EUserPlan)).required(),
+    billingInterval: joi.string().valid('monthly', 'annual').optional(),
 })
 export const getMeValidation = joi.object({
-    user_id: joi.string().required()
+    user_id: joi.string().required(),
+    role: joi.string().optional(),
 })
 
 export const forgotPasswordValidation = joi.object({
