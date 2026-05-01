@@ -17,7 +17,7 @@ import { subscriptionApi } from './api/subscriptionApi';
 import { analyticsApi } from './api/analyticsApi';
 import { checkinApi } from './api/checkinApi';
 import { reportsApi } from './api/reportsApi';
-import { uiReducer, userReducer, agencyReducer } from './slices';
+import { uiReducer, userReducer, agencyReducer, subscriptionReducer } from './slices';
 import { agencyApi } from './api/agencyApi';
 import { managerApi } from './api/managerApi';
 import { installAxiosInterceptors } from './api/axiosInstance';
@@ -26,6 +26,7 @@ const rootReducer = combineReducers({
   user: userReducer,
   ui: uiReducer,
   agency: agencyReducer,
+  subscription: subscriptionReducer,
   [authApi.reducerPath]: authApi.reducer,
   [subscriptionApi.reducerPath]: subscriptionApi.reducer,
   [analyticsApi.reducerPath]: analyticsApi.reducer,
@@ -38,7 +39,7 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['user', 'agency'],
+  whitelist: ['user', 'agency', 'subscription'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
