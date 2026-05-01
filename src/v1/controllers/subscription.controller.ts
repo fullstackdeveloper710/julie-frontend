@@ -414,11 +414,31 @@ export const createCheckoutSession = async (req: AuthenticatedRequest, res: Resp
         }
 
         // Get user's subscription to find Stripe customer ID
-        const subscription = await Services.subscription.getSubscriptionByUserId(userId);
-        if (!subscription?.stripeCustomerId) {
-            return res.status(RESPONSE_CODES.BAD_REQUEST).json({
-                success: false,
-                message: 'No subscription found for user',
+        let subscription = await Services.subscription.getSubscriptionByUserId(userId);
+        let stripeCustomerId = subscription?.stripeCustomerId;
+
+        if (!stripeCustomerId) {
+            const user = await Services.auth.getProfile(userId);
+            const stripeCustomer = await stripeService.createStripeCustomer(
+                userId,
+                user.email,
+                user.fullName ?? ''
+            );
+            stripeCustomerId = stripeCustomer.id;
+
+            const now = new Date();
+            const currentPeriodStart = now;
+            const currentPeriodEnd = new Date(now);
+            currentPeriodEnd.setDate(currentPeriodEnd.getDate() + 14);
+
+            subscription = await Services.subscription.createOrUpdateSubscription(userId, {
+                stripeCustomerId,
+                plan: planId,
+                billingInterval: billingInterval as 'monthly' | 'annual',
+                status: 'trialing',
+                currentPeriodStart,
+                currentPeriodEnd,
+                cancelAtPeriodEnd: false,
             });
         }
 
@@ -427,7 +447,7 @@ export const createCheckoutSession = async (req: AuthenticatedRequest, res: Resp
 
         // Create checkout session
         const session = await stripeService.createStripeCheckoutSession(
-            subscription.stripeCustomerId,
+            stripeCustomerId,
             priceId,
             successUrl,
             cancelUrl
