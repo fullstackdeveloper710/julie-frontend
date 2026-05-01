@@ -149,6 +149,10 @@ export const verifyEmail = async (token: string) => {
 
     const showAgencyModal = (user?.agencies?.length || 0) === 0;
 
+    // Check if user has active subscription
+    const subscription = await Services.subscription.getSubscriptionByUserId(user._id.toString());
+    const hasActiveSubscription = subscription && subscription.status === 'active';
+
     return {
         alreadyVerified,
         user: {
@@ -156,9 +160,11 @@ export const verifyEmail = async (token: string) => {
             email: user.email,
             fullName: user.fullName,
             plan: user.plan,
+            role: user.role,
             agencies: user?.agencies,
             createdAt: user.createdAt,
             showAgencyModal,
+            hasActiveSubscription,
         },
         tokens,
     };
@@ -199,15 +205,21 @@ export const signIn = async (credentials: TAuthBase) => {
 
     const showAgencyModal = (user?.agencies?.length || 0) === 0;
 
+    // Check if user has an active subscription
+    const subscription = await Subscription.findOne({ userId: user._id });
+    const hasActiveSubscription = subscription && ['active', 'trialing'].includes(subscription.status);
+
     return {
         user: {
             id: user._id,
             email: user.email,
             fullName: user.fullName,
+            role: user.role,
             plan: user.plan,
             agencies: user?.agencies,
             createdAt: user.createdAt,
             showAgencyModal,
+            hasActiveSubscription,
         },
         tokens,
     };

@@ -331,3 +331,117 @@ const touchStripeSubscription = async (invoice: any) => {
         cancelAtPeriodEnd: currentSubscription.cancelAtPeriodEnd,
     });
 };
+
+/**
+ * @route POST /api/v1/subscriptions/initialize
+ * @desc Initialize subscription for a newly verified user (called after email verification)
+ */
+export const initializeSubscription = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.user?.user_id;
+        if (!userId) {
+            return res.status(RESPONSE_CODES.UNAUTHORIZED).json({
+                success: false,
+                message: MESSAGES.AUTH.UNAUTHORIZED,
+            });
+        }
+
+        const { planId, billingInterval = 'monthly', isFoundingRate = false } = req.body || {};
+
+        // Get user details
+        const user = await Services.auth.getProfile(userId);
+
+        // Create Stripe customer
+        const stripeCustomer = await stripeService.createStripeCustomer(userId, user.email, user.fullName);
+
+        // Calculate trial period
+        const now = new Date();
+        const currentPeriodStart = now;
+        const currentPeriodEnd = new Date(now);
+        currentPeriodEnd.setDate(currentPeriodEnd.getDate() + 14); // 14-day trial
+
+        // Create/update subscription record
+        let subscriptionData: any = {
+            stripeCustomerId: stripeCustomer.id,
+            plan: planId || user.plan,
+            billingInterval: billingInterval as 'monthly' | 'annual',
+            status: 'trialing',
+            currentPeriodStart,
+            currentPeriodEnd,
+            cancelAtPeriodEnd: false,
+        };
+
+        // Apply founding rate if applicable
+        if (isFoundingRate && (planId === 'founder' || user.plan === 'professional')) {
+            const { applyFoundingRate } = await import('../services/subscription.service.js');
+            await applyFoundingRate(userId);
+            subscriptionData.isFoundingRate = true;
+        }
+
+        const subscription = await Services.subscription.createOrUpdateSubscription(userId, subscriptionData);
+
+        return res.status(RESPONSE_CODES.OK).json({
+            success: true,
+            message: 'Subscription initialized successfully',
+            data: subscription,
+        });
+    } catch (error) {
+        handleErrorResponse(error, res, next);
+    }
+};
+
+/**
+ * @route POST /api/v1/subscriptions/create-checkout
+ * @desc Create a Stripe checkout session for subscription payment
+ */
+export const createCheckoutSession = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.user?.user_id;
+        if (!userId) {
+            return res.status(RESPONSE_CODES.UNAUTHORIZED).json({
+                success: false,
+                message: MESSAGES.AUTH.UNAUTHORIZED,
+            });
+        }
+
+        const { planId, billingInterval = 'monthly', successUrl, cancelUrl } = req.body || {};
+
+        if (!planId || !successUrl || !cancelUrl) {
+            return res.status(RESPONSE_CODES.BAD_REQUEST).json({
+                success: false,
+                message: 'planId, successUrl, and cancelUrl are required',
+            });
+        }
+
+        // Get user's subscription to find Stripe customer ID
+        const subscription = await Services.subscription.getSubscriptionByUserId(userId);
+        if (!subscription?.stripeCustomerId) {
+            return res.status(RESPONSE_CODES.BAD_REQUEST).json({
+                success: false,
+                message: 'No subscription found for user',
+            });
+        }
+
+        // Get price ID for the plan
+        const priceId = stripeService.getPriceIdForPlan(planId, billingInterval);
+
+        // Create checkout session
+        const session = await stripeService.createStripeCheckoutSession(
+            subscription.stripeCustomerId,
+            priceId,
+            successUrl,
+            cancelUrl
+        );
+
+        return res.status(RESPONSE_CODES.OK).json({
+            success: true,
+            message: 'Checkout session created successfully',
+            data: {
+                sessionId: session.id,
+                url: session.url,
+            },
+        });
+    } catch (error) {
+        handleErrorResponse(error, res, next);
+    }
+};

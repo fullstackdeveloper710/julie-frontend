@@ -173,3 +173,94 @@ export const getTrialEndDate = (stripeSubscription: any): Date | null => {
     }
     return null;
 };
+
+/**
+ * Create a Stripe customer
+ */
+export const createStripeCustomer = async (userId: string, email: string, fullName: string) => {
+    try {
+        const customer = await stripe.customers.create({
+            email,
+            name: fullName,
+            metadata: {
+                userId,
+            },
+        });
+        return customer;
+    } catch (error: any) {
+        console.error('Error creating Stripe customer:', error);
+        throw new CustomError(
+            RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            `Failed to create Stripe customer: ${error.message}`
+        );
+    }
+};
+
+/**
+ * Create a Stripe checkout session
+ */
+export const createStripeCheckoutSession = async (
+    customerId: string,
+    priceId: string,
+    successUrl: string,
+    cancelUrl: string
+) => {
+    try {
+        const session = await stripe.checkout.sessions.create({
+            customer: customerId,
+            line_items: [
+                {
+                    price: priceId,
+                    quantity: 1,
+                },
+            ],
+            mode: 'subscription',
+            success_url: successUrl,
+            cancel_url: cancelUrl,
+            customer_update: {
+                address: 'auto',
+            },
+        });
+        return session;
+    } catch (error: any) {
+        console.error('Error creating Stripe checkout session:', error);
+        throw new CustomError(
+            RESPONSE_CODES.INTERNAL_SERVER_ERROR,
+            `Failed to create checkout session: ${error.message}`
+        );
+    }
+};
+
+/**
+ * Get price ID for a plan and billing interval
+ */
+export const getPriceIdForPlan = (plan: string, billingInterval: string): string => {
+    const priceMap: Record<string, Record<string, string>> = {
+        founder: {
+            monthly: process.env.STRIPE_FOUNDER_MONTHLY_PRICE_ID || '',
+            annual: process.env.STRIPE_FOUNDER_ANNUAL_PRICE_ID || '',
+        },
+        essentials: {
+            monthly: process.env.STRIPE_ESSENTIALS_MONTHLY_PRICE_ID || '',
+            annual: process.env.STRIPE_ESSENTIALS_ANNUAL_PRICE_ID || '',
+        },
+        professional: {
+            monthly: process.env.STRIPE_PROFESSIONAL_MONTHLY_PRICE_ID || '',
+            annual: process.env.STRIPE_PROFESSIONAL_ANNUAL_PRICE_ID || '',
+        },
+        enterprise: {
+            monthly: process.env.STRIPE_ENTERPRISE_MONTHLY_PRICE_ID || '',
+            annual: process.env.STRIPE_ENTERPRISE_ANNUAL_PRICE_ID || '',
+        },
+    };
+
+    const priceId = priceMap[plan]?.[billingInterval];
+    if (!priceId) {
+        throw new CustomError(
+            RESPONSE_CODES.BAD_REQUEST,
+            `No Stripe price configured for plan: ${plan}, interval: ${billingInterval}`
+        );
+    }
+
+    return priceId;
+};
