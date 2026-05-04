@@ -27,6 +27,8 @@ export {
 export {
   checkinApi,
   useSubmitMonthlyCheckInMutation,
+  useGetMonthlyCheckInStatusQuery,
+  useGetCurrentMonthlyCheckInQuery,
   useGetMyMonthlyCheckInsQuery,
   useUpdateMonthlyCheckInMutation,
   useSubmitAnnualCheckInMutation,

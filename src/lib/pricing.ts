@@ -67,5 +67,6 @@ export const fetchPricingPlans = async (): Promise<PricingResponse> => {
     throw new Error(`Failed to load pricing plans (${response.status})`);
   }
 
-  return (await response.json()) as PricingResponse;
+  const json = await response.json();
+  return (json.data ?? json) as PricingResponse;
 };

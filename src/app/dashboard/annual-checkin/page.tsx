@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CalendarCheck, ChevronRight, Pencil, Lock, Eye, Clock, ShieldOff } from 'lucide-react';
 import {
   useGetAnnualCheckInStatusQuery,
   useGetCurrentAnnualCheckInQuery,
-  useGetMyAnnualCheckInsQuery,
+  useAppSelector,
 } from '@/hooks';
 import { useGetCurrentUserQuery } from '@/redux/api/authApi';
 import { USER_ROLE } from '@/types/enums';
@@ -275,26 +275,22 @@ function PastYearsSection({ records }: { records: AnnualCheckInRecord[] }) {
 export default function AnnualCheckInPage() {
   const [mode, setMode] = useState<'view' | 'edit'>('view');
 
+  const selectedAgencyId = useAppSelector((s) => s.agency.selectedAgencyId);
+
   const { data: userResp } = useGetCurrentUserQuery();
   const isAdmin = [USER_ROLE.MANAGER, USER_ROLE.DEPARTMENT_USER].includes(userResp?.data?.role as USER_ROLE);
 
-  const { data: statusResp, isLoading: isStatusLoading } = useGetAnnualCheckInStatusQuery();
-  const { data: currentResp, isLoading: isCurrentLoading } = useGetCurrentAnnualCheckInQuery();
-  const { data: allResp } = useGetMyAnnualCheckInsQuery();
+  const { data: statusResp, isLoading: isStatusLoading, isFetching: isStatusFetching } = useGetAnnualCheckInStatusQuery();
+  const { data: currentResp, isLoading: isCurrentLoading, isFetching: isCurrentFetching } = useGetCurrentAnnualCheckInQuery();
+  useEffect(() => {
+    setMode('view');
+  }, [selectedAgencyId]);
 
   const status = statusResp?.data;
   const currentRecord = (currentResp?.data ?? null) as AnnualCheckInRecord | null;
-  const allRecords = (allResp?.data ?? []) as AnnualCheckInRecord[];
+  const pastRecords: AnnualCheckInRecord[] = [];
 
-  const currentYear = new Date().getUTCFullYear();
-  const pastRecords = allRecords.filter(
-    (r) => {
-      const d = new Date(r.baselineYear);
-      return !isNaN(d.getTime()) && d.getUTCFullYear() < currentYear;
-    },
-  );
-
-  if (isStatusLoading || isCurrentLoading) {
+  if (isStatusLoading || isCurrentLoading || isStatusFetching || isCurrentFetching) {
     return (
       <div className="px-7 py-8">
         <p className="text-sm text-slate-400">Loading…</p>

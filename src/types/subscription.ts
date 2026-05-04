@@ -43,9 +43,7 @@ export interface Subscription {
   // Seats allocation
   managerSeats: number;
   departmentUserSeats: number;
-  departmentUserSeats: number;
   usedManagerSeats: number;
-  usedDepartmentUserSeats: number;
   usedDepartmentUserSeats: number;
 
   // Billing dates

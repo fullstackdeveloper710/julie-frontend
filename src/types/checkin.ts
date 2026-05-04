@@ -128,6 +128,15 @@ export interface AnnualBaselineRequest {
   };
   baselineYear?: string;
 }
+export interface MonthlyCheckinStatus {
+  hasCurrentMonthCheckin: boolean;
+  currentCheckinId: string | null;
+  editCount: number;
+  canEdit: boolean;
+  canSubmit: boolean;
+  maxEdits: number;
+}
+
 export interface AnnualCheckinStatus {
   hasCurrentYearCheckin: boolean;
   currentCheckinId: string | null;

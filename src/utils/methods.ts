@@ -34,8 +34,8 @@ export const getSeats = (plan: PlanType, numberOfDepts: number = 1) => {
   if (plan === USER_PLAN.ENTERPRISE) {
     const extra = numberOfDepts - 1;
     return {
-      managerSeats: cfg.managerSeats + extra * (cfg.additionalManagerSeats ?? 0),
-      departmentUserSeats: cfg.departmentUserSeats + extra * (cfg.additionalDepartmentUserSeats ?? 0),
+      managerSeats: cfg.managerSeats + extra * (cfg.additionalDeptAdminSeats ?? 0),
+      departmentUserSeats: cfg.departmentUserSeats + extra * (cfg.additionalDeptHolderSeats ?? 0),
     };
   }
   return { managerSeats: cfg.managerSeats, departmentUserSeats: cfg.departmentUserSeats };

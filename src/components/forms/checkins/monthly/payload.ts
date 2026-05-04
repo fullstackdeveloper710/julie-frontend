@@ -7,15 +7,17 @@ import type {
 import { MonthlyFormValues } from './types';
 import { MONTHLY_OPTIONAL_FIELD_NAMES } from './config';
 
-const toOptionalString = (value: string): string | undefined => {
-  const normalized = value.trim();
+const toOptionalString = (value: string | undefined | null): string | undefined => {
+  if (value == null) return undefined;
+  const normalized = String(value).trim();
   return normalized ? normalized : undefined;
 };
 
-const toOptionalNumber = (value: string): number | undefined => {
-  const normalized = value.trim();
+const toOptionalNumber = (value: string | number | undefined | null): number | undefined => {
+  if (value == null || value === '') return undefined;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
+  const normalized = String(value).trim();
   if (!normalized) return undefined;
-
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : undefined;
 };
@@ -157,6 +159,62 @@ export const clearMonthlyOptionalValues = (values: MonthlyFormValues): MonthlyFo
     next[field] = '';
   });
   return next;
+};
+
+export const recordToMonthlyFormValues = (record: Record<string, any>): MonthlyFormValues => {
+  const n = (v: any): string => (v !== undefined && v !== null ? String(v) : '');
+  const os = record.organizationalStability ?? {};
+  const or_ = record.operationalResilience ?? {};
+  const fr = record.fatigueResistance ?? {};
+  const ps = record.peerSupportReadiness ?? {};
+  const ls = record.leadershipSustainability ?? {};
+  const opt = record.optional ?? {};
+  const bf = opt.budgetAndFiscalContext ?? {};
+  const od = opt.operationalDemandContext ?? {};
+  const fp = opt.fatiguePrecisionInputs ?? {};
+  const pd = opt.peerSupportDepthInputs ?? {};
+  return {
+    currentlyFilledPositions: n(os.currentlyFilledPositions),
+    currentVacancies: n(os.currentVacancies),
+    resignationsThisMonth: n(os.resignationsThisMonth),
+    newHiresAndAcademyGraduates: n(os.newHiresAndAcademyGraduates),
+    averageTimeToFillDays: n(os.averageTimeToFillDays),
+    leadershipLevelVacancies: n(os.leadershipLevelVacancies),
+    totalOvertimeHours: n(or_.totalOvertimeHours),
+    averageShiftLengthHours: n(or_.averageShiftLengthHours),
+    shiftCoverageShortages: n(or_.shiftCoverageShortages),
+    mandatoryOvertimePercentage: n(or_.mandatoryOvertimePercentage),
+    plannedOvertimePercentage: n(or_.plannedOvertimePercentage),
+    unplannedOvertimePercentage: n(or_.unplannedOvertimePercentage),
+    callInAndHoldoverIncidents: n(or_.callInAndHoldoverIncidents),
+    totalSickLeaveDaysUsed: n(fr.totalSickLeaveDaysUsed),
+    employeesOnFmlaLeave: n(ps.employeesOnFmlaLeave),
+    newFmlaRequests: n(ps.newFmlaRequests),
+    workersCompClaimsFiled: n(ps.workersCompClaimsFiled),
+    peerSupportActivations: n(ps.peerSupportActivations),
+    criticalIncidentExposures: n(ps.criticalIncidentExposures),
+    lineOfDutyDeathsOrSeriousInjuries: n(ps.lineOfDutyDeathsOrSeriousInjuries),
+    lineOfDutyDeathsOrSeriousInjuriesCount: n(ps.lineOfDutyDeathsOrSeriousInjuriesCount),
+    leadershipMoraleRating: n(ls.leadershipMoraleRating),
+    frontlineMoraleRating: n(ls.frontlineMoraleRating),
+    disciplinaryActions: n(ls.disciplinaryActions),
+    formalGrievancesFiled: n(ls.formalGrievancesFiled),
+    promotionsOrLeadershipDevelopmentCount: n(ls.promotionsOrLeadershipDevelopmentCount),
+    dataConfidence: n(record.dataConfidence),
+    overtimeBudgetUtilizationPercentage: n(bf.overtimeBudgetUtilizationPercentage),
+    hiringBudgetAvailability: n(bf.hiringBudgetAvailability),
+    staffingBudgetConstraint: n(bf.staffingBudgetConstraint),
+    totalCallsOrIncidents: n(od.totalCallsOrIncidents),
+    responseTimeStandardsMet: n(od.responseTimeStandardsMet),
+    specialtyUnitVacancies: n(od.specialtyUnitVacancies),
+    minimumRestPeriodRequirementMet: n(fp.minimumRestPeriodRequirementMet),
+    ptoVacationAccrualBacklog: n(fp.ptoVacationAccrualBacklog),
+    returnToDutyIncidentsBeforeFullRecovery: n(fp.returnToDutyIncidentsBeforeFullRecovery),
+    eapReferralsOrUtilizations: n(pd.eapReferralsOrUtilizations),
+    topLeadershipConcern: n(pd.topLeadershipConcern),
+    topLeadershipConcernOther: n(pd.topLeadershipConcernOther),
+    additionalContextOrNotes: n(pd.additionalContextOrNotes),
+  };
 };
 
 export const getActiveMonthlyStepFields = (

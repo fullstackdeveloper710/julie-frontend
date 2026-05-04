@@ -13,6 +13,9 @@ import {
   setSelectedAgencyId,
   signOutLocally,
 } from '@/hooks';
+import { checkinApi } from '@/redux/api/checkinApi';
+import { reportsApi } from '@/redux/api/reportsApi';
+import { analyticsApi } from '@/redux/api/analyticsApi';
 import { useGetCurrentUserQuery } from '@/redux/api/authApi';
 import AgencyBadge from '../AgencyBadge';
 import { HEADING_FONT } from '@/utils/constant';
@@ -50,6 +53,9 @@ export function Navbar() {
 
   const switchAgency = (agencyId: string) => {
     dispatch(setSelectedAgencyId(agencyId));
+    dispatch(checkinApi.util.invalidateTags(['MonthlyCheckin', 'AnnualCheckin']));
+    dispatch(reportsApi.util.invalidateTags(['Report', 'Reports']));
+    dispatch(analyticsApi.util.invalidateTags(['Analytics', 'MetricsData', 'ScenarioData']));
     setShowAgencyMenu(false);
   };
 
