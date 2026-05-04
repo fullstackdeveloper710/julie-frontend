@@ -59,7 +59,12 @@ export default function PaymentModal({ isOpen, onClose, onSuccess }: PaymentModa
 
         // Set default plan based on user's plan or first available
         const defaultPlan =
-          response.plans.find((p: any) => p.id === user?.plan) || response.plans[0];
+          response.plans.find(
+            (p: any) => p.id?.toLowerCase().trim() === user?.plan?.toLowerCase().trim(),
+          ) || response.plans[0];
+
+        console.log('USER PLAN:', user?.plan);
+        console.log('MATCHED PLAN:', defaultPlan);
         if (defaultPlan) {
           setSelectedPlan(defaultPlan.id);
         }
@@ -188,9 +193,20 @@ export default function PaymentModal({ isOpen, onClose, onSuccess }: PaymentModa
                   disabled={isPaymentProcessing}
                   className="mr-3"
                 />
-                <div className="flex-1">
-                  <div className="font-medium text-white">{plan.name}</div>
-                  <div className="text-sm text-slate-400">{plan.description}</div>
+                <div className="flex-1 flex items-center justify-between pr-6 ro">
+                  <div>
+                    <div className="font-semibold text-white text-base">{plan.name}</div>
+                    <div className="text-sm text-slate-400 mt-0.5">{plan.description}</div>
+                  </div>
+
+                  {selectedPlan === plan.id && (
+                    <div className="flex items-center gap-1.5 px-3 py-1rounded-full bg-emerald-500/10 border border-emerald-500/30 rounded-full">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                      <span className="text-xs font-semibold text-emerald-400 tracking-wide">
+                        Selected Plan
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="text-right">
                   <div className="font-bold text-white">
