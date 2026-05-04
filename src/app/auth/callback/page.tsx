@@ -24,6 +24,7 @@ export default function AuthCallbackPage() {
             return;
         }
 
+
         router.replace('/auth/signin');
     }, [router, searchParams]);
 
