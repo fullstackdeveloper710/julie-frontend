@@ -97,33 +97,4 @@ export default function PaymentSuccessPage() {
     </div>
   );
 }
-  }, [searchParams, router, user]);
 
-  return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-      <div className="text-center">
-        {status === 'loading' && (
-          <>
-            <div className="text-4xl mb-4">⏳</div>
-            <h1 className="text-white text-2xl font-bold mb-2">Processing Payment...</h1>
-            <p className="text-slate-400">Please wait while we confirm your payment.</p>
-          </>
-        )}
-        {status === 'success' && (
-          <>
-            <div className="text-4xl mb-4">✅</div>
-            <h1 className="text-white text-2xl font-bold mb-2">Payment Successful!</h1>
-            <p className="text-slate-400">{message}</p>
-          </>
-        )}
-        {status === 'error' && (
-          <>
-            <div className="text-4xl mb-4">❌</div>
-            <h1 className="text-white text-2xl font-bold mb-2">Payment Error</h1>
-            <p className="text-slate-400">{message}</p>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
