@@ -7,6 +7,8 @@ export default function AuthCallbackPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
+
+
     useEffect(() => {
         const token = searchParams.get('token');
         const error = searchParams.get('error');
