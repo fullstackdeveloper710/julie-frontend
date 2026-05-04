@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/redux';
 import { Button } from '@/components/ui';
-import { initializeSubscriptionForNewUser } from '@/services/stripe';
 import { fetchPricingPlans } from '@/lib/pricing';
 import { BILLING_INTERVAL } from '@/types/enums';
 import {
@@ -13,6 +12,7 @@ import {
   setPaymentError,
   resetPaymentState,
 } from '@/redux/slices';
+import { useCreateStripeSessionMutation } from '@/redux/api/subscriptionApi';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -35,6 +35,7 @@ export default function PaymentModal({ isOpen, onClose, onSuccess }: PaymentModa
   const [error, setError] = useState<string>('');
   const [showRetryOption, setShowRetryOption] = useState(false);
   const isProcessing = useRef(false);
+  const [createStripeSession] = useCreateStripeSessionMutation();
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -80,38 +81,45 @@ export default function PaymentModal({ isOpen, onClose, onSuccess }: PaymentModa
   }, [paymentError]);
 
   const handlePayment = async () => {
-    if (!accessToken || !selectedPlan || isPaymentProcessing || isProcessing.current) return;
+    if (!accessToken) {
+      setError('User not authenticated');
+      return;
+    }
+
+    if (!selectedPlan) {
+      setError('Please select a plan');
+      return;
+    }
+
+    if (isPaymentProcessing || isProcessing.current) return;
 
     isProcessing.current = true;
     dispatch(setPaymentProcessing(true));
     setError('');
-    setShowRetryOption(false);
 
     try {
-      const checkoutData = await initializeSubscriptionForNewUser(
-        accessToken,
-        selectedPlan,
-        billingInterval.toLowerCase() as 'monthly' | 'annual',
-        selectedPlan === 'founder',
-      );
+      const res = await createStripeSession({
+        planId: selectedPlan,
+        billingInterval: billingInterval === BILLING_INTERVAL.MONTHLY ? 'monthly' : 'annual',
+      }).unwrap();
 
-      // Redirect to Stripe checkout
-      if (checkoutData.url) {
-        window.location.href = checkoutData.url;
+      console.log('Stripe session:', res);
+
+      if (res?.url) {
+        isProcessing.current = false;
+        window.location.href = res.url;
       } else {
         throw new Error('No checkout URL received');
       }
     } catch (err: any) {
-      console.error('Payment initialization failed:', err);
-      const errorMessage =
-        err.message || 'Payment initialization failed. Please try again or contact support.';
-      setError(errorMessage);
-      dispatch(setPaymentError(errorMessage));
-      setShowRetryOption(true);
+      console.error('Payment error:', err);
+      setError(err.message || 'Payment failed');
+      dispatch(setPaymentError(err.message));
       isProcessing.current = false;
+    } finally {
+      dispatch(setPaymentProcessing(false));
     }
   };
-
   const handleRetry = () => {
     setShowRetryOption(false);
     dispatch(resetPaymentState());

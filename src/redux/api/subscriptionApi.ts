@@ -202,7 +202,7 @@ export const subscriptionApi = createApi({
     // Create Stripe session
     createStripeSession: builder.mutation<
       { sessionId: string; url: string },
-      { subscriptionId: string; redirectUrl: string }
+      { planId: string; billingInterval: 'monthly' | 'annual' }
     >({
       query: (body) => ({
         url: '/stripe/create-session',
