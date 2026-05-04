@@ -209,6 +209,7 @@ export const subscriptionApi = createApi({
         method: 'POST',
         data: body,
       }),
+      transformResponse: (response: { data: { sessionId: string; url: string } }) => response.data,
     }),
   }),
 });
