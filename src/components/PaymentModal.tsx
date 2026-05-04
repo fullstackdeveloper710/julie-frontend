@@ -110,9 +110,9 @@ export default function PaymentModal({ isOpen, onClose, onSuccess }: PaymentModa
 
       console.log('Stripe session:', res);
 
-      if (res?.url) {
+      if (res?.data?.url) {
         isProcessing.current = false;
-        window.location.href = res.url;
+        window.location.href = res.data.url;
       } else {
         throw new Error('No checkout URL received');
       }
