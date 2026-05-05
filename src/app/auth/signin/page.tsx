@@ -10,8 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/redux';
 import { useSignInMutation } from '@/redux/api';
 import { loginSuccess } from '@/redux/actions/auth';
 import { useState, useEffect } from 'react';
-import PaymentModal from '@/components/PaymentModal';
-import { openPaymentModal, closePaymentModal } from '@/redux/slices';
+
 import { USER_ROLE } from '@/types/enums';
 
 export default function SignInPage() {
@@ -20,9 +19,6 @@ export default function SignInPage() {
   const dispatch = useAppDispatch();
   const [signIn, { isLoading, error: rtcError }] = useSignInMutation();
   const { isPaymentModalOpen } = useAppSelector((state) => state.subscription);
-
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [isNavigationBlocked, setIsNavigationBlocked] = useState(false);
 
   const flashMessage = searchParams.get('message');
   const flashError = searchParams.get('error');
@@ -66,12 +62,9 @@ export default function SignInPage() {
         const isOwner = user.role === USER_ROLE.USER || user.role == null;
 
         if (isOwner && !hasActiveSubscription) {
-          // Block navigation and show payment modal for owners without an active subscription
-          setIsNavigationBlocked(true);
-          setShowPaymentModal(true);
-          dispatch(openPaymentModal());
+          // ✅ redirect to payment page instead of modal
+          router.push('/payment');
         } else {
-          // Non-owner users or already subscribed users go directly to dashboard
           router.push('/dashboard');
         }
       } catch (err: any) {
@@ -80,21 +73,6 @@ export default function SignInPage() {
       }
     },
   });
-
-  const handlePaymentModalClose = () => {
-    // Don't allow closing if payment is in progress
-    setShowPaymentModal(false);
-    setIsNavigationBlocked(false);
-    dispatch(closePaymentModal());
-  };
-
-  const handlePaymentSuccess = () => {
-    setShowPaymentModal(false);
-    setIsNavigationBlocked(false);
-    dispatch(closePaymentModal());
-    // Redirect to agency page after successful payment
-    router.push('/agency');
-  };
 
   const errorMessage = extractRtkErrorMessage(rtcError);
 
@@ -133,11 +111,9 @@ export default function SignInPage() {
               </div>
             )}
 
-            {isNavigationBlocked && (
-              <div className="bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs px-3 py-2 rounded mb-4">
-                ⏳ Complete payment to continue...
-              </div>
-            )}
+            {/* <div className="bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs px-3 py-2 rounded mb-4">
+              ⏳ Complete payment to continue...
+            </div> */}
 
             <form onSubmit={formik.handleSubmit} className="space-y-4">
               <Input
@@ -149,7 +125,6 @@ export default function SignInPage() {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 required
-                disabled={isNavigationBlocked}
                 containerClassName="flex flex-col gap-2"
                 labelClassName="text-xs  font-semibold tracking-widest"
                 inputClassName="bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-(--accent) disabled:opacity-50"
@@ -165,7 +140,6 @@ export default function SignInPage() {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 required
-                disabled={isNavigationBlocked}
                 containerClassName="flex flex-col gap-2"
                 labelClassName="text-xs  font-semibold tracking-widest"
                 inputClassName={`bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-(--accent) disabled:opacity-50 ${formik.touched.password && formik.errors.password ? 'border-red-500' : ''}`}
@@ -182,7 +156,6 @@ export default function SignInPage() {
                     name="rememberMe"
                     checked={formik.values.rememberMe}
                     onChange={formik.handleChange}
-                    disabled={isNavigationBlocked}
                     className="accent-(--accent) disabled:opacity-50"
                   />
                   Remember me
@@ -197,7 +170,7 @@ export default function SignInPage() {
 
               <Button
                 type="submit"
-                disabled={isLoading || isNavigationBlocked}
+                disabled={isLoading}
                 buttonClassName="w-full bg-(--accent) hover:bg-(--accent)/80 disabled:bg-(--accent)/50 text-slate-950 font-bold text-sm tracking-widest uppercase py-3 rounded-lg transition-colors"
               >
                 {isLoading ? 'Signing In...' : 'Sign In →'}
@@ -218,13 +191,6 @@ export default function SignInPage() {
           </div>
         </div>
       </div>
-
-      {/* Payment Modal - shown after successful login if user is owner without subscription */}
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={handlePaymentModalClose}
-        onSuccess={handlePaymentSuccess}
-      />
     </>
   );
 }
