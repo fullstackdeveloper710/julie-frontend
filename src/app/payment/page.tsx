@@ -47,15 +47,18 @@ export default function PaymentPage() {
         setSelectedPlan('');
 
         const response = await fetchPricingPlans();
-        setPricingPlans(response.plans);
+        const plans = response?.plans || [];
+        setPricingPlans(plans);
 
-        const defaultPlan =
-          response.plans.find(
-            (p: any) => p.id?.toLowerCase().trim() === user?.plan?.toLowerCase().trim(),
-          ) || response.plans[0];
+        if (plans.length > 0) {
+          const defaultPlan =
+            plans.find(
+              (p: any) => p.id?.toLowerCase().trim() === user?.plan?.toLowerCase().trim(),
+            ) || plans[0];
 
-        if (defaultPlan) {
-          setSelectedPlan(defaultPlan.id);
+          if (defaultPlan) {
+            setSelectedPlan(defaultPlan.id);
+          }
         }
       } catch (err) {
         console.error('Failed to load pricing plans:', err);
@@ -170,7 +173,7 @@ export default function PaymentPage() {
             </div>
           ) : (
             <div className="grid gap-3">
-              {pricingPlans.map((plan: any) => (
+              {pricingPlans?.map((plan: any) => (
                 <label
                   key={plan.id}
                   className={`flex items-center p-4 rounded-lg border cursor-pointer transition ${

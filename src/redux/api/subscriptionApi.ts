@@ -211,6 +211,15 @@ export const subscriptionApi = createApi({
       }),
       transformResponse: (response: { data: { sessionId: string; url: string } }) => response.data,
     }),
+
+    // Sync subscription
+    syncSubscription: builder.mutation<{ success: boolean; data: any }, void>({
+      query: () => ({
+        url: '/subscription/sync',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Subscription'],
+    }),
   }),
 });
 
@@ -228,4 +237,5 @@ export const {
   useAddAgencyMutation,
   useInviteUserMutation,
   useCreateStripeSessionMutation,
+  useSyncSubscriptionMutation,
 } = subscriptionApi;

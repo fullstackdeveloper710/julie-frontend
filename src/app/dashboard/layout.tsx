@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { USER_ROLE } from '@/types/enums';
 import { Tabs } from '@/components/common/Tabs';
 import { Loading } from '@/components/ui';
@@ -13,15 +13,19 @@ import {
   setSelectedAgencyId,
   signOutLocally,
 } from '@/hooks';
+import { useSyncSubscriptionMutation } from '@/redux/api/subscriptionApi';
+import { authApi } from '@/redux/api/authApi';
 
 const ALWAYS_ACCESSIBLE = ['/dashboard/agency-setup'];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname() ?? '';
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const accessToken = useAppSelector((s) => s.user.accessToken);
   const hasToken = !!accessToken;
+  const [syncSubscription] = useSyncSubscriptionMutation();
   const { data: userRes, isLoading: isUserLoading } = useGetCurrentUserAuthQuery(undefined, {
     skip: !hasToken,
   });
@@ -31,6 +35,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const selectedAgencyId = useAppSelector((s) => s.agency.selectedAgencyId);
   const agencies = agencyRes?.data?.agencies ?? [];
   const isAdmin = [USER_ROLE.MANAGER, USER_ROLE.DEPARTMENT_USER].includes(userRes?.data?.role as USER_ROLE);
+
+  useEffect(() => {
+    if (searchParams.get('checkout') === 'success') {
+      syncSubscription().unwrap().then(() => {
+        dispatch(authApi.util.invalidateTags(['User']));
+      }).catch(err => console.error("Sync failed", err));
+    }
+  }, [searchParams, syncSubscription, dispatch]);
 
   useEffect(() => {
     if (!hasToken) {

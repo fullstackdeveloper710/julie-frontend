@@ -68,5 +68,5 @@ export const fetchPricingPlans = async (): Promise<PricingResponse> => {
   }
 
   const json = await response.json();
-  return (json.data ?? json) as PricingResponse;
+  return json.data as PricingResponse;
 };
