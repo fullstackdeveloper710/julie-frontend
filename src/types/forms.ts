@@ -7,7 +7,8 @@ export type TabType =
   | 'alert-system'
   | 'peer-benchmarking'
   | 'grant-writer'
-  | 'intelligence-report';
+  | 'intelligence-report'
+  | 'dept-users';
 
 export interface AlertConfig {
   id: string;

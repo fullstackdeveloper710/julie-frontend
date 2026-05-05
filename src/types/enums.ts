@@ -35,8 +35,8 @@ export enum USER_PLAN {
 
 export enum USER_ROLE {
   USER = 'user',
+  DEPARTMENT_USER = 'department_user',
   MANAGER = 'manager',
-  VIEWER = 'viewer',
 }
 
 export enum BILLING_INTERVAL {

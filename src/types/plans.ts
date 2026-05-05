@@ -8,8 +8,8 @@ export interface PlanFeatures {
   advancedAnalytics: boolean;
   apiAccess: boolean;
   aiChat: boolean;
-  adminSeats: number;
-  holderSeats: number;
+  managerSeats: number;
+  departmentUserSeats: number;
   additionalDeptAdminSeats?: number;
   additionalDeptHolderSeats?: number;
 }
@@ -46,8 +46,8 @@ export const PRICING_CONFIG: Record<PlanType, PlanConfig> = {
       advancedAnalytics: true,
       apiAccess: true,
       aiChat: true,
-      adminSeats: 2,
-      holderSeats: 1,
+      managerSeats: 2,
+      departmentUserSeats: 1,
     },
     pricing: {
       monthly: FOUNDER_PLAN.monthly,
@@ -65,8 +65,8 @@ export const PRICING_CONFIG: Record<PlanType, PlanConfig> = {
       advancedAnalytics: true,
       apiAccess: false,
       aiChat: false,
-      adminSeats: 2,
-      holderSeats: 1,
+      managerSeats: 2,
+      departmentUserSeats: 1,
     },
     pricing: { monthly: 199, annual: 2189 },
   },
@@ -81,8 +81,8 @@ export const PRICING_CONFIG: Record<PlanType, PlanConfig> = {
       advancedAnalytics: true,
       apiAccess: true,
       aiChat: true,
-      adminSeats: 2,
-      holderSeats: 1,
+      managerSeats: 2,
+      departmentUserSeats: 1,
     },
     pricing: { monthly: 499, annual: 4389 },
   },
@@ -97,8 +97,8 @@ export const PRICING_CONFIG: Record<PlanType, PlanConfig> = {
       advancedAnalytics: true,
       apiAccess: true,
       aiChat: true,
-      adminSeats: 4,
-      holderSeats: 3,
+      managerSeats: 4,
+      departmentUserSeats: 3,
       additionalDeptAdminSeats: 2,
       additionalDeptHolderSeats: 1,
     },

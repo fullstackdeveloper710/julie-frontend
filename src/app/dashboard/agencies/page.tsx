@@ -25,7 +25,7 @@ export default function AgenciesPage() {
   const capacity = data?.data?.capacity;
   const errorMessage = extractRtkErrorMessage(error);
   const isEnterprise = userResp?.data?.plan === USER_PLAN.ENTERPRISE;
-  const isAdmin = userResp?.data?.role === USER_ROLE.MANAGER;
+  const isAdmin = [USER_ROLE.MANAGER, USER_ROLE.DEPARTMENT_USER].includes(userResp?.data?.role as USER_ROLE);
   const canAddAgency = !isAdmin && isEnterprise && !!capacity?.canCreateMore;
   const canEditAgency = !isAdmin;
 

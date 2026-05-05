@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { UserCog, Mail, BadgeCheck, Clock, Trash2, PowerOff, Power, Building2, Send } from 'lucide-react';
+import { Users, Mail, BadgeCheck, Clock, Building2, Trash2, PowerOff, Power, Send } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { TextField } from '@/components/forms/checkins/shared/FormFields';
 import {
@@ -13,16 +13,16 @@ import {
 } from '@/components/forms/checkins/shared/styles';
 import { extractRtkErrorMessage, logRtkError } from '@/utils/rtkErrorHandler';
 import {
-  useCreateManagerMutation,
-  useListManagersQuery,
-  useSetManagerStatusMutation,
-  useResendManagerInviteMutation,
-  useAssignManagerAgencyMutation,
-  useDeleteManagerMutation,
+  useListDeptHoldersQuery,
+  useCreateDeptHolderMutation,
+  useSetDeptHolderStatusMutation,
+  useResendDeptHolderInviteMutation,
+  useDeleteDeptHolderMutation,
+  useAssignDeptHolderAgencyMutation,
 } from '@/redux/api/managerApi';
 import { useGetCurrentUserQuery } from '@/redux/api/authApi';
 import { useListMyAgenciesQuery } from '@/redux/api/agencyApi';
-import { USER_ROLE } from '@/types/enums';
+import { USER_PLAN, USER_ROLE } from '@/types/enums';
 import { ManagerFormValues } from '@/types';
 
 const INITIAL_VALUES: ManagerFormValues = {
@@ -32,86 +32,63 @@ const INITIAL_VALUES: ManagerFormValues = {
   agencyId: '',
 };
 
-const buildValidationSchema = (isEnterprise: boolean) =>
-  Yup.object({
-    fullName: Yup.string().trim().required('Full name is required').max(200),
-    email: Yup.string().email('Invalid email address').required('Email is required'),
-    title: Yup.string().trim().max(200).notRequired(),
-    agencyId: isEnterprise
-      ? Yup.string().required('Please select an agency for this admin')
-      : Yup.string().notRequired(),
-  });
+const validationSchema = Yup.object({
+  fullName: Yup.string().trim().required('Full name is required').max(200),
+  email: Yup.string().email('Invalid email address').required('Email is required'),
+  title: Yup.string().trim().max(200).notRequired(),
+  agencyId: Yup.string().notRequired(),
+});
 
-export default function CreateManagerPage() {
+export default function DeptUsersPage() {
   const router = useRouter();
   const { data: userResp } = useGetCurrentUserQuery();
-  const isAdmin = [USER_ROLE.MANAGER, USER_ROLE.DEPARTMENT_USER].includes(userResp?.data?.role as USER_ROLE);
+  const user = userResp?.data;
+  const isOwner = user?.role === USER_ROLE.USER;
+  const isEnterprise = user?.plan === USER_PLAN.ENTERPRISE;
 
   useEffect(() => {
-    if (isAdmin) router.replace('/dashboard');
-  }, [isAdmin, router]);
+    if (!userResp) return;
+    // Only the main account holder (USER role) can manage dept users
+    if (!isOwner || !isEnterprise) router.replace('/dashboard');
+  }, [userResp, isOwner, isEnterprise, router]);
 
-  const { data: listResp, isLoading: isListLoading } = useListManagersQuery(undefined, {
-    skip: isAdmin,
+  const { data: deptHolderResp, isLoading } = useListDeptHoldersQuery(undefined, {
+    skip: !userResp || !isOwner || !isEnterprise,
   });
-  const { data: agencyListResp } = useListMyAgenciesQuery(undefined, { skip: isAdmin });
+  const { data: agencyListResp } = useListMyAgenciesQuery(undefined, {
+    skip: !userResp || !isOwner || !isEnterprise,
+  });
 
-  const [createManager, { isLoading: isSubmitting }] = useCreateManagerMutation();
-  const [setManagerStatus] = useSetManagerStatusMutation();
-  const [resendInvite] = useResendManagerInviteMutation();
-  const [assignManagerAgency] = useAssignManagerAgencyMutation();
-  const [deleteManager] = useDeleteManagerMutation();
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [createDeptHolder, { isLoading: isSubmitting }] = useCreateDeptHolderMutation();
+  const [setDeptHolderStatus] = useSetDeptHolderStatusMutation();
+  const [resendDeptHolderInvite] = useResendDeptHolderInviteMutation();
+  const [deleteDeptHolder] = useDeleteDeptHolderMutation();
+  const [assignDeptHolderAgency] = useAssignDeptHolderAgencyMutation();
+
+  const [formStatus, setFormStatus] = useState<{ error?: string; success?: string }>({});
   const [actionError, setActionError] = useState<string>('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [resendSuccessId, setResendSuccessId] = useState<string | null>(null);
   const [assigningId, setAssigningId] = useState<string | null>(null);
 
-  const admins = listResp?.data?.admins ?? [];
-  const capacity = listResp?.data?.capacity;
+  const holders = deptHolderResp?.data?.holders ?? [];
+  const capacity = deptHolderResp?.data?.capacity;
   const canCreateMore = capacity?.canCreateMore ?? true;
-  const used = capacity?.used ?? admins.length;
+  const used = capacity?.used ?? holders.length;
   const maxAllowed = capacity?.maxAllowed ?? 2;
   const agencies = agencyListResp?.data?.agencies ?? [];
-
-  // Enterprise: maxAllowed === 4 (plan-based) and multiple agencies exist
-  const isEnterprise = maxAllowed >= 4;
 
   const agencyNameById = (id: string | null) => {
     if (!id) return null;
     return agencies.find((a) => a._id === id)?.name ?? null;
   };
 
-  const formik = useFormik<ManagerFormValues>({
-    initialValues: INITIAL_VALUES,
-    validationSchema: buildValidationSchema(isEnterprise),
-    onSubmit: async (values, { resetForm, setStatus }) => {
-      try {
-        setStatus({ error: '', success: '' });
-        const res = await createManager({
-          fullName: values.fullName.trim(),
-          email: values.email.trim().toLowerCase(),
-          title: values.title.trim() || undefined,
-          ...(isEnterprise && values.agencyId ? { agencyId: values.agencyId } : {}),
-        } as any).unwrap();
-        if (res.success) {
-          setStatus({ success: res.message || 'Admin invite sent' });
-          resetForm();
-        }
-      } catch (err) {
-        logRtkError('Create admin error', err);
-        setStatus({
-          error: extractRtkErrorMessage(err) || 'Failed to create admin',
-        });
-      }
-    },
-  });
-
   const handleToggleStatus = async (id: string, currentStatus: 'active' | 'inactive') => {
     setActionError('');
     const next = currentStatus === 'active' ? 'inactive' : 'active';
     try {
-      await setManagerStatus({ id, status: next }).unwrap();
+      await setDeptHolderStatus({ id, status: next }).unwrap();
     } catch (err) {
       setActionError(extractRtkErrorMessage(err) || 'Failed to update status');
     }
@@ -122,7 +99,7 @@ export default function CreateManagerPage() {
     setResendingId(id);
     setResendSuccessId(null);
     try {
-      await resendInvite(id).unwrap();
+      await resendDeptHolderInvite(id).unwrap();
       setResendSuccessId(id);
       setTimeout(() => setResendSuccessId((prev) => (prev === id ? null : prev)), 4000);
     } catch (err) {
@@ -132,11 +109,22 @@ export default function CreateManagerPage() {
     }
   };
 
-  const handleAssignAgency = async (adminId: string, agencyId: string | null) => {
+  const handleDelete = async (id: string) => {
     setActionError('');
-    setAssigningId(adminId);
     try {
-      await assignManagerAgency({ id: adminId, agencyId }).unwrap();
+      await deleteDeptHolder(id).unwrap();
+      setConfirmDeleteId(null);
+    } catch (err) {
+      setActionError(extractRtkErrorMessage(err) || 'Failed to remove department user');
+      setConfirmDeleteId(null);
+    }
+  };
+
+  const handleAssignAgency = async (holderId: string, agencyId: string | null) => {
+    setActionError('');
+    setAssigningId(holderId);
+    try {
+      await assignDeptHolderAgency({ id: holderId, agencyId }).unwrap();
     } catch (err) {
       setActionError(extractRtkErrorMessage(err) || 'Failed to assign agency');
     } finally {
@@ -144,16 +132,28 @@ export default function CreateManagerPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    setActionError('');
-    try {
-      await deleteManager(id).unwrap();
-      setConfirmDeleteId(null);
-    } catch (err) {
-      setActionError(extractRtkErrorMessage(err) || 'Failed to delete admin');
-      setConfirmDeleteId(null);
-    }
-  };
+  const formik = useFormik<ManagerFormValues>({
+    initialValues: INITIAL_VALUES,
+    validationSchema,
+    onSubmit: async (values, { resetForm }) => {
+      setFormStatus({});
+      try {
+        const res = await createDeptHolder({
+          fullName: values.fullName.trim(),
+          email: values.email.trim().toLowerCase(),
+          title: values.title.trim() || undefined,
+          ...(values.agencyId ? { agencyId: values.agencyId } : {}),
+        } as any).unwrap();
+        if (res.success) {
+          setFormStatus({ success: res.message || 'Department user invite sent' });
+          resetForm();
+        }
+      } catch (err) {
+        logRtkError('Create dept user error', err);
+        setFormStatus({ error: extractRtkErrorMessage(err) || 'Failed to send invite' });
+      }
+    },
+  });
 
   const errorOf = (name: keyof ManagerFormValues): string | undefined => {
     const touched = formik.touched[name];
@@ -168,45 +168,32 @@ export default function CreateManagerPage() {
           className="text-3xl font-bold text-white mb-1 flex items-center gap-3"
           style={{ fontFamily: HEADING_FONT_FAMILY }}
         >
-          <UserCog className="w-7 h-7" />
-          Manage Admin
+          <Users className="w-7 h-7" />
+          Manage Department Users
         </h1>
         <p className="text-sm text-slate-400">
-          Invite a Deputy Chief, Lieutenant, or equivalent decision-maker. They&apos;ll receive an
-          email with a temporary password and verification link.
+          Invite Department Account Holders who manage their own department&apos;s data. Up to{' '}
+          {maxAllowed} dept holders are included in the Enterprise plan.
         </p>
-
-        {formik.status?.error && (
-          <div className="mt-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-3 py-2 rounded">
-            {formik.status.error}
-          </div>
-        )}
-        {formik.status?.success && (
-          <div className="mt-3 bg-green-500/10 border border-green-500/30 text-green-400 text-xs px-3 py-2 rounded">
-            {formik.status.success}
-          </div>
-        )}
       </div>
 
-      {/* SEAT USAGE / ROSTER */}
+      {/* ROSTER */}
       <section className="mb-8 bg-slate-800 border border-slate-700 rounded-lg p-5">
-        <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
-          <div>
-            <h2
-              className="text-sm font-bold text-white uppercase tracking-widest"
-              style={{ fontFamily: HEADING_FONT_FAMILY }}
-            >
-              Admin Seats
-            </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              {isListLoading ? 'Loading…' : `${used} of ${maxAllowed} admin seats used.`}
-            </p>
-          </div>
+        <div className="mb-4">
+          <h2
+            className="text-sm font-bold text-white uppercase tracking-widest"
+            style={{ fontFamily: HEADING_FONT_FAMILY }}
+          >
+            Department User Seats
+          </h2>
+          <p className="text-xs text-slate-400 mt-1">
+            {isLoading ? 'Loading…' : `${used} of ${maxAllowed} seats used.`}
+          </p>
         </div>
 
-        {!isListLoading && admins.length === 0 && (
+        {!isLoading && holders.length === 0 && (
           <p className="text-xs text-slate-500">
-            No admin invites yet. Use the form below to create your first admin seat.
+            No department users yet. Use the form below to invite one.
           </p>
         )}
 
@@ -216,25 +203,26 @@ export default function CreateManagerPage() {
           </p>
         )}
 
-        {admins.length > 0 && (
+        {holders.length > 0 && (
           <ul className="divide-y divide-slate-700">
-            {admins.map((admin) => {
-              const isInactive = admin.status === 'inactive';
-              const assignedName = agencyNameById(admin.assignedAgencyId);
+            {holders.map((holder) => {
+              const isInactive = holder.status === 'inactive';
+              const assignedName = agencyNameById(holder.assignedAgencyId);
               return (
-                <li key={admin._id} className="py-3 flex flex-col gap-2">
+                <li key={holder._id} className="py-3 flex flex-col gap-2">
                   <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="min-w-0 flex-1">
                       <p className={`text-sm font-semibold truncate ${isInactive ? 'text-slate-500' : 'text-white'}`}>
-                        {admin.fullName || admin.email}
+                        {holder.fullName || holder.email}
                       </p>
                       <p className="text-xs text-slate-400 flex items-center gap-1.5 truncate">
                         <Mail className="w-3.5 h-3.5" />
-                        {admin.email}
+                        {holder.email}
                       </p>
-                      {admin.title && <p className="text-xs text-slate-500 mt-0.5">{admin.title}</p>}
-
-                      {!isEnterprise && assignedName && (
+                      {holder.title && (
+                        <p className="text-xs text-slate-500 mt-0.5">{holder.title}</p>
+                      )}
+                      {assignedName && (
                         <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
                           <Building2 className="w-3 h-3" />
                           {assignedName}
@@ -247,14 +235,14 @@ export default function CreateManagerPage() {
                         className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded inline-flex items-center gap-1 ${
                           isInactive
                             ? 'text-slate-500 border border-slate-600'
-                            : admin.isConfirmed
+                            : holder.isConfirmed
                               ? 'text-emerald-400 border border-emerald-400/40'
                               : 'text-amber-400 border border-amber-400/40'
                         }`}
                       >
                         {isInactive ? (
                           'Disabled'
-                        ) : admin.isConfirmed ? (
+                        ) : holder.isConfirmed ? (
                           <><BadgeCheck className="w-3 h-3" /> Active</>
                         ) : (
                           <><Clock className="w-3 h-3" /> Pending</>
@@ -264,7 +252,7 @@ export default function CreateManagerPage() {
                       <button
                         type="button"
                         title={isInactive ? 'Activate' : 'Deactivate'}
-                        onClick={() => handleToggleStatus(admin._id, admin.status)}
+                        onClick={() => handleToggleStatus(holder._id, holder.status)}
                         className={`p-1.5 rounded border transition-colors ${
                           isInactive
                             ? 'text-emerald-400 border-emerald-400/40 hover:bg-emerald-400/10'
@@ -274,14 +262,14 @@ export default function CreateManagerPage() {
                         {isInactive ? <Power className="w-3.5 h-3.5" /> : <PowerOff className="w-3.5 h-3.5" />}
                       </button>
 
-                      {!admin.isConfirmed && (
+                      {!holder.isConfirmed && (
                         <button
                           type="button"
-                          title={resendSuccessId === admin._id ? 'Invite sent!' : 'Resend invite'}
-                          disabled={resendingId === admin._id}
-                          onClick={() => handleResendInvite(admin._id)}
+                          title={resendSuccessId === holder._id ? 'Invite sent!' : 'Resend invite'}
+                          disabled={resendingId === holder._id}
+                          onClick={() => handleResendInvite(holder._id)}
                           className={`p-1.5 rounded border transition-colors disabled:opacity-50 ${
-                            resendSuccessId === admin._id
+                            resendSuccessId === holder._id
                               ? 'text-emerald-400 border-emerald-400/40'
                               : 'text-sky-400 border-sky-400/40 hover:bg-sky-400/10'
                           }`}
@@ -290,11 +278,11 @@ export default function CreateManagerPage() {
                         </button>
                       )}
 
-                      {confirmDeleteId === admin._id ? (
+                      {confirmDeleteId === holder._id ? (
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
-                            onClick={() => handleDelete(admin._id)}
+                            onClick={() => handleDelete(holder._id)}
                             className="text-[10px] font-bold uppercase px-2 py-1 rounded bg-red-600 hover:bg-red-500 text-white transition-colors"
                           >
                             Confirm
@@ -310,8 +298,8 @@ export default function CreateManagerPage() {
                       ) : (
                         <button
                           type="button"
-                          title="Delete admin"
-                          onClick={() => setConfirmDeleteId(admin._id)}
+                          title="Remove department user"
+                          onClick={() => setConfirmDeleteId(holder._id)}
                           className="p-1.5 rounded border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -320,15 +308,15 @@ export default function CreateManagerPage() {
                     </div>
                   </div>
 
-                  {/* Enterprise agency assignment row */}
-                  {isEnterprise && agencies.length > 0 && (
+                  {/* Agency assignment row */}
+                  {agencies.length > 0 && (
                     <div className="flex items-center gap-2 flex-wrap ml-0.5">
                       <Building2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                       <span className="text-xs text-slate-500">Agency:</span>
                       <select
-                        value={admin.assignedAgencyId ?? ''}
-                        disabled={assigningId === admin._id}
-                        onChange={(e) => handleAssignAgency(admin._id, e.target.value || null)}
+                        value={holder.assignedAgencyId ?? ''}
+                        disabled={assigningId === holder._id}
+                        onChange={(e) => handleAssignAgency(holder._id, e.target.value || null)}
                         className="text-xs bg-slate-700 border border-slate-600 text-slate-200 rounded px-2 py-1 focus:outline-none focus:border-slate-400 disabled:opacity-50"
                       >
                         <option value="">— Unassigned —</option>
@@ -338,7 +326,7 @@ export default function CreateManagerPage() {
                           </option>
                         ))}
                       </select>
-                      {assigningId === admin._id && (
+                      {assigningId === holder._id && (
                         <span className="text-xs text-slate-500">Saving…</span>
                       )}
                     </div>
@@ -350,7 +338,18 @@ export default function CreateManagerPage() {
         )}
       </section>
 
-      {/* CREATE FORM */}
+      {/* INVITE FORM */}
+      {formStatus.error && (
+        <div className="mb-4 bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-3 py-2 rounded">
+          {formStatus.error}
+        </div>
+      )}
+      {formStatus.success && (
+        <div className="mb-4 bg-green-500/10 border border-green-500/30 text-green-400 text-xs px-3 py-2 rounded">
+          {formStatus.success}
+        </div>
+      )}
+
       {canCreateMore ? (
         <form
           onSubmit={formik.handleSubmit}
@@ -361,7 +360,7 @@ export default function CreateManagerPage() {
               className="text-xl font-bold text-white mb-1"
               style={{ fontFamily: HEADING_FONT_FAMILY }}
             >
-              Admin Details
+              Invite Department User
             </h2>
             <p className="text-xs text-slate-500 mb-5">The invite is sent to the email below.</p>
 
@@ -378,7 +377,7 @@ export default function CreateManagerPage() {
               <TextField
                 name="email"
                 label="Email"
-                placeholder="admin@youragency.gov"
+                placeholder="dept@youragency.gov"
                 helpText="Used for the invite and future sign-in."
                 value={formik.values.email}
                 onChange={formik.handleChange}
@@ -388,7 +387,7 @@ export default function CreateManagerPage() {
               <TextField
                 name="title"
                 label="Typical Title"
-                placeholder="Deputy Chief / Lieutenant or equivalent"
+                placeholder="Department Head or equivalent"
                 helpText="Optional. Free-form rank or role."
                 value={formik.values.title}
                 onChange={formik.handleChange}
@@ -396,10 +395,10 @@ export default function CreateManagerPage() {
                 error={errorOf('title')}
               />
 
-              {isEnterprise && agencies.length > 0 && (
+              {agencies.length > 0 && (
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                    Assign Agency
+                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    Assign Department Agency
                   </label>
                   <select
                     name="agencyId"
@@ -415,11 +414,8 @@ export default function CreateManagerPage() {
                       </option>
                     ))}
                   </select>
-                  {errorOf('agencyId') && (
-                    <p className="text-xs text-red-400">{errorOf('agencyId')}</p>
-                  )}
                   <p className="text-xs text-slate-500">
-                    This admin will only be able to access the selected agency.
+                    This user will manage the selected agency&apos;s department.
                   </p>
                 </div>
               )}
@@ -435,13 +431,13 @@ export default function CreateManagerPage() {
               buttonClassName={PRIMARY_BUTTON_CLASS}
               style={{ fontFamily: HEADING_FONT_FAMILY }}
             >
-              {isSubmitting ? 'Sending invite…' : 'Save and Continue'}
+              {isSubmitting ? 'Sending invite…' : 'Send Invite'}
             </Button>
           </div>
         </form>
       ) : (
         <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 text-center text-slate-400 text-sm">
-          All {maxAllowed} admin seats are in use. Remove an existing admin to invite another.
+          All {maxAllowed} department user seats are in use.
         </div>
       )}
     </div>

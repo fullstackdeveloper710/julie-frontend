@@ -34,7 +34,7 @@ export default function AgencyEditPage() {
 
   // Admins can't edit agency details — bounce them back to the read-only list.
   useEffect(() => {
-    if (userResp?.data?.role === USER_ROLE.MANAGER) {
+    if ([USER_ROLE.MANAGER, USER_ROLE.DEPARTMENT_USER].includes(userResp?.data?.role as USER_ROLE)) {
       router.replace('/dashboard/agencies');
     }
   }, [userResp, router]);

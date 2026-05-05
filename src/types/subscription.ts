@@ -41,10 +41,10 @@ export interface Subscription {
   numberOfAgencies: number;
 
   // Seats allocation
-  adminSeats: number;
-  viewerSeats: number;
-  usedAdminSeats: number;
-  usedViewerSeats: number;
+  managerSeats: number;
+  departmentUserSeats: number;
+  usedManagerSeats: number;
+  usedDepartmentUserSeats: number;
 
   // Billing dates
   currentPeriodStart: string;

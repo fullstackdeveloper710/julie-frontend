@@ -6,7 +6,7 @@ import Link from "next/link";
 
 function AnnualCheckinNudge() {
   const { data: userResp } = useGetCurrentUserQuery();
-  const isAdmin = userResp?.data?.role === USER_ROLE.MANAGER;
+  const isAdmin = [USER_ROLE.MANAGER, USER_ROLE.DEPARTMENT_USER].includes(userResp?.data?.role as USER_ROLE);
   const { data: statusResp } = useGetAnnualCheckInStatusQuery(undefined, { skip: isAdmin });
   const status = statusResp?.data;
 

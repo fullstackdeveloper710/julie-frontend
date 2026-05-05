@@ -45,7 +45,7 @@ export default function Pricing() {
 
   // Backend already filters: founder XOR professional based on active founder count.
   // This page renders whatever the API returns — no client-side exclusivity logic needed.
-  const { founderAvailable, founderSpotsRemaining } = pricing;
+  const { founderAvailable, founderSpotsRemaining, plans } = pricing;
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -112,7 +112,7 @@ export default function Pricing() {
 
           {/* Plan grid — always 3 cards (founder/professional swap handled by backend) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 items-start">
-            {pricing.plans.map((plan) => (
+            {plans?.map((plan) => (
               <PricingCard
                 key={plan.id}
                 plan={plan}

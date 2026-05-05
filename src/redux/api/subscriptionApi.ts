@@ -187,7 +187,7 @@ export const subscriptionApi = createApi({
         subscriptionId: string;
         inviteData: {
           email: string;
-          role: 'admin' | 'viewer';
+          role: 'manager' | 'department_user';
         };
       }
     >({
