@@ -206,11 +206,18 @@ export default function PaymentPage() {
                   <div className="text-right">
                     <div className="font-bold text-white">
                       $
-                      {billingInterval === BILLING_INTERVAL.ANNUAL
+                      {plan.id === 'enterprise'
                         ? plan.pricing.annual
-                        : plan.pricing.monthly}
+                        : billingInterval === BILLING_INTERVAL.ANNUAL
+                          ? plan.pricing.annual
+                          : plan.pricing.monthly}
                       <span className="text-sm font-normal text-slate-400">
-                        /{billingInterval === BILLING_INTERVAL.ANNUAL ? 'yr' : 'mo'}
+                        /
+                        {plan.id === 'enterprise'
+                          ? 'yr'
+                          : billingInterval === BILLING_INTERVAL.ANNUAL
+                            ? 'yr'
+                            : 'mo'}
                       </span>
                     </div>
                   </div>

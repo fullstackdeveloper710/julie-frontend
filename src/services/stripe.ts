@@ -11,8 +11,9 @@ export async function initializeSubscriptionForNewUser(
   isFoundingRate: boolean = false
 ) {
   const currentOrigin =
-    typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
-
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_APP_URL;
   const successUrl = `${currentOrigin}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
   const cancelUrl = `${currentOrigin}/cancel`;
 
@@ -59,7 +60,7 @@ export async function createBillingPortalSession(accessToken: string, returnUrl:
   }
 
   const data = await response.json();
-  return data.data; // Should return { url }
+  return data.data;
 }
 
 
