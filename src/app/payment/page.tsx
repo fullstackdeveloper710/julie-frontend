@@ -269,7 +269,7 @@ export default function PaymentPage() {
             className="flex-1"
             disabled={isPaymentProcessing}
           >
-            {isPaymentProcessing ? 'Processing...' : 'Cancel'}
+            Cancel
           </Button>
           <Button
             onClick={handlePayment}
